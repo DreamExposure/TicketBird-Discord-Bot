@@ -71,7 +71,12 @@ public class GuildSettings {
     }
 
     public String getStaffString() {
-        return staff.toString().replace("[", "").replace("]", "").replace(" ", "");
+        StringBuilder list = new StringBuilder();
+        for (long l : staff) {
+            list.append(l).append(",");
+        }
+
+        return list.toString();
     }
 
     //Setters
@@ -109,7 +114,10 @@ public class GuildSettings {
 
     public void setStaffFromString(String _staff) {
         for (String s : _staff.split(",")) {
-            staff.add(Long.valueOf(s));
+            try {
+                staff.add(Long.valueOf(s));
+            } catch (NumberFormatException ignore) {
+            }
         }
     }
 }
