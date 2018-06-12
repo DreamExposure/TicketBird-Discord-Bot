@@ -1,7 +1,5 @@
 package com.novamaday.ticketbird.objects.guild;
 
-import java.util.ArrayList;
-
 public class GuildSettings {
     private final long guildID;
 
@@ -11,7 +9,10 @@ public class GuildSettings {
     private boolean patronGuild;
     private boolean devGuild;
 
-    private final ArrayList<String> dmAnnouncements = new ArrayList<>();
+    private long awaitingCategory;
+    private long respondedCategory;
+    private long holdCategory;
+    private long closeCategory;
 
     public GuildSettings(long _guildId) {
         guildID = _guildId;
@@ -44,6 +45,22 @@ public class GuildSettings {
         return devGuild;
     }
 
+    public long getAwaitingCategory() {
+        return awaitingCategory;
+    }
+
+    public long getRespondedCategory() {
+        return respondedCategory;
+    }
+
+    public long getHoldCategory() {
+        return holdCategory;
+    }
+
+    public long getCloseCategory() {
+        return closeCategory;
+    }
+
     //Setters
     public void setLang(String _lang) {
         lang = _lang;
@@ -59,5 +76,21 @@ public class GuildSettings {
 
     public void setDevGuild(boolean _devGuild) {
         devGuild = _devGuild;
+    }
+
+    public void setAwaitingCategory(long _awaiting) {
+        awaitingCategory = _awaiting;
+    }
+
+    public void setRespondedCategory(long _responded) {
+        respondedCategory = _responded;
+    }
+
+    public void setHoldCategory(long _hold) {
+        holdCategory = _hold;
+    }
+
+    public void setCloseCategory(long _close) {
+        closeCategory = _close;
     }
 }

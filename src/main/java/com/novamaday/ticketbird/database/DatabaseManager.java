@@ -5,7 +5,6 @@ import com.novamaday.ticketbird.objects.bot.BotSettings;
 import com.novamaday.ticketbird.objects.guild.GuildSettings;
 
 import java.sql.*;
-import java.util.ArrayList;
 
 @SuppressWarnings({"SqlResolve", "UnusedReturnValue", "SqlNoDataSourceInspection"})
 public class DatabaseManager {
@@ -72,6 +71,10 @@ public class DatabaseManager {
                     " PREFIX VARCHAR(255) not NULL, " +
                     " PATRON_GUILD BOOLEAN not NULL, " +
                     " DEV_GUILD BOOLEAN not NULL, " +
+                    " AWAITING_CATEGORY LONG not NULL, " +
+                    " RESPONDED_CATEGORY LONG not NULL, " +
+                    " HOLD_CATEGORY LONG not NULL, " +
+                    " CLOSE_CATEGORY LONG not NULL, " +
                     " PRIMARY KEY (GUILD_ID))";
             statement.executeUpdate(createSettingsTable);
             statement.close();
@@ -97,14 +100,18 @@ public class DatabaseManager {
                 if (!hasStuff || res.getString("GUILD_ID") == null) {
                     //Data not present, add to DB.
                     String insertCommand = "INSERT INTO " + dataTableName +
-                            "(GUILD_ID, LANG, PREFIX, PATRON_GUILD, DEV_GUILD)" +
-                            " VALUES (?, ?, ?, ?, ?);";
+                            "(GUILD_ID, LANG, PREFIX, PATRON_GUILD, DEV_GUILD, AWAITING_CATEGORY, RESPONDED_CATEGORY, HOLD_CATEGORY, CLOSE_CATEGORY)" +
+                            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);";
                     PreparedStatement ps = databaseInfo.getConnection().prepareStatement(insertCommand);
                     ps.setString(1, String.valueOf(settings.getGuildID()));
                     ps.setString(2, settings.getLang());
                     ps.setString(3, settings.getPrefix());
                     ps.setBoolean(4, settings.isPatronGuild());
                     ps.setBoolean(5, settings.isDevGuild());
+                    ps.setLong(6, settings.getAwaitingCategory());
+                    ps.setLong(7, settings.getRespondedCategory());
+                    ps.setLong(8, settings.getHoldCategory());
+                    ps.setLong(9, settings.getCloseCategory());
 
 
                     ps.executeUpdate();
@@ -114,6 +121,7 @@ public class DatabaseManager {
                     //Data present, update.
                     String update = "UPDATE " + dataTableName
                             + " SET LANG = ?, PREFIX = ?, PATRON_GUILD = ?, " +
+                            " AWAITNG_CATEGORY = ?, RESPONDED_CATEGORY = ?, HOLD_CATEGORY = ?, CLOSE_CATEGORY = ?, " +
                             "DEV_GUILD = ? WHERE GUILD_ID = ?";
                     PreparedStatement ps = databaseInfo.getConnection().prepareStatement(update);
 
@@ -121,7 +129,11 @@ public class DatabaseManager {
                     ps.setString(2, settings.getPrefix());
                     ps.setBoolean(3, settings.isPatronGuild());
                     ps.setBoolean(4, settings.isDevGuild());
-                    ps.setString(5, String.valueOf(settings.getGuildID()));
+                    ps.setLong(5, settings.getAwaitingCategory());
+                    ps.setLong(6, settings.getRespondedCategory());
+                    ps.setLong(7, settings.getHoldCategory());
+                    ps.setLong(8, settings.getCloseCategory());
+                    ps.setString(9, String.valueOf(settings.getGuildID()));
 
                     ps.executeUpdate();
 
@@ -157,6 +169,11 @@ public class DatabaseManager {
                     settings.setPatronGuild(res.getBoolean("PATRON_GUILD"));
                     settings.setDevGuild(res.getBoolean("DEV_GUILD"));
 
+                    settings.setAwaitingCategory(res.getLong("AWAITING_CATEGORY"));
+                    settings.setRespondedCategory(res.getLong("RESPONDED_CATEGORY"));
+                    settings.setHoldCategory(res.getLong("HOLD_CATEGORY"));
+                    settings.setCloseCategory(res.getLong("CLOSE_CATEGORY"));
+
                     statement.close();
                 } else {
                     //Data not present.
@@ -168,33 +185,5 @@ public class DatabaseManager {
             Logger.getLogger().exception(null, "Failed to get Guild Settings.", e, this.getClass());
         }
         return settings;
-    }
-
-    public ArrayList<GuildSettings> getAllSettings() {
-        ArrayList<GuildSettings> allSettings = new ArrayList<>();
-        try {
-            if (databaseInfo.getMySQL().checkConnection()) {
-                String dataTableName = String.format("%sguild_settings", databaseInfo.getPrefix());
-
-                PreparedStatement stmt = databaseInfo.getConnection().prepareStatement("SELECT * FROM " + dataTableName);
-                ResultSet res = stmt.executeQuery();
-
-                while (res.next()) {
-                    if (res.getString("GUILD_ID") != null) {
-                        GuildSettings settings = new GuildSettings(Long.valueOf(res.getString("GUILD_ID")));
-                        settings.setLang(res.getString("LANG"));
-                        settings.setPrefix(res.getString("PREFIX"));
-                        settings.setPatronGuild(res.getBoolean("PATRON_GUILD"));
-                        settings.setDevGuild(res.getBoolean("DEV_GUILD"));
-
-                        allSettings.add(settings);
-                    }
-                }
-                stmt.close();
-            }
-        } catch (SQLException e) {
-            Logger.getLogger().exception(null, "Failed to get all guild settings", e, this.getClass());
-        }
-        return allSettings;
     }
 }
