@@ -122,9 +122,9 @@ public class DatabaseManager {
                 } else {
                     //Data present, update.
                     String update = "UPDATE " + dataTableName
-                            + " SET LANG = ?, PREFIX = ?, PATRON_GUILD = ?, " +
+                            + " SET LANG = ?, PREFIX = ?, PATRON_GUILD = ?, DEV_GUILD = ?, " +
                             " AWAITING_CATEGORY = ?, RESPONDED_CATEGORY = ?, HOLD_CATEGORY = ?, CLOSE_CATEGORY = ?, " +
-                            "DEV_GUILD = ?, STAFF = ? WHERE GUILD_ID = ?";
+                            " STAFF = ? WHERE GUILD_ID = ?";
                     PreparedStatement ps = databaseInfo.getConnection().prepareStatement(update);
 
                     ps.setString(1, settings.getLang());
