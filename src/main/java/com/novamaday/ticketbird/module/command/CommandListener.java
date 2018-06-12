@@ -59,7 +59,7 @@ class CommandListener {
                         cmd.issueCommand(argsOr[1], new String[0], event, settings);
                     } else if (argsOr.length == 1) {
                         //Only disCal mentioned...
-                        cmd.issueCommand("DisCal", new String[0], event, settings);
+                        cmd.issueCommand("TicketBird", new String[0], event, settings);
                     }
                 }
             }
