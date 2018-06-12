@@ -18,6 +18,10 @@
   "Embed.TicketBird.Settings.Dev": "Dev Guild",
   "Embed.TicketBird.Settings.Language": "Language",
   "Embed.TicketBird.Settings.Prefix": "Prefix",
+  "Setup.Already": "Setup has already been completed! %lb% %lb% You do not need to run this command again.",
+  "Setup.Working": "Setting up TicketBird... %lb% please wait while we complete the setup.",
+  "Setup.Complete": "TicketBird Setup Complete! %lb% You may now rename the categories at this point. %lb% %lb% To add projects, use `=project add <name> <prefix>`. %lb% %lb% To add staff members with `=ticketbird staff add <user mention>`",
+
   "Notification.Args.Few": "You must specify a function to execute! Use '=help` for a full list of valid commands and functions!",
   "Notification.Args.Invalid": "Invalid function! Please view `=help` for a full list of valid commands and functions!",
   "Notification.Args.InvalidSubCmd": "Invalid sub command! Use `=help <command>` for more info!",

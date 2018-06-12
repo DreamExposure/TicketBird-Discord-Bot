@@ -2,6 +2,7 @@ package com.novamaday.ticketbird.module.command;
 
 import com.novamaday.ticketbird.Main;
 import com.novamaday.ticketbird.database.DatabaseManager;
+import com.novamaday.ticketbird.message.ChannelManager;
 import com.novamaday.ticketbird.message.MessageManager;
 import com.novamaday.ticketbird.objects.command.CommandInfo;
 import com.novamaday.ticketbird.objects.guild.GuildSettings;
@@ -47,6 +48,8 @@ public class TicketBirdCommand implements ICommand {
         info.setDescription("Used to configure TicketBird");
         info.setExample("=TicketBird (function) (value)");
 
+        info.getSubCommands().put("setup", "Starts the initial bot setup/installation.");
+
         info.getSubCommands().put("settings", "Displays the bot's settings.");
         info.getSubCommands().put("language", "Sets the bot's language.");
         info.getSubCommands().put("lang", "Sets the bot's language.");
@@ -71,6 +74,9 @@ public class TicketBirdCommand implements ICommand {
             switch (args[0].toLowerCase()) {
                 case "ticketbird":
                     moduleTicketBirdInfo(event, settings);
+                    break;
+                case "setup":
+                    moduleSetup(event, settings);
                     break;
                 case "settings":
                     moduleSettings(event, settings);
@@ -165,5 +171,26 @@ public class TicketBirdCommand implements ICommand {
     private void moduleInvite(MessageReceivedEvent event, GuildSettings settings) {
         String INVITE_LINK = "https://discord.gg/AmAMGeN";
         MessageManager.sendMessage(MessageManager.getMessage("TicketBird.InviteLink", "%link%", INVITE_LINK, settings), event);
+    }
+
+    private void moduleSetup(MessageReceivedEvent event, GuildSettings settings) {
+        if (event.getGuild().getCategoryByID(settings.getCloseCategory()) == null) {
+            //Do initial setup!
+            MessageManager.sendMessage(MessageManager.getMessage("Setup.Working", settings), event);
+
+            //Create categories...
+            settings.setAwaitingCategory(ChannelManager.createCategory("Tickets Awaiting Response", event.getGuild()).getLongID());
+            settings.setRespondedCategory(ChannelManager.createCategory("Tickets Responded To", event.getGuild()).getLongID());
+            settings.setHoldCategory(ChannelManager.createCategory("Tickets On Hold", event.getGuild()).getLongID());
+            settings.setCloseCategory(ChannelManager.createCategory("Tickets Closed", event.getGuild()).getLongID());
+
+            //Update database
+            DatabaseManager.getManager().updateSettings(settings);
+
+            MessageManager.sendMessage(MessageManager.getMessage("Setup.Complete", settings), event);
+        } else {
+            //Setup has already been done.
+            MessageManager.sendMessage(MessageManager.getMessage("Setup.Already", settings), event);
+        }
     }
 }
