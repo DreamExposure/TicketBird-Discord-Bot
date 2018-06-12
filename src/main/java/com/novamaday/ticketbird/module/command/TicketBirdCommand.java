@@ -5,6 +5,7 @@ import com.novamaday.ticketbird.database.DatabaseManager;
 import com.novamaday.ticketbird.message.MessageManager;
 import com.novamaday.ticketbird.objects.command.CommandInfo;
 import com.novamaday.ticketbird.objects.guild.GuildSettings;
+import com.novamaday.ticketbird.utils.GlobalVars;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.util.EmbedBuilder;
@@ -98,25 +99,23 @@ public class TicketBirdCommand implements ICommand {
         IGuild guild = event.getGuild();
 
         EmbedBuilder em = new EmbedBuilder();
-        em.withAuthorIcon(Main.getClient().getGuildByID(266063520112574464L).getIconURL());
+        em.withAuthorIcon(Main.getClient().getGuildByID(GlobalVars.serverId).getIconURL());
         em.withAuthorName("TicketBird!");
         em.withTitle(MessageManager.getMessage("Embed.TicketBird.Info.Title", settings));
         em.appendField(MessageManager.getMessage("Embed.TicketBird.Info.Developer", settings), "NovaFox161", true);
-        em.appendField(MessageManager.getMessage("Embed.TicketBird.Info.Version", settings), Main.version, true);
+        em.appendField(MessageManager.getMessage("Embed.TicketBird.Info.Version", settings), GlobalVars.version, true);
         em.appendField(MessageManager.getMessage("Embed.TicketBird.Info.Library", settings), "Discord4J, version 2.9.2", false);
         em.appendField(MessageManager.getMessage("Embed.TicketBird.Info.TotalGuilds", settings), Main.getClient().getGuilds().size() + "", true);
         em.appendField(MessageManager.getMessage("Embed.TicketBird.Info.Ping", "%shard%", (guild.getShard().getInfo()[0] + 1) + "/" + Main.getClient().getShardCount(), settings), guild.getShard().getResponseTime() + "ms", false);
         em.withFooterText(MessageManager.getMessage("Embed.TicketBird.Info.Patron", settings) + ": https://www.patreon.com/Novafox");
         em.withUrl("https://www.novamaday.com/ticketbird/");
-        em.withColor(56, 138, 237);
+        em.withColor(GlobalVars.embedColor);
         MessageManager.sendMessage(em.build(), event);
     }
 
     private void moduleSettings(MessageReceivedEvent event, GuildSettings settings) {
-        long guildId = event.getGuild().getLongID();
-
         EmbedBuilder em = new EmbedBuilder();
-        em.withAuthorIcon(Main.getClient().getGuildByID(266063520112574464L).getIconURL());
+        em.withAuthorIcon(Main.getClient().getGuildByID(GlobalVars.serverId).getIconURL());
         em.withAuthorName("TicketBird");
         em.withTitle(MessageManager.getMessage("Embed.TicketBird.Settings.Title", settings));
         em.appendField(MessageManager.getMessage("Embed.TicketBird.Settings.Patron", settings), String.valueOf(settings.isPatronGuild()), true);
@@ -126,7 +125,7 @@ public class TicketBirdCommand implements ICommand {
         //TODO: Add translations...
         em.withFooterText(MessageManager.getMessage("Embed.TicketBird.Info.Patron", settings) + ": https://www.patreon.com/Novafox");
         em.withUrl("https://www.novamaday.com/ticketbird/");
-        em.withColor(56, 138, 237);
+        em.withColor(GlobalVars.embedColor);
         MessageManager.sendMessage(em.build(), event);
     }
 

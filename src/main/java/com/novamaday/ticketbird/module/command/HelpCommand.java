@@ -4,6 +4,7 @@ import com.novamaday.ticketbird.Main;
 import com.novamaday.ticketbird.message.MessageManager;
 import com.novamaday.ticketbird.objects.command.CommandInfo;
 import com.novamaday.ticketbird.objects.guild.GuildSettings;
+import com.novamaday.ticketbird.utils.GlobalVars;
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.util.EmbedBuilder;
@@ -58,7 +59,7 @@ public class HelpCommand implements ICommand {
     public Boolean issueCommand(String[] args, MessageReceivedEvent event, GuildSettings settings) {
         if (args.length < 1) {
             EmbedBuilder em = new EmbedBuilder();
-            em.withAuthorIcon(Main.getClient().getGuildByID(266063520112574464L).getIconURL());
+            em.withAuthorIcon(Main.getClient().getGuildByID(GlobalVars.serverId).getIconURL());
             em.withAuthorName("TicketBird");
             em.withTitle("TicketBird Command Help");
             for (ICommand c : CommandExecutor.getExecutor().getCommands()) {
@@ -71,7 +72,7 @@ public class HelpCommand implements ICommand {
             }
             em.withFooterText("Check out the official site for more command info!");
             em.withUrl("https://www.novamaday.com/ticketbird/commands");
-            em.withColor(56, 138, 237);
+            em.withColor(GlobalVars.embedColor);
             MessageManager.sendMessage(em.build(), event);
         } else if (args.length == 1) {
             String cmdFor = args[0];
@@ -99,7 +100,7 @@ public class HelpCommand implements ICommand {
     //Embed formatters
     private EmbedObject getCommandInfoEmbed(ICommand cmd) {
         EmbedBuilder em = new EmbedBuilder();
-        em.withAuthorIcon(Main.getClient().getGuildByID(266063520112574464L).getIconURL());
+        em.withAuthorIcon(Main.getClient().getGuildByID(GlobalVars.serverId).getIconURL());
         em.withAuthorName("TicketBird");
         em.appendField("Command", cmd.getCommand(), true);
         em.appendField("Description", cmd.getCommandInfo().getDescription(), true);
@@ -116,14 +117,14 @@ public class HelpCommand implements ICommand {
 
         em.withUrl("https://www.novamaday.com/ticketbird/commands");
 
-        em.withColor(56, 138, 237);
+        em.withColor(GlobalVars.embedColor);
 
         return em.build();
     }
 
     private EmbedObject getSubCommandEmbed(ICommand cmd, String subCommand) {
         EmbedBuilder em = new EmbedBuilder();
-        em.withAuthorIcon(Main.getClient().getGuildByID(266063520112574464L).getIconURL());
+        em.withAuthorIcon(Main.getClient().getGuildByID(GlobalVars.serverId).getIconURL());
         em.withAuthorName("TicketBird");
         em.appendField("Command", cmd.getCommand(), true);
         em.appendField("Sub Command", subCommand, true);
@@ -134,7 +135,7 @@ public class HelpCommand implements ICommand {
 
         em.withUrl("https://www.novamaday.com/ticketbird/commands");
 
-        em.withColor(56, 138, 237);
+        em.withColor(GlobalVars.embedColor);
 
         return em.build();
     }

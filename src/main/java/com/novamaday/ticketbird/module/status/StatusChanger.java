@@ -1,6 +1,7 @@
 package com.novamaday.ticketbird.module.status;
 
 import com.novamaday.ticketbird.Main;
+import com.novamaday.ticketbird.utils.GlobalVars;
 import sx.blah.discord.handle.obj.ActivityType;
 import sx.blah.discord.handle.obj.StatusType;
 
@@ -23,7 +24,7 @@ public class StatusChanger extends TimerTask {
 
         statuses.add("%shards% shards!");
 
-        statuses.add("Version " + Main.version);
+        statuses.add("Version " + GlobalVars.version);
         statuses.add("TicketBird is on Patreon!");
         statuses.add("Share TicketBird!!");
         index = 0;

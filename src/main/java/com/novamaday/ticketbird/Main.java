@@ -20,8 +20,6 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class Main {
-    public static String version = "${project.version}";
-
     private static IDiscordClient client;
 
     public static void main(String[] args) throws IOException {

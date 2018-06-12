@@ -6,6 +6,7 @@ import com.novamaday.ticketbird.logger.Logger;
 import com.novamaday.ticketbird.message.MessageManager;
 import com.novamaday.ticketbird.objects.command.CommandInfo;
 import com.novamaday.ticketbird.objects.guild.GuildSettings;
+import com.novamaday.ticketbird.utils.GlobalVars;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.IShard;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
@@ -77,8 +78,7 @@ public class DevCommand implements ICommand {
      */
     @Override
     public Boolean issueCommand(String[] args, MessageReceivedEvent event, GuildSettings settings) {
-        long novaId = 130510525770629121L;
-        if (event.getAuthor().getLongID() == novaId) {
+        if (event.getAuthor().getLongID() == GlobalVars.novaId) {
             if (args.length < 1) {
                 MessageManager.sendMessage("Please specify the function you would like to execute. To view valid functions use `!help dev`", event);
             } else {
@@ -161,7 +161,7 @@ public class DevCommand implements ICommand {
             em.withAuthorName("Error");
             em.withDesc(ex.getMessage());
             em.withFooterText("Eval failed");
-            em.withColor(56, 138, 237);
+            em.withColor(GlobalVars.embedColor);
             MessageManager.sendMessage(em.build(), channel);
             return;
         }
@@ -169,7 +169,7 @@ public class DevCommand implements ICommand {
         EmbedBuilder em = new EmbedBuilder();
         em.withAuthorIcon(guild.getIconURL());
         em.withAuthorName("Success!");
-        em.withColor(56, 138, 237);
+        em.withColor(GlobalVars.embedColor);
         em.withTitle("Evaluation output.");
         em.withDesc(o == null ? "No output, object is null" : o.toString());
         em.appendField("Input", "```java\n" + input + "\n```", false);
