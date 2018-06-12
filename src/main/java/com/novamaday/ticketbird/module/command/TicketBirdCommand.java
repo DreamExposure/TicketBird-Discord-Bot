@@ -7,8 +7,10 @@ import com.novamaday.ticketbird.message.MessageManager;
 import com.novamaday.ticketbird.objects.command.CommandInfo;
 import com.novamaday.ticketbird.objects.guild.GuildSettings;
 import com.novamaday.ticketbird.utils.GlobalVars;
+import com.novamaday.ticketbird.utils.UserUtils;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IGuild;
+import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.util.EmbedBuilder;
 
 import java.util.ArrayList;
@@ -49,6 +51,7 @@ public class TicketBirdCommand implements ICommand {
         info.setExample("=TicketBird (function) (value)");
 
         info.getSubCommands().put("setup", "Starts the initial bot setup/installation.");
+        info.getSubCommands().put("staff", "Adds/Removes staff members (for ticket management permissions).");
 
         info.getSubCommands().put("settings", "Displays the bot's settings.");
         info.getSubCommands().put("language", "Sets the bot's language.");
@@ -77,6 +80,9 @@ public class TicketBirdCommand implements ICommand {
                     break;
                 case "setup":
                     moduleSetup(event, settings);
+                    break;
+                case "staff":
+                    moduleStaff(args, event, settings);
                     break;
                 case "settings":
                     moduleSettings(event, settings);
@@ -191,6 +197,44 @@ public class TicketBirdCommand implements ICommand {
         } else {
             //Setup has already been done.
             MessageManager.sendMessage(MessageManager.getMessage("Setup.Already", settings), event);
+        }
+    }
+
+    private void moduleStaff(String[] args, MessageReceivedEvent event, GuildSettings settings) {
+        if (args.length == 3) {
+            String name = args[2];
+            IUser userFromName = event.getGuild().getUserByID(UserUtils.getUser(name, event.getGuild()));
+
+            if (userFromName == null) {
+                MessageManager.sendMessage(MessageManager.getMessage("Notification.User.NotFound", settings), event);
+                return;
+            }
+
+            switch (args[1].toLowerCase()) {
+                case "add":
+                    if (settings.getStaff().contains(userFromName.getLongID())) {
+                        MessageManager.sendMessage(MessageManager.getMessage("Staff.Add.Already", settings), event);
+                    } else {
+                        settings.getStaff().add(userFromName.getLongID());
+                        DatabaseManager.getManager().updateSettings(settings);
+                        MessageManager.sendMessage(MessageManager.getMessage("Staff.Add.Success", settings), event);
+                    }
+                    break;
+                case "remove":
+                    if (settings.getStaff().contains(userFromName.getLongID())) {
+                        settings.getStaff().remove(userFromName.getLongID());
+                        DatabaseManager.getManager().updateSettings(settings);
+                        MessageManager.sendMessage(MessageManager.getMessage("Staff.Remove.Success", settings), event);
+                    } else {
+                        MessageManager.sendMessage(MessageManager.getMessage("Staff.Remove.Not", settings), event);
+                    }
+                    break;
+                default:
+                    MessageManager.sendMessage(MessageManager.getMessage("Staff.Specify", settings), event);
+                    break;
+            }
+        } else {
+            MessageManager.sendMessage(MessageManager.getMessage("Staff.Specify", settings), event);
         }
     }
 }

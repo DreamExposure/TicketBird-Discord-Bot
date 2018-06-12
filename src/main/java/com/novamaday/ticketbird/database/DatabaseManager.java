@@ -75,6 +75,7 @@ public class DatabaseManager {
                     " RESPONDED_CATEGORY LONG not NULL, " +
                     " HOLD_CATEGORY LONG not NULL, " +
                     " CLOSE_CATEGORY LONG not NULL, " +
+                    " STAFF LONGTEXT not NULL, " +
                     " PRIMARY KEY (GUILD_ID))";
             statement.executeUpdate(createSettingsTable);
             statement.close();
@@ -100,8 +101,8 @@ public class DatabaseManager {
                 if (!hasStuff || res.getString("GUILD_ID") == null) {
                     //Data not present, add to DB.
                     String insertCommand = "INSERT INTO " + dataTableName +
-                            "(GUILD_ID, LANG, PREFIX, PATRON_GUILD, DEV_GUILD, AWAITING_CATEGORY, RESPONDED_CATEGORY, HOLD_CATEGORY, CLOSE_CATEGORY)" +
-                            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);";
+                            "(GUILD_ID, LANG, PREFIX, PATRON_GUILD, DEV_GUILD, AWAITING_CATEGORY, RESPONDED_CATEGORY, HOLD_CATEGORY, CLOSE_CATEGORY, STAFF)" +
+                            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
                     PreparedStatement ps = databaseInfo.getConnection().prepareStatement(insertCommand);
                     ps.setString(1, String.valueOf(settings.getGuildID()));
                     ps.setString(2, settings.getLang());
@@ -112,6 +113,7 @@ public class DatabaseManager {
                     ps.setLong(7, settings.getRespondedCategory());
                     ps.setLong(8, settings.getHoldCategory());
                     ps.setLong(9, settings.getCloseCategory());
+                    ps.setString(10, settings.getStaffString());
 
 
                     ps.executeUpdate();
@@ -121,8 +123,8 @@ public class DatabaseManager {
                     //Data present, update.
                     String update = "UPDATE " + dataTableName
                             + " SET LANG = ?, PREFIX = ?, PATRON_GUILD = ?, " +
-                            " AWAITNG_CATEGORY = ?, RESPONDED_CATEGORY = ?, HOLD_CATEGORY = ?, CLOSE_CATEGORY = ?, " +
-                            "DEV_GUILD = ? WHERE GUILD_ID = ?";
+                            " AWAITING_CATEGORY = ?, RESPONDED_CATEGORY = ?, HOLD_CATEGORY = ?, CLOSE_CATEGORY = ?, " +
+                            "DEV_GUILD = ?, STAFF = ? WHERE GUILD_ID = ?";
                     PreparedStatement ps = databaseInfo.getConnection().prepareStatement(update);
 
                     ps.setString(1, settings.getLang());
@@ -133,7 +135,8 @@ public class DatabaseManager {
                     ps.setLong(6, settings.getRespondedCategory());
                     ps.setLong(7, settings.getHoldCategory());
                     ps.setLong(8, settings.getCloseCategory());
-                    ps.setString(9, String.valueOf(settings.getGuildID()));
+                    ps.setString(9, settings.getStaffString());
+                    ps.setString(10, String.valueOf(settings.getGuildID()));
 
                     ps.executeUpdate();
 
@@ -173,6 +176,8 @@ public class DatabaseManager {
                     settings.setRespondedCategory(res.getLong("RESPONDED_CATEGORY"));
                     settings.setHoldCategory(res.getLong("HOLD_CATEGORY"));
                     settings.setCloseCategory(res.getLong("CLOSE_CATEGORY"));
+
+                    settings.setStaffFromString(res.getString("STAFF"));
 
                     statement.close();
                 } else {

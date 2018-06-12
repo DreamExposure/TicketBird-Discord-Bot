@@ -1,5 +1,8 @@
 package com.novamaday.ticketbird.objects.guild;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class GuildSettings {
     private final long guildID;
 
@@ -13,6 +16,8 @@ public class GuildSettings {
     private long respondedCategory;
     private long holdCategory;
     private long closeCategory;
+
+    private List<Long> staff = new ArrayList<>();
 
     public GuildSettings(long _guildId) {
         guildID = _guildId;
@@ -61,6 +66,14 @@ public class GuildSettings {
         return closeCategory;
     }
 
+    public List<Long> getStaff() {
+        return staff;
+    }
+
+    public String getStaffString() {
+        return staff.toString().replace("[", "").replace("]", "").replace(" ", "");
+    }
+
     //Setters
     public void setLang(String _lang) {
         lang = _lang;
@@ -92,5 +105,11 @@ public class GuildSettings {
 
     public void setCloseCategory(long _close) {
         closeCategory = _close;
+    }
+
+    public void setStaffFromString(String _staff) {
+        for (String s : _staff.split(",")) {
+            staff.add(Long.valueOf(s));
+        }
     }
 }
