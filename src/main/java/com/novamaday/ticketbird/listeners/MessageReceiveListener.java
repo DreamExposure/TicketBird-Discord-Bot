@@ -13,7 +13,6 @@ import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.Permissions;
 import sx.blah.discord.util.EmbedBuilder;
 
-import java.util.Collections;
 import java.util.EnumSet;
 
 public class MessageReceiveListener {
@@ -45,10 +44,10 @@ public class MessageReceiveListener {
                 EnumSet<Permissions> toRemove = EnumSet.allOf(Permissions.class);
 
                 channel.overrideRolePermissions(event.getGuild().getEveryoneRole(), EnumSet.noneOf(Permissions.class), toRemove);
-                channel.overrideUserPermissions(event.getAuthor(), toAdd, EnumSet.copyOf(Collections.emptyList()));
+                channel.overrideUserPermissions(event.getAuthor(), toAdd, EnumSet.noneOf(Permissions.class));
 
                 for (long uid : settings.getStaff()) {
-                    channel.overrideUserPermissions(event.getGuild().getUserByID(uid), toAdd, EnumSet.copyOf(Collections.emptyList()));
+                    channel.overrideUserPermissions(event.getGuild().getUserByID(uid), toAdd, EnumSet.noneOf(Permissions.class));
                 }
 
                 //Register ticket in database.
