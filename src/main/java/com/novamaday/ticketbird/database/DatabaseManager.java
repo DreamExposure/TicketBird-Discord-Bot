@@ -88,8 +88,7 @@ public class DatabaseManager {
             String createProjectsTable = "CREATE TABLE IF NOT EXISTS " + projectTableName +
                     "(GUILD_ID VARCHAR(255) not NULL, " +
                     " PROJECT_NAME LONGTEXT not NULL, " +
-                    " PROJECT_PREFIX VARCHAR(16) not NULL, " +
-                    " PRIMARY KEY (GUILD_ID))";
+                    " PROJECT_PREFIX VARCHAR(16) not NULL)";
             String createTicketsTable = "CREATE TABLE IF NOT EXISTS " + ticketTableName +
                     "(GUILD_ID VARCHAR(255) not NULL, " +
                     " NUMBER INTEGER not NULL, " +
@@ -97,8 +96,7 @@ public class DatabaseManager {
                     " CREATOR LONG not NULL, " +
                     " CHANNEL LONG not NULL, " +
                     " CATEGORY LONG not NULL, " +
-                    " LAST_ACTIVITY LONG not NULL, " +
-                    " PRIMARY KEY (GUILD_ID))";
+                    " LAST_ACTIVITY LONG not NULL)";
             statement.executeUpdate(createSettingsTable);
             statement.executeUpdate(createProjectsTable);
             statement.executeUpdate(createTicketsTable);
