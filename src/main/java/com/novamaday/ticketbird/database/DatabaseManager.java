@@ -72,7 +72,7 @@ public class DatabaseManager {
             String projectTableName = String.format("%sprojects", databaseInfo.getPrefix());
             String ticketTableName = String.format("%stickets", databaseInfo.getPrefix());
             String createSettingsTable = "CREATE TABLE IF NOT EXISTS " + settingsTableName +
-                    "(GUILD_ID LONG not NULL, " +
+                    "(GUILD_ID LONGTEXT not NULL, " +
                     " LANG VARCHAR(255) not NULL, " +
                     " PREFIX VARCHAR(16) not NULL, " +
                     " PATRON_GUILD BOOLEAN not NULL, " +
@@ -83,19 +83,22 @@ public class DatabaseManager {
                     " CLOSE_CATEGORY LONG not NULL, " +
                     " SUPPORT_CHANNEL LONG not NULL, " +
                     " NEXT_ID INTEGER not NULL, " +
-                    " STAFF LONGTEXT not NULL)";
+                    " STAFF LONGTEXT not NULL, " +
+                    " PRIMARY KEY (GUILD_ID))";
             String createProjectsTable = "CREATE TABLE IF NOT EXISTS " + projectTableName +
-                    "(GUILD_ID LONG not NULL, " +
+                    "(GUILD_ID LONGTEXT not NULL, " +
                     " PROJECT_NAME LONGTEXT not NULL, " +
-                    " PROJECT_PREFIX VARCHAR(16) not NULL)";
+                    " PROJECT_PREFIX VARCHAR(16) not NULL, " +
+                    " PRIMARY KEY (GUILD_ID, PROJECT_NAME))";
             String createTicketsTable = "CREATE TABLE IF NOT EXISTS " + ticketTableName +
-                    "(GUILD_ID LONG not NULL, " +
+                    "(GUILD_ID LONGTEXT not NULL, " +
                     " NUMBER INTEGER not NULL, " +
                     " PROJECT LONGTEXT not NULL, " +
                     " CREATOR LONG not NULL, " +
                     " CHANNEL LONG not NULL, " +
                     " CATEGORY LONG not NULL, " +
-                    " LAST_ACTIVITY LONG not NULL)";
+                    " LAST_ACTIVITY LONG not NULL, " +
+                    " PRIMARY KEY (GUILD_ID))";
             statement.executeUpdate(createSettingsTable);
             statement.executeUpdate(createProjectsTable);
             statement.executeUpdate(createTicketsTable);
@@ -125,7 +128,7 @@ public class DatabaseManager {
                             "(GUILD_ID, LANG, PREFIX, PATRON_GUILD, DEV_GUILD, AWAITING_CATEGORY, RESPONDED_CATEGORY, HOLD_CATEGORY, CLOSE_CATEGORY, SUPPORT_CHANNEL, NEXT_ID, STAFF)" +
                             " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
                     PreparedStatement ps = databaseInfo.getConnection().prepareStatement(insertCommand);
-                    ps.setLong(1, settings.getGuildID());
+                    ps.setString(1, settings.getGuildID() + "");
                     ps.setString(2, settings.getLang());
                     ps.setString(3, settings.getPrefix());
                     ps.setBoolean(4, settings.isPatronGuild());
@@ -161,7 +164,7 @@ public class DatabaseManager {
                     ps.setLong(9, settings.getSupportChannel());
                     ps.setInt(10, settings.getNextId());
                     ps.setString(11, settings.getStaffString());
-                    ps.setLong(12, settings.getGuildID());
+                    ps.setString(12, settings.getGuildID() + "");
 
                     ps.executeUpdate();
 
@@ -194,7 +197,7 @@ public class DatabaseManager {
                     String insertCommand = "INSERT INTO " + dataTableName +
                             "(GUILD_ID, PROJECT_NAME, PROJECT_PREFIX) VALUES (?, ?, ?);";
                     PreparedStatement ps = databaseInfo.getConnection().prepareStatement(insertCommand);
-                    ps.setLong(1, project.getGuildId());
+                    ps.setString(1, project.getGuildId() + "");
                     ps.setString(2, project.getName());
                     ps.setString(3, project.getPrefix());
 
@@ -207,7 +210,7 @@ public class DatabaseManager {
                     PreparedStatement ps = databaseInfo.getConnection().prepareStatement(update);
 
                     ps.setString(1, project.getPrefix());
-                    ps.setLong(2, project.getGuildId());
+                    ps.setString(2, project.getGuildId() + "");
                     ps.setString(3, project.getName());
 
                     ps.executeUpdate();
@@ -241,7 +244,7 @@ public class DatabaseManager {
                     String insertCommand = "INSERT INTO " + dataTableName +
                             "(GUILD_ID, NUMBER, PROJECT, CREATOR, CHANNEL, CATEGORY, LAST_ACTIVITY) VALUES (?, ?, ?, ?, ?, ?, ?);";
                     PreparedStatement ps = databaseInfo.getConnection().prepareStatement(insertCommand);
-                    ps.setLong(1, ticket.getGuildId());
+                    ps.setString(1, ticket.getGuildId() + "");
                     ps.setInt(2, ticket.getNumber());
                     ps.setString(3, ticket.getProject());
                     ps.setLong(4, ticket.getCreator());
@@ -262,7 +265,7 @@ public class DatabaseManager {
                     ps.setLong(3, ticket.getChannel());
                     ps.setLong(4, ticket.getCategory());
                     ps.setLong(5, ticket.getLastActivity());
-                    ps.setLong(6, ticket.getGuildId());
+                    ps.setString(6, ticket.getGuildId() + "");
                     ps.setInt(7, ticket.getNumber());
 
                     ps.executeUpdate();
@@ -332,7 +335,7 @@ public class DatabaseManager {
 
                 boolean hasStuff = res.next();
 
-                if (hasStuff && res.getLong("GUILD_ID") > 0 && res.getString("PROJECT_NAME") != null) {
+                if (hasStuff && res.getString("GUILD_ID") != null && res.getString("PROJECT_NAME") != null) {
                     Project project = new Project(guildId, projectName);
                     project.setPrefix(res.getString("PROJECT_PREFIX"));
 
@@ -361,7 +364,7 @@ public class DatabaseManager {
 
                 boolean hasStuff = res.next();
 
-                if (hasStuff && res.getLong("GUILD_ID") > 0 && res.getInt("NUMBER") > 0) {
+                if (hasStuff && res.getString("GUILD_ID") != null && res.getInt("NUMBER") > 0) {
                     Ticket ticket = new Ticket(guildId, number);
                     ticket.setProject(res.getString("PROJECT"));
                     ticket.setCreator(res.getLong("CREATOR"));
@@ -448,7 +451,7 @@ public class DatabaseManager {
 
                 PreparedStatement preparedStmt = databaseInfo.getConnection().prepareStatement(query);
 
-                preparedStmt.setLong(1, guildId);
+                preparedStmt.setString(1, guildId + "");
                 preparedStmt.setString(2, projectName);
 
                 preparedStmt.execute();
@@ -470,7 +473,7 @@ public class DatabaseManager {
 
                 PreparedStatement preparedStmt = databaseInfo.getConnection().prepareStatement(query);
 
-                preparedStmt.setLong(1, guildId);
+                preparedStmt.setString(1, guildId + "");
                 preparedStmt.setInt(2, number);
 
                 preparedStmt.execute();

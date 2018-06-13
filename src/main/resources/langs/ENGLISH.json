@@ -26,8 +26,8 @@
   "Setup.Working": "Setting up TicketBird... %lb%please wait while we complete the setup.",
   "Setup.Complete": "TicketBird Setup Complete! %lb%You may now rename the categories and support request channel at this point and/or move them to new locations should you wish. %lb% %lb%To add projects, use `=project add <name> <prefix>`. %lb% %lb% To add staff members with `=ticketbird staff add <username>` %lb% %lb%NOTE: Please do not change the names of ticket channels or else the system will break! %lb% %lb% Thank you for using TicketBird!",
   "Support.DefaultTopic": "Request help with a project/service by sending a message here. No commands needed!",
-  "Support.StaticMessage.Normal": "Need help with something? Create a new ticket by typing a message here. You **DO NOT** need to use commands to open a ticket! %lb% %lb% ```Tickets currently Open: %open% %lb%Tickets currently on hold: %hold% %lb%Total tickets closed: %closed%",
-  "Support.StaticMessage.HighVolume": "**We are experiencing high ticket volumes. Support may be delayed at this time. Sorry for the inconvenience!** %lb% %lb%Need help with something? Create a new ticket by typing a message here. You **DO NOT** need to use commands to open a ticket! %lb% %lb% ```Tickets currently Open: %open% %lb%Tickets currently on hold: %hold% %lb%Total tickets closed: %closed%",
+  "Support.StaticMessage.Normal": "Need help with something? Create a new ticket by typing a message here. You **DO NOT** need to use commands to open a ticket! %lb% %lb% ```Tickets currently Open: %open% %lb%Tickets currently on hold: %hold% %lb%Total tickets closed: %closed%```",
+  "Support.StaticMessage.HighVolume": "**We are experiencing high ticket volumes. Support may be delayed at this time. Sorry for the inconvenience!** %lb% %lb%Need help with something? Create a new ticket by typing a message here. You **DO NOT** need to use commands to open a ticket! %lb% %lb% ```Tickets currently Open: %open% %lb%Tickets currently on hold: %hold% %lb%Total tickets closed: %closed%```",
 
 
   "Staff.Specify": "Please use `=ticketbird staff <add/remove> <username>`",
