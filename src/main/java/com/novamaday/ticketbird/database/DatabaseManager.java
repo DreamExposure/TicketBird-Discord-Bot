@@ -120,7 +120,7 @@ public class DatabaseManager {
 
                 boolean hasStuff = res.next();
 
-                if (!hasStuff || res.getLong("GUILD_ID") > 0) {
+                if (!hasStuff || res.getString("GUILD_ID") != null) {
                     //Data not present, add to DB.
                     String insertCommand = "INSERT INTO " + dataTableName +
                             "(GUILD_ID, LANG, PREFIX, PATRON_GUILD, DEV_GUILD, AWAITING_CATEGORY, RESPONDED_CATEGORY, HOLD_CATEGORY, CLOSE_CATEGORY, SUPPORT_CHANNEL, NEXT_ID, STAFF)" +
