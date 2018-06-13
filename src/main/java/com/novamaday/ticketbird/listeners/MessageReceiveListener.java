@@ -10,7 +10,12 @@ import com.novamaday.ticketbird.objects.guild.Ticket;
 import com.novamaday.ticketbird.utils.GlobalVars;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IChannel;
+import sx.blah.discord.handle.obj.Permissions;
 import sx.blah.discord.util.EmbedBuilder;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
 
 public class MessageReceiveListener {
 
@@ -29,6 +34,25 @@ public class MessageReceiveListener {
                 IChannel channel = ChannelManager.createChannel("ticket-" + ticketNumber, event.getGuild());
                 channel.changeCategory(event.getGuild().getCategoryByID(settings.getAwaitingCategory()));
 
+                //Set channel permissions...
+                EnumSet<Permissions> toAdd = EnumSet.copyOf(Collections.emptyList());
+                toAdd.add(Permissions.MENTION_EVERYONE);
+                toAdd.add(Permissions.ATTACH_FILES);
+                toAdd.add(Permissions.EMBED_LINKS);
+                toAdd.add(Permissions.SEND_MESSAGES);
+                toAdd.add(Permissions.READ_MESSAGES);
+                toAdd.add(Permissions.READ_MESSAGE_HISTORY);
+
+                EnumSet<Permissions> toRemove = EnumSet.copyOf(Arrays.asList(Permissions.values()));
+
+                channel.overrideRolePermissions(event.getGuild().getEveryoneRole(), EnumSet.copyOf(Collections.emptyList()), toRemove);
+                channel.overrideUserPermissions(event.getAuthor(), toAdd, EnumSet.copyOf(Collections.emptyList()));
+
+                for (long uid : settings.getStaff()) {
+                    channel.overrideUserPermissions(event.getGuild().getUserByID(uid), toAdd, EnumSet.copyOf(Collections.emptyList()));
+                }
+
+                //Register ticket in database.
                 Ticket ticket = new Ticket(event.getGuild().getLongID(), ticketNumber);
                 ticket.setChannel(channel.getLongID());
                 ticket.setCategory(settings.getAwaitingCategory());
@@ -128,7 +152,7 @@ public class MessageReceiveListener {
                                     event.getChannel().changeCategory(event.getGuild().getCategoryByID(settings.getRespondedCategory()));
 
                                     //Let creator know it was reopened...
-                                    MessageManager.sendMessage(MessageManager.getMessage("Ticket.Reopen.Creator", "%creator%", event.getGuild().getUserByID(ticket.getCreator()).mention(true), settings), event);
+                                    MessageManager.sendMessage(MessageManager.getMessage("Ticket.Reopen.Creator", "%creator%", event.getGuild().getUserByID(ticket.getCreator()).mention(), settings), event);
 
                                     //Update database...
                                     ticket.setCategory(settings.getRespondedCategory());
@@ -139,7 +163,7 @@ public class MessageReceiveListener {
                                     event.getChannel().changeCategory(event.getGuild().getCategoryByID(settings.getAwaitingCategory()));
 
                                     //Let creator know it was reopened...
-                                    MessageManager.sendMessage(MessageManager.getMessage("Ticket.Reopen.Creator", "%creator%", event.getGuild().getUserByID(ticket.getCreator()).mention(true), settings), event);
+                                    MessageManager.sendMessage(MessageManager.getMessage("Ticket.Reopen.Creator", "%creator%", event.getGuild().getUserByID(ticket.getCreator()).mention(), settings), event);
 
                                     //Update database...
                                     ticket.setCategory(settings.getAwaitingCategory());
