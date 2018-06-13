@@ -72,7 +72,7 @@ public class DatabaseManager {
             String projectTableName = String.format("%sprojects", databaseInfo.getPrefix());
             String ticketTableName = String.format("%stickets", databaseInfo.getPrefix());
             String createSettingsTable = "CREATE TABLE IF NOT EXISTS " + settingsTableName +
-                    "(GUILD_ID LONGTEXT not NULL, " +
+                    "(GUILD_ID VARCHAR(255) not NULL, " +
                     " LANG VARCHAR(255) not NULL, " +
                     " PREFIX VARCHAR(16) not NULL, " +
                     " PATRON_GUILD BOOLEAN not NULL, " +
@@ -86,12 +86,12 @@ public class DatabaseManager {
                     " STAFF LONGTEXT not NULL, " +
                     " PRIMARY KEY (GUILD_ID))";
             String createProjectsTable = "CREATE TABLE IF NOT EXISTS " + projectTableName +
-                    "(GUILD_ID LONGTEXT not NULL, " +
+                    "(GUILD_ID VARCHAR(255) not NULL, " +
                     " PROJECT_NAME LONGTEXT not NULL, " +
                     " PROJECT_PREFIX VARCHAR(16) not NULL, " +
-                    " PRIMARY KEY (GUILD_ID, PROJECT_NAME))";
+                    " PRIMARY KEY (GUILD_ID))";
             String createTicketsTable = "CREATE TABLE IF NOT EXISTS " + ticketTableName +
-                    "(GUILD_ID LONGTEXT not NULL, " +
+                    "(GUILD_ID VARCHAR(255) not NULL, " +
                     " NUMBER INTEGER not NULL, " +
                     " PROJECT LONGTEXT not NULL, " +
                     " CREATOR LONG not NULL, " +
