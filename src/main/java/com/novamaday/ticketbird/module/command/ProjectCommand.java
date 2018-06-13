@@ -1,11 +1,14 @@
 package com.novamaday.ticketbird.module.command;
 
+import com.novamaday.ticketbird.Main;
 import com.novamaday.ticketbird.database.DatabaseManager;
 import com.novamaday.ticketbird.message.MessageManager;
 import com.novamaday.ticketbird.objects.command.CommandInfo;
 import com.novamaday.ticketbird.objects.guild.GuildSettings;
 import com.novamaday.ticketbird.objects.guild.Project;
+import com.novamaday.ticketbird.utils.GlobalVars;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
+import sx.blah.discord.util.EmbedBuilder;
 
 import java.util.ArrayList;
 
@@ -40,12 +43,13 @@ public class ProjectCommand implements ICommand {
      */
     @Override
     public CommandInfo getCommandInfo() {
-        CommandInfo info = new CommandInfo("event");
+        CommandInfo info = new CommandInfo("Project");
         info.setDescription("Used to configure TicketBird Projects");
         info.setExample("=Project <function> <value>");
 
         info.getSubCommands().put("add", "Adds a new project to your TicketBird.");
         info.getSubCommands().put("remove", "Removes a project from  your TicketBird.");
+        info.getSubCommands().put("list", "Lists all active projects/services for tickets.");
 
         return info;
     }
@@ -71,6 +75,10 @@ public class ProjectCommand implements ICommand {
                 case "remove":
                     //=project remove <name>
                     moduleRemove(args, event, settings);
+                    break;
+                case "list":
+                    //=project list
+                    moduleList(event, settings);
                     break;
                 default:
                     MessageManager.sendMessage(MessageManager.getMessage("Notification.Args.Invalid", settings), event);
@@ -111,5 +119,23 @@ public class ProjectCommand implements ICommand {
         } else {
             MessageManager.sendMessage(MessageManager.getMessage("Notification.Args.Few", settings), event);
         }
+    }
+
+    private void moduleList(MessageReceivedEvent event, GuildSettings settings) {
+        EmbedBuilder em = new EmbedBuilder();
+
+        em.withAuthorIcon(Main.getClient().getGuildByID(GlobalVars.serverId).getIconURL());
+        em.withAuthorName("TicketBird");
+        em.withTitle("All Current Projects/Services");
+
+        for (Project p : DatabaseManager.getManager().getAllProjects(settings.getGuildID())) {
+            em.appendField(p.getName(), p.getPrefix(), true);
+        }
+
+        em.withFooterText("List of all Projects with their prefix for tickets.");
+
+        em.withColor(GlobalVars.embedColor);
+
+        MessageManager.sendMessage(em.build(), event);
     }
 }

@@ -1,5 +1,10 @@
 package com.novamaday.ticketbird.utils;
 
+import com.novamaday.ticketbird.message.MessageManager;
+import com.novamaday.ticketbird.objects.guild.GuildSettings;
+import sx.blah.discord.handle.obj.ICategory;
+import sx.blah.discord.handle.obj.IGuild;
+
 import java.util.Random;
 
 public class GeneralUtils {
@@ -67,5 +72,35 @@ public class GeneralUtils {
             rightFace.append(alphabet.charAt(random.nextInt(alphabet.length())));
         }
         return str.replace("<<", leftFace.toString()).replace(">>", rightFace.toString()).replace("<", "").replace(">", "").replace(leftFace.toString(), "<").replace(rightFace.toString(), ">");
+    }
+
+    public static String getNormalStaticSupportMessage(IGuild guild, GuildSettings settings) {
+        String msg = MessageManager.getMessage("Support.StaticMessage.Normal", settings);
+
+        ICategory awaiting = guild.getCategoryByID(settings.getAwaitingCategory());
+        ICategory responded = guild.getCategoryByID(settings.getRespondedCategory());
+        ICategory hold = guild.getCategoryByID(settings.getHoldCategory());
+        ICategory close = guild.getCategoryByID(settings.getCloseCategory());
+
+        msg = msg.replace("%open%", String.valueOf(awaiting.getChannels().size() + responded.getChannels().size()));
+        msg = msg.replace("%hold%", hold.getChannels().size() + "");
+        msg = msg.replace("%closed%", close.getChannels().size() + "");
+
+        return msg;
+    }
+
+    public static String getHighVoluneStaticSupportMessage(IGuild guild, GuildSettings settings) {
+        String msg = MessageManager.getMessage("Support.StaticMessage.HighVolume", settings);
+
+        ICategory awaiting = guild.getCategoryByID(settings.getAwaitingCategory());
+        ICategory responded = guild.getCategoryByID(settings.getRespondedCategory());
+        ICategory hold = guild.getCategoryByID(settings.getHoldCategory());
+        ICategory close = guild.getCategoryByID(settings.getCloseCategory());
+
+        msg = msg.replace("%open%", String.valueOf(awaiting.getChannels().size() + responded.getChannels().size()));
+        msg = msg.replace("%hold%", hold.getChannels().size() + "");
+        msg = msg.replace("%closed%", close.getChannels().size() + "");
+
+        return msg;
     }
 }

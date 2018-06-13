@@ -6,9 +6,11 @@ import com.novamaday.ticketbird.message.ChannelManager;
 import com.novamaday.ticketbird.message.MessageManager;
 import com.novamaday.ticketbird.objects.command.CommandInfo;
 import com.novamaday.ticketbird.objects.guild.GuildSettings;
+import com.novamaday.ticketbird.utils.GeneralUtils;
 import com.novamaday.ticketbird.utils.GlobalVars;
 import com.novamaday.ticketbird.utils.UserUtils;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
+import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.util.EmbedBuilder;
@@ -46,7 +48,7 @@ public class TicketBirdCommand implements ICommand {
      */
     @Override
     public CommandInfo getCommandInfo() {
-        CommandInfo info = new CommandInfo("event");
+        CommandInfo info = new CommandInfo("TicketBird");
         info.setDescription("Used to configure TicketBird");
         info.setExample("=TicketBird (function) (value)");
 
@@ -189,6 +191,13 @@ public class TicketBirdCommand implements ICommand {
             settings.setRespondedCategory(ChannelManager.createCategory("Tickets Responded To", event.getGuild()).getLongID());
             settings.setHoldCategory(ChannelManager.createCategory("Tickets On Hold", event.getGuild()).getLongID());
             settings.setCloseCategory(ChannelManager.createCategory("Tickets Closed", event.getGuild()).getLongID());
+
+            settings.setSupportChannel(ChannelManager.createChannel("support-request", event.getGuild()).getLongID());
+
+            IChannel support = event.getGuild().getChannelByID(settings.getSupportChannel());
+            support.changeTopic(MessageManager.getMessage("Support.DefaultTopic", settings));
+            MessageManager.sendMessage(GeneralUtils.getNormalStaticSupportMessage(event.getGuild(), settings), support);
+
 
             //Update database
             DatabaseManager.getManager().updateSettings(settings);

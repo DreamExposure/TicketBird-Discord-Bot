@@ -10,4 +10,6 @@ public class GlobalVars {
     public final static long serverId = 375357265198317579L;
 
     public final static Color embedColor = new Color(252, 113, 20);
+
+    public final static long oneWeekMs = 604800000;
 }

@@ -1,18 +1,24 @@
 package com.novamaday.ticketbird.objects.guild;
 
 public class Ticket {
+    private final long guildId;
     private final int number;
     private String project;
     private long creator;
     private long channel;
     private long category;
 
-    public Ticket(int _number) {
+    public Ticket(long _guildId, int _number) {
+        guildId = _guildId;
         number = _number;
         project = "N/a";
     }
 
     //Getters
+    public long getGuildId() {
+        return guildId;
+    }
+
     public int getNumber() {
         return number;
     }

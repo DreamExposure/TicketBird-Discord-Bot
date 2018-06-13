@@ -17,6 +17,10 @@ public class GuildSettings {
     private long holdCategory;
     private long closeCategory;
 
+    private long supportChannel;
+
+    private int nextId;
+
     private List<Long> staff = new ArrayList<>();
 
     public GuildSettings(long _guildId) {
@@ -27,6 +31,8 @@ public class GuildSettings {
 
         patronGuild = false;
         devGuild = false;
+
+        nextId = 1;
     }
 
     //Getters
@@ -64,6 +70,14 @@ public class GuildSettings {
 
     public long getCloseCategory() {
         return closeCategory;
+    }
+
+    public long getSupportChannel() {
+        return supportChannel;
+    }
+
+    public int getNextId() {
+        return nextId;
     }
 
     public List<Long> getStaff() {
@@ -110,6 +124,14 @@ public class GuildSettings {
 
     public void setCloseCategory(long _close) {
         closeCategory = _close;
+    }
+
+    public void setSupportChannel(long _support) {
+        supportChannel = _support;
+    }
+
+    public void setNextId(int _next) {
+        nextId = _next;
     }
 
     public void setStaffFromString(String _staff) {

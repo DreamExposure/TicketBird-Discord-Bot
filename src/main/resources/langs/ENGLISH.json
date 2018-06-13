@@ -1,12 +1,14 @@
 {
   "Language": "ENGLISH",
 
+
   "TicketBird.Lang.Success": "Language successfully changed!",
   "TicketBird.Lang.Unsupported": "Sorry! That language may be misspelled or unsupported... %lb% supported languages are currently: %values% %lb% %lb% Don't see your language? Translate TicketBird now at: <https://github.com/NovaFox161/TicketBird-Discord-Bot>!",
   "TicketBird.Lang.Specify": "Please specify a supported language with `=TicketBird lang <langName>` %lb% supported languages are currently: %values% %lb% %lb% Don't see your language? Translate TicketBird now at: <https://github.com/NovaFox161/TicketBird-Discord-Bot>!",
   "TicketBird.Prefix.Set": "Prefix set to `%prefix%` TicketBird will now accept commands starting with the new prefix **OR** by mentioning TicketBird!",
   "TicketBird.Prefix.Specify": "Please specify the preferred prefix with `=TicketBird prefix <prefix>` **SPACES ARE NOT ALLOWED**!",
   "TicketBird.InviteLink": "Here is the invite to my official support guild: %link%",
+
 
   "Embed.TicketBird.Info.Title": "TicketBird is an advanced ticket manager!",
   "Embed.TicketBird.Info.Developer": "Developer",
@@ -22,7 +24,12 @@
   "Embed.TicketBird.Settings.Prefix": "Prefix",
   "Setup.Already": "Setup has already been completed! %lb% %lb% You do not need to run this command again.",
   "Setup.Working": "Setting up TicketBird... %lb%please wait while we complete the setup.",
-  "Setup.Complete": "TicketBird Setup Complete! %lb%You may now rename the categories at this point. %lb% %lb%To add projects, use `=project add <name> <prefix>`. %lb% %lb% To add staff members with `=ticketbird staff add <username>`",
+  "Setup.Complete": "TicketBird Setup Complete! %lb%You may now rename the categories and support request channel at this point and/or move them to new locations should you wish. %lb% %lb%To add projects, use `=project add <name> <prefix>`. %lb% %lb% To add staff members with `=ticketbird staff add <username>` %lb% %lb%NOTE: Please do not change the names of ticket channels or else the system will break! %lb% %lb% Thank you for using TicketBird!",
+  "Support.DefaultTopic": "Request help with a project/service by sending a message here. No commands needed!",
+  "Support.StaticMessage.Normal": "Need help with something? Create a new ticket by typing a message here. You **DO NOT** need to use commands to open a ticket! %lb% %lb% ```Tickets currently Open: %open% %lb%Tickets currently on hold: %hold% %lb%Total tickets closed: %closed%",
+  "Support.StaticMessage.HighVolume": "**We are experiencing high ticket volumes. Support may be delayed at this time. Sorry for the inconvenience!** %lb% %lb%Need help with something? Create a new ticket by typing a message here. You **DO NOT** need to use commands to open a ticket! %lb% %lb% ```Tickets currently Open: %open% %lb%Tickets currently on hold: %hold% %lb%Total tickets closed: %closed%",
+
+
   "Staff.Specify": "Please use `=ticketbird staff <add/remove> <username>`",
   "Staff.Add.Already": "That user is already a TicketBird Staff Member for this server!",
   "Staff.Add.Success": "Successfully added user as a TicketBird Staff Member for this server!",
@@ -31,6 +38,15 @@
   "Project.Remove.Not": "That project does not exist! Perhaps you made a typo or it was never created!",
   "Project.Remove.Success": "The project was successfully removed!",
   "Project.Add.Already": "That project already exists!",
+  "Ticket.Close.InvalidChannel": "Cannot close this channel as it is not a valid ticket channel OR the ticket does not exist! %lb% %lb%If this IS a ticket, please manually close it by deleting the channel.",
+  "Ticket.Close.Success": "%creator% this ticket has been closed! If you have further issues with the scope of this ticket, just send a message to reopen it! %lb% %lb% If you other issues, just open a new ticket!",
+  "Ticket.Hold.InvalidChannel": "Cannot place this channel on hold as it is not a valid ticket channel OR the ticket does not exist. %lb% %lb%If this IS a ticket, please manually place it on hold by moving it to the held tickets category.",
+  "Ticket.Hold.Success": "%creator% this ticket has been placed on hold until a staff member is available to assist you! This ticket will not be auto-closed for inactivity.",
+  "Ticket.Reopen.Creator": "%creator% this ticket has been reopened!",
+  "Ticket.Reopen.Everyone": "@everyone this ticket has been reopened!",
+  "Ticket.Project.Invalid": "Sorry, but that project does not exist. Perhaps you made a typo. Please check the first message for a list of valid projects and type a new message with only the project name!",
+  "Ticket.Project.Success": "Okay, you need help with %project%! %lb% %lb% Please provide any extra information that may help staff assist you such as project version numbers, errors, etc etc.",
+  "Ticket.Open": "%creator% is requesting help with ```%content%``` %lb% %lb% Please specify the project/service you need help with from the provided list!",
 
 
   "Notification.Args.Few": "You must specify a function to execute! Use '=help` for a full list of valid commands and functions!",
