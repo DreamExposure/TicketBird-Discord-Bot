@@ -100,6 +100,8 @@ public class ProjectCommand implements ICommand {
                 Project project = new Project(event.getGuild().getLongID(), name);
                 project.setPrefix(prefix);
                 DatabaseManager.getManager().updateProject(project);
+
+                MessageManager.sendMessage(MessageManager.getMessage("Project.Add.Success", settings), event);
             } else {
                 MessageManager.sendMessage(MessageManager.getMessage("Project.Add.Already", settings), event);
             }

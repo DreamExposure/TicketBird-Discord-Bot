@@ -38,6 +38,7 @@
   "Project.Remove.Not": "That project does not exist! Perhaps you made a typo or it was never created!",
   "Project.Remove.Success": "The project was successfully removed!",
   "Project.Add.Already": "That project already exists!",
+  "Project.Add.Success": "Successfully added the project! Tickets can now reference this project!",
   "Ticket.Close.InvalidChannel": "Cannot close this channel as it is not a valid ticket channel OR the ticket does not exist! %lb% %lb%If this IS a ticket, please manually close it by deleting the channel.",
   "Ticket.Close.Success": "%creator% this ticket has been closed! If you have further issues with the scope of this ticket, just send a message to reopen it! %lb% %lb% If you other issues, just open a new ticket!",
   "Tickets.Close.Inactive": "%creator% this ticket has been closed to due inactivity! If the issue has not been resolved or this is a mistake, simply reopen the ticket by sending a message in the channel (no commands needed).",
