@@ -53,7 +53,7 @@ public class MessageReceiveListener {
                 }
                 em.withColor(GlobalVars.embedColor);
 
-                MessageManager.sendMessage(em.build(), msg, event);
+                MessageManager.sendMessage(em.build(), msg, channel);
 
                 //Delete message in support channel.
                 event.getMessage().delete();
