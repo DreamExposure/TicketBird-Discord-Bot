@@ -72,7 +72,7 @@ public class DatabaseManager {
             String projectTableName = String.format("%sprojects", databaseInfo.getPrefix());
             String ticketTableName = String.format("%stickets", databaseInfo.getPrefix());
             String createSettingsTable = "CREATE TABLE IF NOT EXISTS " + settingsTableName +
-                    "(GUILD_ID LONG(64) not NULL, " +
+                    "(GUILD_ID LONG not NULL, " +
                     " LANG VARCHAR(255) not NULL, " +
                     " PREFIX VARCHAR(16) not NULL, " +
                     " PATRON_GUILD BOOLEAN not NULL, " +
@@ -83,22 +83,19 @@ public class DatabaseManager {
                     " CLOSE_CATEGORY LONG not NULL, " +
                     " SUPPORT_CHANNEL LONG not NULL, " +
                     " NEXT_ID INTEGER not NULL, " +
-                    " STAFF LONGTEXT not NULL, " +
-                    " PRIMARY KEY (GUILD_ID))";
+                    " STAFF LONGTEXT not NULL)";
             String createProjectsTable = "CREATE TABLE IF NOT EXISTS " + projectTableName +
-                    "(GUILD_ID LONG(64) not NULL, " +
+                    "(GUILD_ID LONG not NULL, " +
                     " PROJECT_NAME LONGTEXT not NULL, " +
-                    " PROJECT_PREFIX VARCHAR(16) not NULL, " +
-                    " PRIMARY KEY (GUILD_ID, PROJECT_NAME))";
+                    " PROJECT_PREFIX VARCHAR(16) not NULL)";
             String createTicketsTable = "CREATE TABLE IF NOT EXISTS " + ticketTableName +
-                    "(GUILD_ID LONG(64) not NULL, " +
+                    "(GUILD_ID LONG not NULL, " +
                     " NUMBER INTEGER not NULL, " +
                     " PROJECT LONGTEXT not NULL, " +
                     " CREATOR LONG not NULL, " +
                     " CHANNEL LONG not NULL, " +
                     " CATEGORY LONG not NULL, " +
-                    " LAST_ACTIVITY LONG not NULL, " +
-                    " PRIMARY KEY(GUILD_ID, NUMBER))";
+                    " LAST_ACTIVITY LONG not NULL)";
             statement.executeUpdate(createSettingsTable);
             statement.executeUpdate(createProjectsTable);
             statement.executeUpdate(createTicketsTable);
