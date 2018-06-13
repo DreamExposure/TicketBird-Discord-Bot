@@ -1,9 +1,12 @@
 package com.novamaday.ticketbird.utils;
 
+import com.novamaday.ticketbird.database.DatabaseManager;
 import com.novamaday.ticketbird.message.MessageManager;
 import com.novamaday.ticketbird.objects.guild.GuildSettings;
 import sx.blah.discord.handle.obj.ICategory;
+import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
+import sx.blah.discord.handle.obj.IMessage;
 
 import java.util.Random;
 
@@ -102,5 +105,19 @@ public class GeneralUtils {
         msg = msg.replace("%closed%", close.getChannels().size() + "");
 
         return msg;
+    }
+
+    public static void updateStaticMessage(IGuild guild, GuildSettings settings) {
+        IChannel supportChannel = guild.getChannelByID(settings.getSupportChannel());
+
+        IMessage staticMsg = supportChannel.getMessageByID(settings.getStaticMessage());
+        if (staticMsg != null) {
+            //Edit static message...
+            MessageManager.editMessage(staticMsg, GeneralUtils.getNormalStaticSupportMessage(guild, settings));
+        } else {
+            //Somehow the static message was deleted, let's just recreate it.
+            settings.setStaticMessage(MessageManager.sendMessage(GeneralUtils.getNormalStaticSupportMessage(guild, settings), supportChannel).getLongID());
+            DatabaseManager.getManager().updateSettings(settings);
+        }
     }
 }

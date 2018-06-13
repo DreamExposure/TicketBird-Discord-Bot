@@ -82,6 +82,7 @@ public class DatabaseManager {
                     " HOLD_CATEGORY LONG not NULL, " +
                     " CLOSE_CATEGORY LONG not NULL, " +
                     " SUPPORT_CHANNEL LONG not NULL, " +
+                    " STATIC_MESSAGE LONG not NULL, " +
                     " NEXT_ID INTEGER not NULL, " +
                     " STAFF LONGTEXT not NULL, " +
                     " PRIMARY KEY (GUILD_ID))";
@@ -123,8 +124,8 @@ public class DatabaseManager {
                 if (!hasStuff || res.getString("GUILD_ID") == null) {
                     //Data not present, add to DB.
                     String insertCommand = "INSERT INTO " + dataTableName +
-                            "(GUILD_ID, LANG, PREFIX, PATRON_GUILD, DEV_GUILD, AWAITING_CATEGORY, RESPONDED_CATEGORY, HOLD_CATEGORY, CLOSE_CATEGORY, SUPPORT_CHANNEL, NEXT_ID, STAFF)" +
-                            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+                            "(GUILD_ID, LANG, PREFIX, PATRON_GUILD, DEV_GUILD, AWAITING_CATEGORY, RESPONDED_CATEGORY, HOLD_CATEGORY, CLOSE_CATEGORY, SUPPORT_CHANNEL, STATIC_MESSAGE, NEXT_ID, STAFF)" +
+                            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
                     PreparedStatement ps = databaseInfo.getConnection().prepareStatement(insertCommand);
                     ps.setString(1, settings.getGuildID() + "");
                     ps.setString(2, settings.getLang());
@@ -136,8 +137,9 @@ public class DatabaseManager {
                     ps.setLong(8, settings.getHoldCategory());
                     ps.setLong(9, settings.getCloseCategory());
                     ps.setLong(10, settings.getSupportChannel());
-                    ps.setInt(11, settings.getNextId());
-                    ps.setString(12, settings.getStaffString());
+                    ps.setLong(11, settings.getStaticMessage());
+                    ps.setInt(12, settings.getNextId());
+                    ps.setString(13, settings.getStaffString());
 
 
                     ps.executeUpdate();
@@ -147,7 +149,8 @@ public class DatabaseManager {
                     //Data present, update.
                     String update = "UPDATE " + dataTableName
                             + " SET LANG = ?, PREFIX = ?, PATRON_GUILD = ?, DEV_GUILD = ?, " +
-                            " AWAITING_CATEGORY = ?, RESPONDED_CATEGORY = ?, HOLD_CATEGORY = ?, CLOSE_CATEGORY = ?, SUPPORT_CHANNEL = ?, " +
+                            " AWAITING_CATEGORY = ?, RESPONDED_CATEGORY = ?, HOLD_CATEGORY = ?, " +
+                            " CLOSE_CATEGORY = ?, SUPPORT_CHANNEL = ?, STATIC_MESSAGE = ?, " +
                             " NEXT_ID = ?, STAFF = ? WHERE GUILD_ID = ?";
                     PreparedStatement ps = databaseInfo.getConnection().prepareStatement(update);
 
@@ -160,9 +163,10 @@ public class DatabaseManager {
                     ps.setLong(7, settings.getHoldCategory());
                     ps.setLong(8, settings.getCloseCategory());
                     ps.setLong(9, settings.getSupportChannel());
-                    ps.setInt(10, settings.getNextId());
-                    ps.setString(11, settings.getStaffString());
-                    ps.setString(12, settings.getGuildID() + "");
+                    ps.setLong(10, settings.getStaticMessage());
+                    ps.setInt(11, settings.getNextId());
+                    ps.setString(12, settings.getStaffString());
+                    ps.setString(13, settings.getGuildID() + "");
 
                     ps.executeUpdate();
 
@@ -304,6 +308,7 @@ public class DatabaseManager {
                     settings.setHoldCategory(res.getLong("HOLD_CATEGORY"));
                     settings.setCloseCategory(res.getLong("CLOSE_CATEGORY"));
                     settings.setSupportChannel(res.getLong("SUPPORT_CHANNEL"));
+                    settings.setStaticMessage(res.getLong("STATIC_MESSAGE"));
 
                     settings.setNextId(res.getInt("NEXT_ID"));
 

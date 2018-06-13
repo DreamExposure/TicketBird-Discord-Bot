@@ -12,6 +12,7 @@ import com.novamaday.ticketbird.utils.UserUtils;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
+import sx.blah.discord.handle.obj.IMessage;
 import sx.blah.discord.handle.obj.IUser;
 import sx.blah.discord.util.EmbedBuilder;
 
@@ -196,8 +197,9 @@ public class TicketBirdCommand implements ICommand {
 
             IChannel support = event.getGuild().getChannelByID(settings.getSupportChannel());
             support.changeTopic(MessageManager.getMessage("Support.DefaultTopic", settings));
-            MessageManager.sendMessage(GeneralUtils.getNormalStaticSupportMessage(event.getGuild(), settings), support);
+            IMessage staticMsg = MessageManager.sendMessage(GeneralUtils.getNormalStaticSupportMessage(event.getGuild(), settings), support);
 
+            settings.setStaticMessage(staticMsg.getLongID());
 
             //Update database
             DatabaseManager.getManager().updateSettings(settings);

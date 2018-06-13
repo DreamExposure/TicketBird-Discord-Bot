@@ -5,6 +5,7 @@ import com.novamaday.ticketbird.message.MessageManager;
 import com.novamaday.ticketbird.objects.command.CommandInfo;
 import com.novamaday.ticketbird.objects.guild.GuildSettings;
 import com.novamaday.ticketbird.objects.guild.Ticket;
+import com.novamaday.ticketbird.utils.GeneralUtils;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 
 import java.util.ArrayList;
@@ -77,6 +78,9 @@ public class HoldCommand implements ICommand {
 
                     //Send message! :D
                     MessageManager.sendMessage(MessageManager.getMessage("Ticket.Hold.Success", "%creator%", event.getGuild().getUserByID(ticket.getCreator()).mention(), settings), event);
+
+                    //Lets update the static message!
+                    GeneralUtils.updateStaticMessage(event.getGuild(), settings);
                 }
             } else {
                 //Not a ticket/invalid ticket.

@@ -7,6 +7,7 @@ import com.novamaday.ticketbird.message.MessageManager;
 import com.novamaday.ticketbird.objects.guild.GuildSettings;
 import com.novamaday.ticketbird.objects.guild.Project;
 import com.novamaday.ticketbird.objects.guild.Ticket;
+import com.novamaday.ticketbird.utils.GeneralUtils;
 import com.novamaday.ticketbird.utils.GlobalVars;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IChannel;
@@ -76,6 +77,9 @@ public class MessageReceiveListener {
 
                 //Delete message in support channel.
                 event.getMessage().delete();
+
+                //Lets update the static message!
+                GeneralUtils.updateStaticMessage(event.getGuild(), settings);
             } else {
                 //Check if in ticket channel...
                 try {
@@ -129,6 +133,9 @@ public class MessageReceiveListener {
                                     ticket.setCategory(settings.getRespondedCategory());
                                     ticket.setLastActivity(System.currentTimeMillis());
                                     DatabaseManager.getManager().updateTicket(ticket);
+
+                                    //Lets update the static message!
+                                    GeneralUtils.updateStaticMessage(event.getGuild(), settings);
                                 } else {
                                     //Move ticket...
                                     event.getChannel().changeCategory(event.getGuild().getCategoryByID(settings.getAwaitingCategory()));
@@ -140,6 +147,9 @@ public class MessageReceiveListener {
                                     ticket.setCategory(settings.getAwaitingCategory());
                                     ticket.setLastActivity(System.currentTimeMillis());
                                     DatabaseManager.getManager().updateTicket(ticket);
+
+                                    //Lets update the static message!
+                                    GeneralUtils.updateStaticMessage(event.getGuild(), settings);
                                 }
                             } else if (event.getChannel().getCategory().getLongID() == settings.getHoldCategory()) {
                                 //Ticket was on hold, reopen ticket...
@@ -156,6 +166,9 @@ public class MessageReceiveListener {
                                     ticket.setCategory(settings.getRespondedCategory());
                                     ticket.setLastActivity(System.currentTimeMillis());
                                     DatabaseManager.getManager().updateTicket(ticket);
+
+                                    //Lets update the static message!
+                                    GeneralUtils.updateStaticMessage(event.getGuild(), settings);
                                 } else {
                                     //Move ticket...
                                     event.getChannel().changeCategory(event.getGuild().getCategoryByID(settings.getAwaitingCategory()));
@@ -167,6 +180,9 @@ public class MessageReceiveListener {
                                     ticket.setCategory(settings.getAwaitingCategory());
                                     ticket.setLastActivity(System.currentTimeMillis());
                                     DatabaseManager.getManager().updateTicket(ticket);
+
+                                    //Lets update the static message!
+                                    GeneralUtils.updateStaticMessage(event.getGuild(), settings);
                                 }
                             } else if (event.getChannel().getCategory().getLongID() == settings.getAwaitingCategory()) {
                                 //Ticket awaiting response from staff, check user response...

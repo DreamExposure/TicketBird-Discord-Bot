@@ -18,6 +18,7 @@ public class GuildSettings {
     private long closeCategory;
 
     private long supportChannel;
+    private long staticMessage;
 
     private int nextId;
 
@@ -76,6 +77,10 @@ public class GuildSettings {
         return supportChannel;
     }
 
+    public long getStaticMessage() {
+        return staticMessage;
+    }
+
     public int getNextId() {
         return nextId;
     }
@@ -128,6 +133,10 @@ public class GuildSettings {
 
     public void setSupportChannel(long _support) {
         supportChannel = _support;
+    }
+
+    public void setStaticMessage(long _static) {
+        staticMessage = _static;
     }
 
     public void setNextId(int _next) {
