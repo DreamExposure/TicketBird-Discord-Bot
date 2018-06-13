@@ -73,7 +73,7 @@ public class MessageReceiveListener {
 
                             if (project != null) {
                                 //Valid project! Lets assign the prefix!
-                                event.getChannel().changeName(project.getPrefix() + "-ticket-" + ticket.getNumber());
+                                event.getChannel().changeName(project.getPrefix().toLowerCase() + "-ticket-" + ticket.getNumber());
 
                                 //Update database!
                                 ticket.setProject(project.getName());
