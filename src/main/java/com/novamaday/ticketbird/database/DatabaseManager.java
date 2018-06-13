@@ -147,7 +147,7 @@ public class DatabaseManager {
                     //Data present, update.
                     String update = "UPDATE " + dataTableName
                             + " SET LANG = ?, PREFIX = ?, PATRON_GUILD = ?, DEV_GUILD = ?, " +
-                            " AWAITING_CATEGORY = ?, RESPONDED_CATEGORY = ?, HOLD_CATEGORY = ?, CLOSE_CATEGORY = ?, SUPPORT CHANNEL = ?, " +
+                            " AWAITING_CATEGORY = ?, RESPONDED_CATEGORY = ?, HOLD_CATEGORY = ?, CLOSE_CATEGORY = ?, SUPPORT_CHANNEL = ?, " +
                             " NEXT_ID, STAFF = ? WHERE GUILD_ID = ?";
                     PreparedStatement ps = databaseInfo.getConnection().prepareStatement(update);
 
