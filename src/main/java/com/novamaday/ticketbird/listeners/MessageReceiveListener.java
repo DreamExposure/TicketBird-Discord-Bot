@@ -63,7 +63,7 @@ public class MessageReceiveListener {
                     //Brand new ticket needing project set format ticket-[number]
                     if (event.getChannel().getName().split("-").length == 2) {
                         //New ticket needs project set!!!
-                        int ticketNumber = Integer.valueOf(event.getChannel().getName().split("-")[2]);
+                        int ticketNumber = Integer.valueOf(event.getChannel().getName().split("-")[1]);
                         Ticket ticket = DatabaseManager.getManager().getTicket(event.getGuild().getLongID(), ticketNumber);
 
                         //Check if ticket, if not, fail silently.

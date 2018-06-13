@@ -59,7 +59,13 @@ public class CloseCommand implements ICommand {
         String channelName = event.getChannel().getName();
         //Channel name format [prefix]-ticket-[number]
         try {
-            int ticketNumber = Integer.valueOf(channelName.split("-")[2]);
+            int ticketNumber = 0;
+            if (channelName.split("-").length == 2) {
+                //Ticket has not had a project set
+                ticketNumber = Integer.valueOf(channelName.split("-")[1]);
+            } else {
+                ticketNumber = Integer.valueOf(channelName.split("-")[2]);
+            }
             Ticket ticket = DatabaseManager.getManager().getTicket(event.getGuild().getLongID(), ticketNumber);
 
             if (ticket != null) {
