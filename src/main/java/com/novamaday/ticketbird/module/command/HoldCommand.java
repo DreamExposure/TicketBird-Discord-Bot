@@ -76,7 +76,7 @@ public class HoldCommand implements ICommand {
                     MessageManager.deleteMessage(event.getMessage());
 
                     //Send message! :D
-                    MessageManager.sendMessage(MessageManager.getMessage("Ticket.Hold.Success", "%creator%", event.getGuild().getUserByID(ticket.getCreator()).mention(true), settings), event);
+                    MessageManager.sendMessage(MessageManager.getMessage("Ticket.Hold.Success", "%creator%", event.getGuild().getUserByID(ticket.getCreator()).mention(), settings), event);
                 }
             } else {
                 //Not a ticket/invalid ticket.

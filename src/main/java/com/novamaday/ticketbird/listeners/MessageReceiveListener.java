@@ -54,7 +54,7 @@ public class MessageReceiveListener {
                 Ticket ticket = new Ticket(event.getGuild().getLongID(), ticketNumber);
                 ticket.setChannel(channel.getLongID());
                 ticket.setCategory(settings.getAwaitingCategory());
-                ticket.setCategory(event.getAuthor().getLongID());
+                ticket.setCreator(event.getAuthor().getLongID());
                 ticket.setLastActivity(System.currentTimeMillis());
                 DatabaseManager.getManager().updateTicket(ticket);
 
