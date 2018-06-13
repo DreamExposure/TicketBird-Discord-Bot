@@ -13,7 +13,6 @@ import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.Permissions;
 import sx.blah.discord.util.EmbedBuilder;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 
@@ -35,7 +34,7 @@ public class MessageReceiveListener {
                 channel.changeCategory(event.getGuild().getCategoryByID(settings.getAwaitingCategory()));
 
                 //Set channel permissions...
-                EnumSet<Permissions> toAdd = EnumSet.copyOf(Collections.emptyList());
+                EnumSet<Permissions> toAdd = EnumSet.noneOf(Permissions.class);
                 toAdd.add(Permissions.MENTION_EVERYONE);
                 toAdd.add(Permissions.ATTACH_FILES);
                 toAdd.add(Permissions.EMBED_LINKS);
@@ -43,9 +42,9 @@ public class MessageReceiveListener {
                 toAdd.add(Permissions.READ_MESSAGES);
                 toAdd.add(Permissions.READ_MESSAGE_HISTORY);
 
-                EnumSet<Permissions> toRemove = EnumSet.copyOf(Arrays.asList(Permissions.values()));
+                EnumSet<Permissions> toRemove = EnumSet.allOf(Permissions.class);
 
-                channel.overrideRolePermissions(event.getGuild().getEveryoneRole(), EnumSet.copyOf(Collections.emptyList()), toRemove);
+                channel.overrideRolePermissions(event.getGuild().getEveryoneRole(), EnumSet.noneOf(Permissions.class), toRemove);
                 channel.overrideUserPermissions(event.getAuthor(), toAdd, EnumSet.copyOf(Collections.emptyList()));
 
                 for (long uid : settings.getStaff()) {
