@@ -28,6 +28,10 @@
   "Staff.Add.Success": "Successfully added user as a TicketBird Staff Member for this server!",
   "Staff.Remove.Not": "That user is not a TicketBird Staff Member for this server!",
   "Staff.Remove.Success": "Successfully removed user as a TicketBird Staff Member for this server!",
+  "Project.Remove.Not": "That project does not exist! Perhaps you made a typo or it was never created!",
+  "Project.Remove.Success": "The project was successfully removed!",
+  "Project.Add.Already": "That project already exists!",
+
 
   "Notification.Args.Few": "You must specify a function to execute! Use '=help` for a full list of valid commands and functions!",
   "Notification.Args.Invalid": "Invalid function! Please view `=help` for a full list of valid commands and functions!",

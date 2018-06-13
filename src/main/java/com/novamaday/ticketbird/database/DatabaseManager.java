@@ -3,8 +3,11 @@ package com.novamaday.ticketbird.database;
 import com.novamaday.ticketbird.logger.Logger;
 import com.novamaday.ticketbird.objects.bot.BotSettings;
 import com.novamaday.ticketbird.objects.guild.GuildSettings;
+import com.novamaday.ticketbird.objects.guild.Project;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @SuppressWarnings({"SqlResolve", "UnusedReturnValue", "SqlNoDataSourceInspection"})
 public class DatabaseManager {
@@ -65,10 +68,12 @@ public class DatabaseManager {
         try {
             Statement statement = databaseInfo.getConnection().createStatement();
             String settingsTableName = String.format("%sguild_settings", databaseInfo.getPrefix());
+            String projectTableName = String.format("%sprojects", databaseInfo.getPrefix());
+            String ticketTableName = String.format("%stickets", databaseInfo.getPrefix());
             String createSettingsTable = "CREATE TABLE IF NOT EXISTS " + settingsTableName +
-                    "(GUILD_ID VARCHAR(255) not NULL, " +
+                    "(GUILD_ID LONG not NULL, " +
                     " LANG VARCHAR(255) not NULL, " +
-                    " PREFIX VARCHAR(255) not NULL, " +
+                    " PREFIX VARCHAR(16) not NULL, " +
                     " PATRON_GUILD BOOLEAN not NULL, " +
                     " DEV_GUILD BOOLEAN not NULL, " +
                     " AWAITING_CATEGORY LONG not NULL, " +
@@ -77,7 +82,22 @@ public class DatabaseManager {
                     " CLOSE_CATEGORY LONG not NULL, " +
                     " STAFF LONGTEXT not NULL, " +
                     " PRIMARY KEY (GUILD_ID))";
+            String createProjectsTable = "CREATE TABLE IF NOT EXISTS " + projectTableName +
+                    "(GUILD_ID LONG not NULL, " +
+                    " PROJECT_NAME LONGTEXT not NULL, " +
+                    " PROJECT_PREFIX VARCHAR(16) not NULL, " +
+                    " PRIMARY KEY (GUILD_ID, PROJECT_NAME))";
+            String createTicketsTable = "CREATE TABLE IF NOT EXISTS " + ticketTableName +
+                    "(GUILD_ID LONG not NULL, " +
+                    " NUMBER INTEGER not NULL, " +
+                    " PROJECT LONGTEXT not NULL, " +
+                    " CREATOR LONG not NULL, " +
+                    " CHANNEL LONG not NULL, " +
+                    " CATEGORY LONG not NULL, " +
+                    " PRIMARY KEY(GUILD_ID, NUMBER))";
             statement.executeUpdate(createSettingsTable);
+            statement.executeUpdate(createProjectsTable);
+            statement.executeUpdate(createTicketsTable);
             statement.close();
             System.out.println("Successfully created needed tables in MySQL database!");
         } catch (SQLException e) {
@@ -98,13 +118,13 @@ public class DatabaseManager {
 
                 boolean hasStuff = res.next();
 
-                if (!hasStuff || res.getString("GUILD_ID") == null) {
+                if (!hasStuff || res.getLong("GUILD_ID") > 0) {
                     //Data not present, add to DB.
                     String insertCommand = "INSERT INTO " + dataTableName +
                             "(GUILD_ID, LANG, PREFIX, PATRON_GUILD, DEV_GUILD, AWAITING_CATEGORY, RESPONDED_CATEGORY, HOLD_CATEGORY, CLOSE_CATEGORY, STAFF)" +
                             " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
                     PreparedStatement ps = databaseInfo.getConnection().prepareStatement(insertCommand);
-                    ps.setString(1, String.valueOf(settings.getGuildID()));
+                    ps.setLong(1, settings.getGuildID());
                     ps.setString(2, settings.getLang());
                     ps.setString(3, settings.getPrefix());
                     ps.setBoolean(4, settings.isPatronGuild());
@@ -136,7 +156,7 @@ public class DatabaseManager {
                     ps.setLong(7, settings.getHoldCategory());
                     ps.setLong(8, settings.getCloseCategory());
                     ps.setString(9, settings.getStaffString());
-                    ps.setString(10, String.valueOf(settings.getGuildID()));
+                    ps.setLong(10, settings.getGuildID());
 
                     ps.executeUpdate();
 
@@ -153,6 +173,52 @@ public class DatabaseManager {
         return false;
     }
 
+    public boolean updateProject(Project project) {
+        try {
+            if (databaseInfo.getMySQL().checkConnection()) {
+                String dataTableName = String.format("%sprojects", databaseInfo.getPrefix());
+
+                String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = '" + project.getGuildId() + "' AND PROJECT_NAME = '" + project.getName() + "';";
+                PreparedStatement statement = databaseInfo.getConnection().prepareStatement(query);
+                ResultSet res = statement.executeQuery();
+
+                boolean hasStuff = res.next();
+
+                if (!hasStuff || res.getString("GUILD_ID") == null) {
+                    //Data not present, add to DB.
+                    String insertCommand = "INSERT INTO " + dataTableName +
+                            "(GUILD_ID, PROJECT_NAME, PROJECT_PREFIX) VALUES (?, ?, ?);";
+                    PreparedStatement ps = databaseInfo.getConnection().prepareStatement(insertCommand);
+                    ps.setLong(1, project.getGuildId());
+                    ps.setString(2, project.getName());
+                    ps.setString(3, project.getPrefix());
+
+                    ps.executeUpdate();
+                    ps.close();
+                    statement.close();
+                } else {
+                    //Data present, update.
+                    String update = "UPDATE " + dataTableName + " SET PROJECT_PREFIX = ? WHERE GUILD_ID = ? AND PROJECT_NAME = ?";
+                    PreparedStatement ps = databaseInfo.getConnection().prepareStatement(update);
+
+                    ps.setString(1, project.getPrefix());
+                    ps.setLong(2, project.getGuildId());
+                    ps.setString(3, project.getName());
+
+                    ps.executeUpdate();
+
+                    ps.close();
+                    statement.close();
+                }
+                return true;
+            }
+        } catch (SQLException e) {
+            System.out.println("Failed to input data into database! Error Code: 00101");
+            Logger.getLogger().exception(null, "Failed to update/insert project settings.", e, this.getClass());
+            e.printStackTrace();
+        }
+        return false;
+    }
 
     public GuildSettings getSettings(long guildId) {
         GuildSettings settings = new GuildSettings(guildId);
@@ -160,7 +226,7 @@ public class DatabaseManager {
             if (databaseInfo.getMySQL().checkConnection()) {
                 String dataTableName = String.format("%sguild_settings", databaseInfo.getPrefix());
 
-                String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = '" + String.valueOf(guildId) + "';";
+                String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = '" + guildId + "';";
                 PreparedStatement statement = databaseInfo.getConnection().prepareStatement(query);
                 ResultSet res = statement.executeQuery();
 
@@ -190,5 +256,82 @@ public class DatabaseManager {
             Logger.getLogger().exception(null, "Failed to get Guild Settings.", e, this.getClass());
         }
         return settings;
+    }
+
+    public Project getProject(long guildId, String projectName) {
+        try {
+            if (databaseInfo.getMySQL().checkConnection()) {
+                String dataTableName = String.format("%sprojects", databaseInfo.getPrefix());
+
+                String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = '" + guildId + "' AND PROJECT_NAME = '" + projectName + "';";
+                PreparedStatement statement = databaseInfo.getConnection().prepareStatement(query);
+                ResultSet res = statement.executeQuery();
+
+                boolean hasStuff = res.next();
+
+                if (hasStuff && res.getLong("GUILD_ID") > 0 && res.getString("PROJECT_NAME") != null) {
+                    Project project = new Project(guildId, projectName);
+                    project.setPrefix(res.getString("PROJECT_PREFIX"));
+
+                    statement.close();
+
+                    return project;
+                } else {
+                    //Data not present.
+                    statement.close();
+                }
+            }
+        } catch (SQLException e) {
+            Logger.getLogger().exception(null, "Failed to get Project.", e, this.getClass());
+        }
+        return null;
+    }
+
+    public List<Project> getAllProjects(long guildId) {
+        List<Project> projects = new ArrayList<>();
+
+        try {
+            if (databaseInfo.getMySQL().checkConnection()) {
+                String dataTableName = String.format("%sprojects", databaseInfo.getPrefix());
+
+                String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = '" + guildId + "';";
+                PreparedStatement statement = databaseInfo.getConnection().prepareStatement(query);
+                ResultSet res = statement.executeQuery();
+
+
+                while (res.next()) {
+                    Project project = new Project(guildId, res.getString("PROJECT_NAME"));
+                    project.setPrefix(res.getString("PROJECT_PREFIX"));
+
+                    projects.add(project);
+                }
+            }
+        } catch (SQLException e) {
+            Logger.getLogger().exception(null, "Failed to get Projects for guild.", e, this.getClass());
+        }
+
+        return projects;
+    }
+
+    public boolean removeProject(long guildId, String projectName) {
+        try {
+            if (databaseInfo.getMySQL().checkConnection()) {
+                String dataTableName = String.format("%sprojects", databaseInfo.getPrefix());
+
+                String query = "DELETE FROM " + dataTableName + " WHERE GUILD_ID = ? AND PROJECT_NAME = ?";
+
+                PreparedStatement preparedStmt = databaseInfo.getConnection().prepareStatement(query);
+
+                preparedStmt.setLong(1, guildId);
+                preparedStmt.setString(2, projectName);
+
+                preparedStmt.execute();
+                preparedStmt.close();
+                return true;
+            }
+        } catch (SQLException e) {
+            Logger.getLogger().exception(null, "Failed to delete project.", e, this.getClass());
+        }
+        return false;
     }
 }

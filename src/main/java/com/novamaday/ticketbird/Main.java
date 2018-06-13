@@ -4,10 +4,7 @@ import com.novamaday.ticketbird.database.DatabaseManager;
 import com.novamaday.ticketbird.listeners.ReadyEventListener;
 import com.novamaday.ticketbird.logger.Logger;
 import com.novamaday.ticketbird.message.MessageManager;
-import com.novamaday.ticketbird.module.command.CommandExecutor;
-import com.novamaday.ticketbird.module.command.DevCommand;
-import com.novamaday.ticketbird.module.command.HelpCommand;
-import com.novamaday.ticketbird.module.command.TicketBirdCommand;
+import com.novamaday.ticketbird.module.command.*;
 import com.novamaday.ticketbird.objects.bot.BotSettings;
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
@@ -47,6 +44,7 @@ public class Main {
         //Register commands.
         CommandExecutor executor = CommandExecutor.getExecutor().enable();
         executor.registerCommand(new TicketBirdCommand());
+        executor.registerCommand(new ProjectCommand());
         executor.registerCommand(new HelpCommand());
         executor.registerCommand(new DevCommand());
 
