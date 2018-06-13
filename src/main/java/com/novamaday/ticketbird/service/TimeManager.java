@@ -1,6 +1,7 @@
 package com.novamaday.ticketbird.service;
 
 import com.novamaday.ticketbird.module.status.StatusChanger;
+import com.novamaday.ticketbird.utils.GlobalVars;
 
 import java.util.ArrayList;
 import java.util.Timer;
@@ -33,6 +34,11 @@ public class TimeManager {
         timer.schedule(new StatusChanger(), 10 * 1000, 10 * 1000);
 
         timers.add(timer);
+
+        Timer amt = new Timer(true);
+        amt.schedule(new ActivityMonitor(), GlobalVars.oneHourMs, GlobalVars.oneHourMs);
+
+        timers.add(amt);
     }
 
     /**

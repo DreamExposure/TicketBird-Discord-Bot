@@ -97,6 +97,7 @@ public class DatabaseManager {
                     " CREATOR LONG not NULL, " +
                     " CHANNEL LONG not NULL, " +
                     " CATEGORY LONG not NULL, " +
+                    " LAST_ACTIVITY LONG not NULL, " +
                     " PRIMARY KEY(GUILD_ID, NUMBER))";
             statement.executeUpdate(createSettingsTable);
             statement.executeUpdate(createProjectsTable);
@@ -241,7 +242,7 @@ public class DatabaseManager {
                 if (!hasStuff || res.getString("GUILD_ID") == null) {
                     //Data not present, add to DB.
                     String insertCommand = "INSERT INTO " + dataTableName +
-                            "(GUILD_ID, NUMBER, PROJECT, CREATOR, CHANNEL, CATEGORY) VALUES (?, ?, ?, ?, ?, ?);";
+                            "(GUILD_ID, NUMBER, PROJECT, CREATOR, CHANNEL, CATEGORY, LAST_ACTIVITY) VALUES (?, ?, ?, ?, ?, ?, ?);";
                     PreparedStatement ps = databaseInfo.getConnection().prepareStatement(insertCommand);
                     ps.setLong(1, ticket.getGuildId());
                     ps.setInt(2, ticket.getNumber());
@@ -249,21 +250,23 @@ public class DatabaseManager {
                     ps.setLong(4, ticket.getCreator());
                     ps.setLong(5, ticket.getChannel());
                     ps.setLong(6, ticket.getCategory());
+                    ps.setLong(7, ticket.getLastActivity());
 
                     ps.executeUpdate();
                     ps.close();
                     statement.close();
                 } else {
                     //Data present, update.
-                    String update = "UPDATE " + dataTableName + " SET PROJECT = ?, CREATOR = ?, CHANNEL = ?, CATEGORY = ? WHERE GUILD_ID = ? AND NUMBER = ?";
+                    String update = "UPDATE " + dataTableName + " SET PROJECT = ?, CREATOR = ?, CHANNEL = ?, CATEGORY = ?, LAST_ACTIVITY = ? WHERE GUILD_ID = ? AND NUMBER = ?";
                     PreparedStatement ps = databaseInfo.getConnection().prepareStatement(update);
 
                     ps.setString(1, ticket.getProject());
                     ps.setLong(2, ticket.getCreator());
                     ps.setLong(3, ticket.getChannel());
                     ps.setLong(4, ticket.getCategory());
-                    ps.setLong(5, ticket.getGuildId());
-                    ps.setInt(6, ticket.getNumber());
+                    ps.setLong(5, ticket.getLastActivity());
+                    ps.setLong(6, ticket.getGuildId());
+                    ps.setInt(7, ticket.getNumber());
 
                     ps.executeUpdate();
 
@@ -367,6 +370,7 @@ public class DatabaseManager {
                     ticket.setCreator(res.getLong("CREATOR"));
                     ticket.setChannel(res.getLong("CHANNEL"));
                     ticket.setCategory(res.getLong("CATEGORY"));
+                    ticket.setLastActivity(res.getLong("LAST_ACTIVITY"));
 
                     statement.close();
 
@@ -426,6 +430,7 @@ public class DatabaseManager {
                     ticket.setCreator(res.getLong("CREATOR"));
                     ticket.setChannel(res.getLong("CHANNEL"));
                     ticket.setCategory(res.getLong("CATEGORY"));
+                    ticket.setLastActivity(res.getLong("LAST_ACTIVITY"));
 
                     tickets.add(ticket);
                 }

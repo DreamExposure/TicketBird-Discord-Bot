@@ -40,6 +40,7 @@
   "Project.Add.Already": "That project already exists!",
   "Ticket.Close.InvalidChannel": "Cannot close this channel as it is not a valid ticket channel OR the ticket does not exist! %lb% %lb%If this IS a ticket, please manually close it by deleting the channel.",
   "Ticket.Close.Success": "%creator% this ticket has been closed! If you have further issues with the scope of this ticket, just send a message to reopen it! %lb% %lb% If you other issues, just open a new ticket!",
+  "Tickets.Close.Inactive": "%creator% this ticket has been closed to due inactivity! If the issue has not been resolved or this is a mistake, simply reopen the ticket by sending a message in the channel (no commands needed).",
   "Ticket.Hold.InvalidChannel": "Cannot place this channel on hold as it is not a valid ticket channel OR the ticket does not exist. %lb% %lb%If this IS a ticket, please manually place it on hold by moving it to the held tickets category.",
   "Ticket.Hold.Success": "%creator% this ticket has been placed on hold until a staff member is available to assist you! This ticket will not be auto-closed for inactivity.",
   "Ticket.Reopen.Creator": "%creator% this ticket has been reopened!",

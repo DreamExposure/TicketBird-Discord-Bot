@@ -12,4 +12,6 @@ public class GlobalVars {
     public final static Color embedColor = new Color(252, 113, 20);
 
     public final static long oneWeekMs = 604800000;
+
+    public final static long oneHourMs = 3600000;
 }

@@ -36,6 +36,7 @@ public class MessageReceiveListener {
                 ticket.setChannel(channel.getLongID());
                 ticket.setCategory(settings.getAwaitingCategory());
                 ticket.setCategory(event.getAuthor().getLongID());
+                ticket.setLastActivity(System.currentTimeMillis());
                 DatabaseManager.getManager().updateTicket(ticket);
 
                 //Send message
@@ -76,6 +77,7 @@ public class MessageReceiveListener {
 
                                 //Update database!
                                 ticket.setProject(project.getName());
+                                ticket.setLastActivity(System.currentTimeMillis());
                                 DatabaseManager.getManager().updateTicket(ticket);
 
                                 //Send message...
@@ -106,6 +108,7 @@ public class MessageReceiveListener {
 
                                     //Update database...
                                     ticket.setCategory(settings.getRespondedCategory());
+                                    ticket.setLastActivity(System.currentTimeMillis());
                                     DatabaseManager.getManager().updateTicket(ticket);
                                 } else {
                                     //Move ticket...
@@ -116,6 +119,7 @@ public class MessageReceiveListener {
 
                                     //Update database....
                                     ticket.setCategory(settings.getAwaitingCategory());
+                                    ticket.setLastActivity(System.currentTimeMillis());
                                     DatabaseManager.getManager().updateTicket(ticket);
                                 }
                             } else if (event.getChannel().getCategory().getLongID() == settings.getHoldCategory()) {
@@ -131,6 +135,7 @@ public class MessageReceiveListener {
 
                                     //Update database...
                                     ticket.setCategory(settings.getRespondedCategory());
+                                    ticket.setLastActivity(System.currentTimeMillis());
                                     DatabaseManager.getManager().updateTicket(ticket);
                                 } else {
                                     //Move ticket...
@@ -141,6 +146,7 @@ public class MessageReceiveListener {
 
                                     //Update database...
                                     ticket.setCategory(settings.getAwaitingCategory());
+                                    ticket.setLastActivity(System.currentTimeMillis());
                                     DatabaseManager.getManager().updateTicket(ticket);
                                 }
                             } else if (event.getChannel().getCategory().getLongID() == settings.getAwaitingCategory()) {
@@ -153,6 +159,7 @@ public class MessageReceiveListener {
 
                                     //Update database...
                                     ticket.setCategory(settings.getRespondedCategory());
+                                    ticket.setLastActivity(System.currentTimeMillis());
                                     DatabaseManager.getManager().updateTicket(ticket);
                                 }
                             } else if (event.getChannel().getCategory().getLongID() == settings.getRespondedCategory()) {
@@ -163,6 +170,7 @@ public class MessageReceiveListener {
 
                                     //Update database...
                                     ticket.setCategory(settings.getAwaitingCategory());
+                                    ticket.setLastActivity(System.currentTimeMillis());
                                     DatabaseManager.getManager().updateTicket(ticket);
                                 }
                             }

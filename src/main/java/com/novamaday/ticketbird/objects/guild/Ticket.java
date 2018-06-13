@@ -8,10 +8,13 @@ public class Ticket {
     private long channel;
     private long category;
 
+    private long lastActivity;
+
     public Ticket(long _guildId, int _number) {
         guildId = _guildId;
         number = _number;
         project = "N/a";
+        lastActivity = System.currentTimeMillis();
     }
 
     //Getters
@@ -39,6 +42,10 @@ public class Ticket {
         return category;
     }
 
+    public long getLastActivity() {
+        return lastActivity;
+    }
+
     //Setters
     public void setProject(String _project) {
         project = _project;
@@ -54,5 +61,9 @@ public class Ticket {
 
     public void setCategory(long _category) {
         category = _category;
+    }
+
+    public void setLastActivity(long _activity) {
+        lastActivity = _activity;
     }
 }

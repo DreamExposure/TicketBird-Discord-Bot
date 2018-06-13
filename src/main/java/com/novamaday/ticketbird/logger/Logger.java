@@ -15,7 +15,6 @@ public class Logger {
     private static Logger instance;
     private String exceptionsFile;
     private String apiFile;
-    private String announcementsFile;
     private String debugFile;
 
     private Logger() {
@@ -34,7 +33,6 @@ public class Logger {
 
         exceptionsFile = BotSettings.LOG_FOLDER.get() + "/" + timestamp + "-exceptions.log";
         apiFile = BotSettings.LOG_FOLDER.get() + "/" + timestamp + "-api.log";
-        announcementsFile = BotSettings.LOG_FOLDER.get() + "/" + timestamp + "-announcements.log";
         debugFile = BotSettings.LOG_FOLDER.get() + "/" + timestamp + "-debug.log";
 
         try {
@@ -45,10 +43,6 @@ public class Logger {
             PrintWriter api = new PrintWriter(apiFile, "UTF-8");
             api.println("INIT --- " + timestamp + " ---");
             api.close();
-
-            PrintWriter announcement = new PrintWriter(announcementsFile, "UTF-8");
-            announcement.println("INIT --- " + timestamp + " ---");
-            announcement.close();
 
             PrintWriter debug = new PrintWriter(debugFile, "UTF-8");
             debug.println("INIT --- " + timestamp + " ---");
@@ -162,35 +156,6 @@ public class Logger {
             file.write("IP: " + ip + MessageManager.lineBreak);
             file.write("Host: " + host + MessageManager.lineBreak);
             file.write("Endpoint: " + endpoint + MessageManager.lineBreak);
-            file.close();
-        } catch (IOException io) {
-            io.printStackTrace();
-        }
-    }
-
-    public void announcement(String message) {
-        String timeStamp = new SimpleDateFormat("yyyy/MM/dd-HH:mm:ss").format(Calendar.getInstance().getTime());
-
-        try {
-            FileWriter file = new FileWriter(announcementsFile, true);
-            file.write("ANNOUNCEMENT --- " + timeStamp + " ---" + MessageManager.lineBreak);
-            file.write("info: " + message + MessageManager.lineBreak);
-            file.close();
-        } catch (IOException io) {
-            io.printStackTrace();
-        }
-    }
-
-    public void announcement(String message, String guildId, String announcementId, String eventId) {
-        String timeStamp = new SimpleDateFormat("yyyy/MM/dd-HH:mm:ss").format(Calendar.getInstance().getTime());
-
-        try {
-            FileWriter file = new FileWriter(announcementsFile, true);
-            file.write("ANNOUNCEMENT --- " + timeStamp + " ---" + MessageManager.lineBreak);
-            file.write("info: " + message + MessageManager.lineBreak);
-            file.write("guild Id: " + guildId + MessageManager.lineBreak);
-            file.write("announcement Id: " + announcementId + MessageManager.lineBreak);
-            file.write("event id: " + eventId + MessageManager.lineBreak);
             file.close();
         } catch (IOException io) {
             io.printStackTrace();
