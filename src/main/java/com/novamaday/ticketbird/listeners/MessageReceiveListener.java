@@ -8,19 +8,16 @@ import com.novamaday.ticketbird.objects.guild.GuildSettings;
 import com.novamaday.ticketbird.objects.guild.Project;
 import com.novamaday.ticketbird.objects.guild.Ticket;
 import com.novamaday.ticketbird.utils.GlobalVars;
-import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.util.EmbedBuilder;
 
 public class MessageReceiveListener {
 
-    @EventSubscriber
-    public void onMessageReceive(MessageReceivedEvent event) {
+    public static void onMessageReceive(MessageReceivedEvent event, GuildSettings settings) {
         //Make sure a bot (including us) didn't send the message.
         if (!event.getAuthor().isBot() && event.getAuthor().getLongID() != Main.getClient().getOurUser().getLongID()) {
             //Check if in support request channel
-            GuildSettings settings = DatabaseManager.getManager().getSettings(event.getGuild().getLongID());
             if (event.getChannel().getLongID() == settings.getSupportChannel()) {
                 //Create a new ticket!
                 String content = event.getMessage().getContent();

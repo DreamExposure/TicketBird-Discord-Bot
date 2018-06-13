@@ -1,7 +1,6 @@
 package com.novamaday.ticketbird;
 
 import com.novamaday.ticketbird.database.DatabaseManager;
-import com.novamaday.ticketbird.listeners.MessageReceiveListener;
 import com.novamaday.ticketbird.listeners.ReadyEventListener;
 import com.novamaday.ticketbird.logger.Logger;
 import com.novamaday.ticketbird.message.MessageManager;
@@ -35,7 +34,6 @@ public class Main {
         //Register events
         EventDispatcher dispatcher = getClient().getDispatcher();
         dispatcher.registerListener(new ReadyEventListener());
-        dispatcher.registerListener(new MessageReceiveListener());
 
         getClient().login();
 

@@ -2,6 +2,7 @@ package com.novamaday.ticketbird.module.command;
 
 import com.novamaday.ticketbird.Main;
 import com.novamaday.ticketbird.database.DatabaseManager;
+import com.novamaday.ticketbird.listeners.MessageReceiveListener;
 import com.novamaday.ticketbird.logger.Logger;
 import com.novamaday.ticketbird.objects.guild.GuildSettings;
 import sx.blah.discord.api.events.EventSubscriber;
@@ -61,6 +62,9 @@ class CommandListener {
                         //Only disCal mentioned...
                         cmd.issueCommand("TicketBird", new String[0], event, settings);
                     }
+                } else {
+                    //Alright, let's check if its a ticket since its not a command (also prevents oddities with command handling)
+                    MessageReceiveListener.onMessageReceive(event, settings);
                 }
             }
         } catch (Exception e) {
