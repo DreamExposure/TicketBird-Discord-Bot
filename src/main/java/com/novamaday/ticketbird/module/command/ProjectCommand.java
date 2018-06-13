@@ -92,7 +92,9 @@ public class ProjectCommand implements ICommand {
         //=project add <name> <prefix>
         if (args.length == 3) {
             String name = args[1];
-            String prefix = args[2].substring(0, 15); //Cap at 16 just to prevent people from being dumb.
+            String prefix = args[2];
+            if (args[2].length() > 16)
+                prefix = prefix.substring(0, 15); //Cap at 16 just to prevent people from being dumb.
 
             if (DatabaseManager.getManager().getProject(event.getGuild().getLongID(), name) == null) {
                 Project project = new Project(event.getGuild().getLongID(), name);
