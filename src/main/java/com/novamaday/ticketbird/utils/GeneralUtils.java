@@ -110,13 +110,15 @@ public class GeneralUtils {
     public static void updateStaticMessage(IGuild guild, GuildSettings settings) {
         IChannel supportChannel = guild.getChannelByID(settings.getSupportChannel());
 
-        IMessage staticMsg = supportChannel.getMessageByID(settings.getStaticMessage());
+        IMessage staticMsg = supportChannel.fetchMessage(settings.getStaticMessage());
         if (staticMsg != null) {
             //Edit static message...
             MessageManager.editMessage(staticMsg, GeneralUtils.getNormalStaticSupportMessage(guild, settings));
         } else {
             //Somehow the static message was deleted, let's just recreate it.
+
             settings.setStaticMessage(MessageManager.sendMessage(GeneralUtils.getNormalStaticSupportMessage(guild, settings), supportChannel).getLongID());
+
             DatabaseManager.getManager().updateSettings(settings);
         }
     }
