@@ -107,9 +107,8 @@
                 <targetPath>.</targetPath>
                 <directory>${project.basedir}</directory>
                 <includes>
-                    <include>**/src/main/resources/*</include>
+                    <include>src/main/resources/*</include>
                 </includes>
-                <filtering>true</filtering>
             </resource>
         </resources>
         <plugins>
