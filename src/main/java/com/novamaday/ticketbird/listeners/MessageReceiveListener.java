@@ -69,7 +69,7 @@ public class MessageReceiveListener {
                 em.withTitle("Select a Project/Service!");
                 em.withDesc("Send a message with **ONLY** the project/service's name so we can better help you!");
                 for (Project p : DatabaseManager.getManager().getAllProjects(settings.getGuildID())) {
-                    em.appendField(p.getName(), p.getPrefix(), true);
+                    em.appendField(p.getName(), "", false);
                 }
                 em.withColor(GlobalVars.embedColor);
 
