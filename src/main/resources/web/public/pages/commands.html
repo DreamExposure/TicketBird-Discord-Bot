@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<!--suppress HtmlUnknownTarget -->
+<html xmlns:th="http://www.thymeleaf.org">
+	<head>
+		<!--Meta stuffs-->
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="description" content="TicketBird is an advanced ticket manager bot within Discord">
+		<meta property="og:title" content="TicketBird Bot"/>
+		<meta property="og:url" content="https://ticketbirdbot.com"/>
+		<meta property="og:description"
+		      content="TicketBird is an advanced ticket manager bot within Discord"/>
+		<!--meta property="og:image" content="I WILL PUT THE LOGO IN WHEN I MAKE IT SMALL"/-->
+		<title>Commands // TicketBird</title>
+
+		<!--Locally hosted-->
+		<link href="/styles/global.css" rel="stylesheet">
+		<link href="/styles/docs.css" rel="stylesheet">
+	</head>
+
+	<body>
+		<div class="top-nav">
+			<a href="/" class="title"><h1>TICKETBIRD</h1></a>
+			<a href="/about">About</a>
+			<a class="active" href="/commands">Commands</a>
+			<a href="/setup">Setup</a>
+			<a href="https://discordapp.com/api/oauth2/authorize?client_id=456140067220750336&permissions=8&redirect_uri=https%3A%2F%2Fticketbird.novamaday.com&scope=bot">Invite</a>
+			<a href="https://discord.gg/2TFqyuy" target="_blank">Support</a>
+			<a href="https://www.patreon.com/Novafox" target="_blank">Patreon</a>
+		</div>
+
+		<div id="content">
+			<h1>TicketBird Bot - Commands</h1>
+			<p>
+				Below is full documentation on TicketBird commands.
+				<br> <br> <br>
+				This documentation includes the command, acceptable arguments, an example, and an explanation for each
+				and every command TicketBird has to offer.
+				<br> <br>
+				Since many commands have sub-commands and functions, this page will be split into sections for each.
+				<br>
+				<br>
+				<br>
+				<strong>[] = required</strong>
+				<br>
+				<strong>() = optional</strong>
+			</p>
+
+			<hr>
+
+			<div id="project">
+				<h2>=project commands</h2>
+
+				<table style="border-color: #ef0813;" border="#ef0813" cellspacing="0" cellpadding="4">
+					<tbody>
+					<tr>
+						<th>Command</th>
+						<th>Acceptable Arguments</th>
+						<th>Example</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>=project add</td>
+						<td>=project add [projectName] [prefix]</td>
+						<td>=project add MyProject MP</td>
+						<td>Adds a "project" that tickets can reference. The prefix will become part of the ticket
+							channel's name.
+						</td>
+					</tr>
+					<tr>
+						<td>=project remove</td>
+						<td>=project remove [ProjectName]</td>
+						<td>=project remove MyProject</td>
+						<td>Removes a "project" from TicketBirds. New tickets cannot reference this "project" anymore.
+							Existing tickets are not effected.
+						</td>
+					</tr>
+					<tr>
+						<td>=project list</td>
+						<td>=event list</td>
+						<td>=event list</td>
+						<td>Lists all "Projects" that are currently in TicketBird for your server.</td>
+					</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<hr>
+
+			<div id="ticketbird">
+				<h2>=ticketbird commands</h2>
+
+				<table style="border-color: #ef0813;" border="#ef0813" cellspacing="0" cellpadding="4">
+					<tbody>
+					<tr>
+						<th>Command</th>
+						<th>Acceptable Arguments</th>
+						<th>Example</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>=ticketbird</td>
+						<td>=ticketbird</td>
+						<td>=ticketbird</td>
+						<td>Displays TicketBird's bot information</td>
+					</tr>
+					<tr>
+						<td>=ticketbird settings</td>
+						<td>=ticketbird settings</td>
+						<td>=ticketbird settings</td>
+						<td>Displays the guild's settings for TicketBird (like prefix)</td>
+					</tr>
+					<tr>
+						<td>=ticketbird prefix</td>
+						<td>=ticketbird prefix [prefix]</td>
+						<td>=ticketbird prefix $</td>
+						<td>Changes TicketBird's prefix. <strong>Mentioning TicketBird will always work no matter the
+							prefix</strong></td>
+					</tr>
+					<tr>
+						<td>=ticketbird lang</td>
+						<td>=ticketbird lang [language]</td>
+						<td>=ticketbird lang english</td>
+						<td>Set's TicketBird's language</td>
+					</tr>
+					<tr>
+						<td>=ticketbird invite</td>
+						<td>=ticketbird invite</td>
+						<td>=ticketbird invite</td>
+						<td>Displays the invite link to TicketBirds's Support Guild.</td>
+					</tr>
+					<tr>
+						<td>=ticketbird staff add</td>
+						<td>=ticketbird staff add [username]</td>
+						<td>=ticketbird staff add NovaFox161</td>
+						<td>Removes the user from the TicketBird "staff". Their responses will move the ticket to the
+							"Responded to" category.
+						</td>
+					</tr>
+					<tr>
+						<td>=ticketbird staff remove</td>
+						<td>=ticketbird staff remove [username]</td>
+						<td>=ticketbird staff remove NovaFox161</td>
+						<td>Removes the user from the TicketBird "staff". Their responses will no longer move the ticket
+							to the "Responded to" category.
+						</td>
+					</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<hr>
+
+			<div id="other">
+				<h2>All Other Commands</h2>
+
+				<table style="border-color: #ef0813;" border="#ef0813" cellspacing="0" cellpadding="4">
+					<tbody>
+					<tr>
+						<th>Command</th>
+						<th>Acceptable Arguments</th>
+						<th>Example</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>=close</td>
+						<td>=close</td>
+						<td>=close</td>
+						<td>Closes the ticket</td>
+					</tr>
+					<tr>
+						<td>=hold</td>
+						<td>=hold</td>
+						<td>=hold</td>
+						<td>Places the ticket on hold until a staff member can assist with it. Tickets on hold will not
+							be auto closed for inactivity
+						</td>
+					</tr>
+					<tr>
+						<td>=help</td>
+						<td>=help (command) (sub-command)</td>
+						<td>=help event create</td>
+						<td>Displays help information for the specified commands/sub commands</td>
+					</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+	</body>
+
+	<footer id="footer">
+		<p><span th:text="'© Nova Maday ' + ${year} + ' All rights reserved.'"></span><span> - </span><a
+				href="/policy/privacy">Privacy
+			Policy</a><span> - </span><a href="https://www.novamaday.com">Personal Site</a></p>
+	</footer>
+</html>

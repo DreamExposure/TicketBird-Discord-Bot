@@ -5,7 +5,7 @@ import java.util.Properties;
 public enum BotSettings {
     SQL_HOST, SQL_USER, SQL_PASSWORD,
     SQL_DB, SQL_PORT, SQL_PREFIX, TOKEN, SECRET, ID,
-    LANG_PATH, PW_TOKEN, DBO_TOKEN, UPDATE_SITES, LOG_FOLDER;
+    LANG_PATH, PW_TOKEN, DBO_TOKEN, UPDATE_SITES, LOG_FOLDER, RUN_API, PORT;
 
     private String val;
 

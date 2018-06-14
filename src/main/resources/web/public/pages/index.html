@@ -1,0 +1,77 @@
+<!DOCTYPE HTML>
+<!--suppress HtmlUnknownTarget -->
+<html xmlns:th="http://www.thymeleaf.org">
+	<head>
+		<!--Meta stuffs-->
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="description" content="TicketBird is an advanced ticket manager bot within Discord">
+		<meta property="og:title" content="TicketBird Bot"/>
+		<meta property="og:url" content="https://ticketbirdbot.com"/>
+		<meta property="og:description"
+		      content="TicketBird is an advanced ticket manager bot within Discord"/>
+		<!--meta property="og:image" content="I WILL PUT THE LOGO IN WHEN I MAKE IT SMALL"/-->
+		<title>Home // TicketBird</title>
+
+		<!--Locally hosted-->
+		<link href="/styles/global.css" rel="stylesheet">
+	</head>
+
+	<body>
+		<div class="top-nav">
+			<a href="/" class="title"><h1>TICKETBIRD</h1></a>
+			<a href="/about">About</a>
+			<a href="/commands">Commands</a>
+			<a href="/setup">Setup</a>
+			<a href="https://discordapp.com/api/oauth2/authorize?client_id=456140067220750336&permissions=8&redirect_uri=https%3A%2F%2Fticketbird.novamaday.com&scope=bot">Invite</a>
+			<a href="https://discord.gg/2TFqyuy" target="_blank">Support</a>
+			<a href="https://www.patreon.com/Novafox" target="_blank">Patreon</a>
+		</div>
+
+		<div id="content">
+			<div class="image-wrapper" style="float: left">
+				<img src="/assets/images/logos/main.png"
+				     style="max-width: 200px; max-height: 200px;">
+			</div>
+			<h1>TicketBird Bot</h1>
+			<h3>An advanced ticket manager bot within Discord</h3>
+
+			<p>
+				TicketBird manages tickets via discord for projects and services with ease making it easier to provide
+				help to your users in a controlled and sensible fashion all in the comfort of Discord.
+			</p>
+
+			<a href="https://discordapp.com/api/oauth2/authorize?client_id=456140067220750336&permissions=8&redirect_uri=https%3A%2F%2Fticketbird.novamaday.com&scope=bot"
+			   target="_blank">
+				<button>Add To Discord!</button>
+			</a>
+
+			<hr>
+			<h2>See What Actual Users Are Saying</h2>
+			<div class="quote-block">
+				<div class="quote">
+					<h4>Sours#5091</h4>
+					<p>"Awesome again I appreciate your time and the work you put into these bots"</p>
+				</div>
+				<!--
+				<div class="quote">
+					<h4></h4>
+					<p>""</p>
+				</div>
+
+				<div class="quote">
+					<h4></h4>
+					<p>""</p>
+				</div>
+				-->
+			</div>
+
+		</div>
+	</body>
+
+	<footer id="footer">
+		<p><span th:text="'© Nova Maday ' + ${year} + ' All rights reserved.'"></span><span> - </span><a
+				href="/policy/privacy">Privacy
+			Policy</a><span> - </span><a href="https://www.novamaday.com">Personal Site</a></p>
+	</footer>
+</html>

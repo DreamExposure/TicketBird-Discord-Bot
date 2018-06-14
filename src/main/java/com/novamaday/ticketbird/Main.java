@@ -6,6 +6,7 @@ import com.novamaday.ticketbird.logger.Logger;
 import com.novamaday.ticketbird.message.MessageManager;
 import com.novamaday.ticketbird.module.command.*;
 import com.novamaday.ticketbird.objects.bot.BotSettings;
+import com.novamaday.ticketbird.web.spark.SparkManager;
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.events.EventDispatcher;
@@ -40,6 +41,13 @@ public class Main {
         //Connect to MySQL server
         DatabaseManager.getManager().connectToMySQL();
         DatabaseManager.getManager().createTables();
+
+        //Start spark (catch any issues from it so only the site goes down without affecting bot....
+        try {
+            SparkManager.initSpark();
+        } catch (Exception e) {
+            Logger.getLogger().exception(null, "'Spark ERROR' by 'PANIC! AT THE WEBSITE'", e, Main.class);
+        }
 
         //Register commands.
         CommandExecutor executor = CommandExecutor.getExecutor().enable();
