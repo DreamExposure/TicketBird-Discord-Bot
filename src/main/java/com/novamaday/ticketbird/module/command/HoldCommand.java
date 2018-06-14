@@ -1,5 +1,6 @@
 package com.novamaday.ticketbird.module.command;
 
+import com.novamaday.ticketbird.Main;
 import com.novamaday.ticketbird.database.DatabaseManager;
 import com.novamaday.ticketbird.message.MessageManager;
 import com.novamaday.ticketbird.objects.command.CommandInfo;
@@ -77,7 +78,11 @@ public class HoldCommand implements ICommand {
                     MessageManager.deleteMessage(event.getMessage());
 
                     //Send message! :D
-                    MessageManager.sendMessage(MessageManager.getMessage("Ticket.Hold.Success", "%creator%", event.getGuild().getUserByID(ticket.getCreator()).mention(), settings), event);
+                    if (event.getGuild().getUserByID(ticket.getCreator()) != null) {
+                        MessageManager.sendMessage(MessageManager.getMessage("Ticket.Hold.Success", "%creator%", event.getGuild().getUserByID(ticket.getCreator()).mention(), settings), event);
+                    } else {
+                        MessageManager.sendMessage(MessageManager.getMessage("Ticket.Hold.Success", "%creator%", Main.getClient().fetchUser(ticket.getCreator()).mention(), settings), event);
+                    }
 
                     //Lets update the static message!
                     GeneralUtils.updateStaticMessage(event.getGuild(), settings);
