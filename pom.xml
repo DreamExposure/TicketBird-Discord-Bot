@@ -102,15 +102,6 @@
     <build>
         <directory>target</directory>
         <finalName>TicketBird-Bot</finalName>
-        <resources>
-            <resource>
-                <targetPath>.</targetPath>
-                <directory>${project.basedir}</directory>
-                <includes>
-                    <include>/src/main/resources/*</include>
-                </includes>
-            </resource>
-        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
