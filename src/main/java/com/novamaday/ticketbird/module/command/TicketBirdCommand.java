@@ -178,7 +178,7 @@ public class TicketBirdCommand implements ICommand {
     }
 
     private void moduleInvite(MessageReceivedEvent event, GuildSettings settings) {
-        String INVITE_LINK = "https://discord.gg/AmAMGeN";
+        String INVITE_LINK = "https://discord.gg/9QQD6cp";
         MessageManager.sendMessage(MessageManager.getMessage("TicketBird.InviteLink", "%link%", INVITE_LINK, settings), event);
     }
 
