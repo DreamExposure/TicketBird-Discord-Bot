@@ -55,6 +55,7 @@
   "Notification.Args.Value.Integer": "The specified value must be a number! (EX: `1` or `13`)",
   "Notification.Disabled": "This option is disabled for testing only!",
   "Notification.Patron": "This feature is currently patron only! Want access to it first? Support us on patreon here: https://www.patreon.com/Novafox",
+  "Notification.Perm.Bot": "TicketBird cannot create and manage categories/channels with the current permissions. TicketBird requires \"Administrator\" permissions globablly. Thank you!",
   "Notification.Perm.CONTROL_ROLE": "You do not have sufficient permissions to use this TicketBird command!",
   "Notification.Perm.MANAGE_SERVER": "You must have the \"Manage Server\" permission to use this command!",
   "Notification.Error.Unknown": "Oops! Something has failed terribly! I have messaged my development team!",

@@ -188,23 +188,28 @@ public class TicketBirdCommand implements ICommand {
             MessageManager.sendMessage(MessageManager.getMessage("Setup.Working", settings), event);
 
             //Create categories...
-            settings.setAwaitingCategory(ChannelManager.createCategory("Tickets Awaiting Response", event.getGuild()).getLongID());
-            settings.setRespondedCategory(ChannelManager.createCategory("Tickets Responded To", event.getGuild()).getLongID());
-            settings.setHoldCategory(ChannelManager.createCategory("Tickets On Hold", event.getGuild()).getLongID());
-            settings.setCloseCategory(ChannelManager.createCategory("Tickets Closed", event.getGuild()).getLongID());
+            try {
+                settings.setAwaitingCategory(ChannelManager.createCategory("Tickets Awaiting Response", event.getGuild()).getLongID());
+                settings.setRespondedCategory(ChannelManager.createCategory("Tickets Responded To", event.getGuild()).getLongID());
+                settings.setHoldCategory(ChannelManager.createCategory("Tickets On Hold", event.getGuild()).getLongID());
+                settings.setCloseCategory(ChannelManager.createCategory("Tickets Closed", event.getGuild()).getLongID());
 
-            settings.setSupportChannel(ChannelManager.createChannel("support-request", event.getGuild()).getLongID());
+                settings.setSupportChannel(ChannelManager.createChannel("support-request", event.getGuild()).getLongID());
 
-            IChannel support = event.getGuild().getChannelByID(settings.getSupportChannel());
-            support.changeTopic(MessageManager.getMessage("Support.DefaultTopic", settings));
-            IMessage staticMsg = MessageManager.sendMessage(GeneralUtils.getNormalStaticSupportMessage(event.getGuild(), settings), support);
+                IChannel support = event.getGuild().getChannelByID(settings.getSupportChannel());
+                support.changeTopic(MessageManager.getMessage("Support.DefaultTopic", settings));
+                IMessage staticMsg = MessageManager.sendMessage(GeneralUtils.getNormalStaticSupportMessage(event.getGuild(), settings), support);
 
-            settings.setStaticMessage(staticMsg.getLongID());
+                settings.setStaticMessage(staticMsg.getLongID());
 
-            //Update database
-            DatabaseManager.getManager().updateSettings(settings);
+                //Update database
+                DatabaseManager.getManager().updateSettings(settings);
 
-            MessageManager.sendMessage(MessageManager.getMessage("Setup.Complete", settings), event);
+                MessageManager.sendMessage(MessageManager.getMessage("Setup.Complete", settings), event);
+            } catch (NullPointerException e) {
+                MessageManager.sendMessage(MessageManager.getMessage("Notification.Perm.Bot", settings), event);
+            }
+
         } else {
             //Setup has already been done.
             MessageManager.sendMessage(MessageManager.getMessage("Setup.Already", settings), event);
