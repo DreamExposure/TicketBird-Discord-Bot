@@ -49,9 +49,7 @@
   "Ticket.Project.Invalid": "Sorry, but that project does not exist. Perhaps you made a typo. Please check the first message for a list of valid projects and type a new message with only the project name!",
   "Ticket.Project.Success": "Okay, you need help with %project%! %lb% %lb% Please provide any extra information that may help staff assist you such as project version numbers, errors, etc etc.",
   "Ticket.Open": "%creator% is requesting help with ```%content%``` %lb% %lb% Please specify the project/service you need help with from the provided list!",
-
-
-  "Notification.Args.Few": "You must specify a function to execute! Use '=help` for a full list of valid commands and functions!",
+  "Notification.Args.Few": "You must specify a function to execute! Use `=help` for a full list of valid commands and functions!",
   "Notification.Args.Invalid": "Invalid function! Please view `=help` for a full list of valid commands and functions!",
   "Notification.Args.InvalidSubCmd": "Invalid sub command! Use `=help <command>` for more info!",
   "Notification.Args.Value.Integer": "The specified value must be a number! (EX: `1` or `13`)",
