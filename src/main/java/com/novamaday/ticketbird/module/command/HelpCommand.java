@@ -71,7 +71,7 @@ public class HelpCommand implements ICommand {
                 }
             }
             em.withFooterText("Check out the official site for more command info!");
-            em.withUrl("https://www.novamaday.com/ticketbird/commands");
+            em.withUrl("https://ticketbird.novamaday.com/commands");
             em.withColor(GlobalVars.embedColor);
             MessageManager.sendMessage(em.build(), event);
         } else if (args.length == 1) {
@@ -115,7 +115,7 @@ public class HelpCommand implements ICommand {
 
         em.withFooterText("<> = required | () = optional");
 
-        em.withUrl("https://www.novamaday.com/ticketbird/commands");
+        em.withUrl("https://ticketbird.novamaday.com/commands");
 
         em.withColor(GlobalVars.embedColor);
 
@@ -133,7 +133,7 @@ public class HelpCommand implements ICommand {
 
         em.withFooterText("<> = required | () = optional");
 
-        em.withUrl("https://www.novamaday.com/ticketbird/commands");
+        em.withUrl("https://ticketbird.novamaday.com/commands");
 
         em.withColor(GlobalVars.embedColor);
 

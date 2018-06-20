@@ -121,7 +121,7 @@ public class TicketBirdCommand implements ICommand {
         em.appendField(MessageManager.getMessage("Embed.TicketBird.Info.TotalGuilds", settings), Main.getClient().getGuilds().size() + "", true);
         em.appendField(MessageManager.getMessage("Embed.TicketBird.Info.Ping", "%shard%", (guild.getShard().getInfo()[0] + 1) + "/" + Main.getClient().getShardCount(), settings), guild.getShard().getResponseTime() + "ms", false);
         em.withFooterText(MessageManager.getMessage("Embed.TicketBird.Info.Patron", settings) + ": https://www.patreon.com/Novafox");
-        em.withUrl("https://www.novamaday.com/ticketbird/");
+        em.withUrl("https://ticketbird.novamaday.com");
         em.withColor(GlobalVars.embedColor);
         MessageManager.sendMessage(em.build(), event);
     }
@@ -176,7 +176,7 @@ public class TicketBirdCommand implements ICommand {
     }
 
     private void moduleInvite(MessageReceivedEvent event, GuildSettings settings) {
-        String INVITE_LINK = "https://discord.gg/9QQD6cp";
+        String INVITE_LINK = "https://discord.gg/2TFqyuy";
         MessageManager.sendMessage(MessageManager.getMessage("TicketBird.InviteLink", "%link%", INVITE_LINK, settings), event);
     }
 
