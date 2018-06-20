@@ -10,13 +10,11 @@ import com.novamaday.ticketbird.utils.GeneralUtils;
 import com.novamaday.ticketbird.utils.GlobalVars;
 import com.novamaday.ticketbird.utils.UserUtils;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
-import sx.blah.discord.handle.obj.IChannel;
-import sx.blah.discord.handle.obj.IGuild;
-import sx.blah.discord.handle.obj.IMessage;
-import sx.blah.discord.handle.obj.IUser;
+import sx.blah.discord.handle.obj.*;
 import sx.blah.discord.util.EmbedBuilder;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 
 public class TicketBirdCommand implements ICommand {
 
@@ -197,6 +195,15 @@ public class TicketBirdCommand implements ICommand {
                 settings.setSupportChannel(ChannelManager.createChannel("support-request", event.getGuild()).getLongID());
 
                 IChannel support = event.getGuild().getChannelByID(settings.getSupportChannel());
+
+                //Set channel permissions...
+                EnumSet<Permissions> toAdd = EnumSet.noneOf(Permissions.class);
+                toAdd.add(Permissions.SEND_MESSAGES);
+                toAdd.add(Permissions.READ_MESSAGES);
+                toAdd.add(Permissions.READ_MESSAGE_HISTORY);
+
+                support.overrideRolePermissions(event.getGuild().getEveryoneRole(), toAdd, EnumSet.noneOf(Permissions.class));
+
                 support.changeTopic(MessageManager.getMessage("Support.DefaultTopic", settings));
                 IMessage staticMsg = MessageManager.sendMessage(GeneralUtils.getNormalStaticSupportMessage(event.getGuild(), settings), support);
 
