@@ -54,11 +54,11 @@
   "Notification.Args.InvalidSubCmd": "Не верная команда! Используйте `=help <command>` для большей информции!",
   "Notification.Args.Value.Integer": "Не верное значение! (Ex: `1` or `13`)",
   "Notification.Disabled": "Эта опция доступна только для тестеров!",
-  "Notification.Patron": "Данная функция для Patron'ов! Хотите получить доступ? Свяжитесь здесь: https://www.patreon.com/Novafox",
-  "Notification.Perm.Bot": "TicketBird cannot create and manage categories/channels with the current permissions. TicketBird requires \"Administrator\" permissions globablly. Thank you!",
-  "Notification.Perm.CONTROL_ROLE": "You do not have sufficient permissions to use this TicketBird command!",
-  "Notification.Perm.MANAGE_SERVER": "You must have the \"Manage Server\" permission to use this command!",
-  "Notification.Error.Unknown": "Oops! Something has failed terribly! I have messaged my development team!",
-  "Notification.Error.Network": "There was a network error! I have alerted the development team! Please try again!",
+  "Notification.Patron": "Данная функция для Patronов! Хотите получить доступ? Свяжитесь здесь: https://www.patreon.com/Novafox",
+  "Notification.Perm.Bot": "TicketBird не может создавать категории и каналы. Пожалуйста дайте ему права Администраторав discordе",
+  "Notification.Perm.CONTROL_ROLE": "У вас не достаточно прав, что бы использовать команды TicketBirdа!",
+  "Notification.Perm.MANAGE_SERVER": "Вам нужно право \"Manage Server\" что бы использовать данную команду!",
+  "Notification.Error.Unknown": "Что-то пошло не так! Мы отправили сообщение разработчикам!",
+  "Notification.Error.Network": "Произошла ошибка с интернет соединением! Мы оставили сообщение разработчикам! Попробуйте еще раз!",
   "Notification.User.NotFound": "Данный пользователь не был найден на данном сервере!"
 }
