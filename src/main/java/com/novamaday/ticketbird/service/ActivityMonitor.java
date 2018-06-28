@@ -3,6 +3,7 @@ package com.novamaday.ticketbird.service;
 import com.novamaday.ticketbird.Main;
 import com.novamaday.ticketbird.database.DatabaseManager;
 import com.novamaday.ticketbird.logger.Logger;
+import com.novamaday.ticketbird.message.ChannelManager;
 import com.novamaday.ticketbird.message.MessageManager;
 import com.novamaday.ticketbird.objects.guild.GuildSettings;
 import com.novamaday.ticketbird.objects.guild.Ticket;
@@ -32,9 +33,17 @@ public class ActivityMonitor extends TimerTask {
 
                         MessageManager.sendMessage(MessageManager.getMessage("Tickets.Close.Inactive", "%creator%", g.getUserByID(t.getCreator()).mention(), settings), g.getChannelByID(t.getChannel()));
                     }
+                } else if (t.getCategory() == settings.getCloseCategory()) {
+                    //Ticket closed. Check time to purge.
+                    if (System.currentTimeMillis() - t.getLastActivity() > GlobalVars.oneDayMs) {
+                        //Purge ticket...
+                        ChannelManager.deleteChannelAsync(t.getChannel(), g);
+
+                        settings.setTotalClosed(settings.getTotalClosed() + 1);
+                    }
                 }
             }
         }
-        Logger.getLogger().debug("Finished ticket inactivity close task.");
+        Logger.getLogger().debug("Finished ticket inactivity close/purge task.");
     }
 }

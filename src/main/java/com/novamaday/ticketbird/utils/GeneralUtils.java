@@ -87,7 +87,7 @@ public class GeneralUtils {
 
         msg = msg.replace("%open%", String.valueOf(awaiting.getChannels().size() + responded.getChannels().size()));
         msg = msg.replace("%hold%", hold.getChannels().size() + "");
-        msg = msg.replace("%closed%", close.getChannels().size() + "");
+        msg = msg.replace("%closed%", (close.getChannels().size() + settings.getTotalClosed()) + "");
 
         return msg;
     }
@@ -102,7 +102,7 @@ public class GeneralUtils {
 
         msg = msg.replace("%open%", String.valueOf(awaiting.getChannels().size() + responded.getChannels().size()));
         msg = msg.replace("%hold%", hold.getChannels().size() + "");
-        msg = msg.replace("%closed%", close.getChannels().size() + "");
+        msg = msg.replace("%closed%", (close.getChannels().size() + settings.getTotalClosed()) + "");
 
         return msg;
     }

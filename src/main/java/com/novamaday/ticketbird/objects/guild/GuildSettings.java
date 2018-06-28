@@ -22,6 +22,8 @@ public class GuildSettings {
 
     private int nextId;
 
+    private int totalClosed;
+
     private List<Long> staff = new ArrayList<>();
 
     public GuildSettings(long _guildId) {
@@ -34,6 +36,7 @@ public class GuildSettings {
         devGuild = false;
 
         nextId = 1;
+        totalClosed = 0;
     }
 
     //Getters
@@ -83,6 +86,10 @@ public class GuildSettings {
 
     public int getNextId() {
         return nextId;
+    }
+
+    public int getTotalClosed() {
+        return totalClosed;
     }
 
     public List<Long> getStaff() {
@@ -141,6 +148,10 @@ public class GuildSettings {
 
     public void setNextId(int _next) {
         nextId = _next;
+    }
+
+    public void setTotalClosed(int _total) {
+        totalClosed = _total;
     }
 
     public void setStaffFromString(String _staff) {

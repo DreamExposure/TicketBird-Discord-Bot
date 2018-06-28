@@ -61,7 +61,7 @@ public class CloseCommand implements ICommand {
         String channelName = event.getChannel().getName();
         //Channel name format [prefix]-ticket-[number]
         try {
-            int ticketNumber = 0;
+            int ticketNumber;
             if (channelName.split("-").length == 2) {
                 //Ticket has not had a project set
                 ticketNumber = Integer.valueOf(channelName.split("-")[1]);
@@ -78,13 +78,13 @@ public class CloseCommand implements ICommand {
 
                     //Update database info
                     ticket.setCategory(settings.getCloseCategory());
+                    ticket.setLastActivity(System.currentTimeMillis());
                     DatabaseManager.getManager().updateTicket(ticket);
 
                     //Remove command message
                     MessageManager.deleteMessage(event.getMessage());
 
                     //Send message! :D
-
                     if (event.getGuild().getUserByID(ticket.getCreator()) != null) {
                         MessageManager.sendMessage(MessageManager.getMessage("Ticket.Close.Success", "%creator%", event.getGuild().getUserByID(ticket.getCreator()).mention(), settings), event);
                     } else {
