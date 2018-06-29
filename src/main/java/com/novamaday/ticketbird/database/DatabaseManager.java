@@ -153,7 +153,7 @@ public class DatabaseManager {
                             + " SET LANG = ?, PREFIX = ?, PATRON_GUILD = ?, DEV_GUILD = ?, " +
                             " AWAITING_CATEGORY = ?, RESPONDED_CATEGORY = ?, HOLD_CATEGORY = ?, " +
                             " CLOSE_CATEGORY = ?, SUPPORT_CHANNEL = ?, STATIC_MESSAGE = ?, " +
-                            " NEXT_ID = ?, STAFF = ?, CLOSED_TOTAL ? WHERE GUILD_ID = ?";
+                            " NEXT_ID = ?, STAFF = ?, CLOSED_TOTAL = ? WHERE GUILD_ID = ?";
                     PreparedStatement ps = databaseInfo.getConnection().prepareStatement(update);
 
                     ps.setString(1, settings.getLang());
