@@ -1,8 +1,13 @@
 package com.novamaday.ticketbird.logger;
 
+import com.novamaday.ticketbird.Main;
 import com.novamaday.ticketbird.message.MessageManager;
 import com.novamaday.ticketbird.objects.bot.BotSettings;
+import com.novamaday.ticketbird.utils.GlobalVars;
+import sx.blah.discord.handle.obj.IChannel;
+import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IUser;
+import sx.blah.discord.util.EmbedBuilder;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -65,6 +70,44 @@ public class Logger {
             //Can ignore silently...
         }
 
+        if (Main.getClient().getOurUser() != null && Main.getClient().isLoggedIn()) {
+            IUser bot = Main.getClient().getOurUser();
+
+            String shortError = error;
+            if (error.length() > 1250)
+                shortError = error.substring(0, 1250);
+
+
+            EmbedBuilder em = new EmbedBuilder();
+            if (bot != null)
+                em.withAuthorIcon(bot.getAvatarURL());
+
+            if (author != null) {
+                em.withAuthorName(author.getName());
+                em.withThumbnail(author.getAvatarURL());
+            }
+            em.withColor(239, 15, 0);
+            em.withFooterText(clazz.getName());
+
+            //Send to discord!
+            em.appendField("Time", timeStamp, true);
+            if (e.getMessage() != null) {
+                if (e.getMessage().length() > 1024)
+                    em.appendField("Exception", e.getMessage().substring(0, 1024), true);
+                else
+                    em.appendField("Exception", e.getMessage(), true);
+            }
+            if (message != null)
+                em.appendField("Message", message, true);
+
+
+            //Get DisCal guild and channel..
+            IGuild guild = Main.getClient().getGuildByID(GlobalVars.serverId);
+            IChannel channel = guild.getChannelByID(GlobalVars.errorLogId);
+
+            MessageManager.sendMessage(em.build(), "```" + shortError + "```", channel);
+        }
+
         try {
             FileWriter exceptions = new FileWriter(exceptionsFile, true);
             exceptions.write("ERROR --- " + timeStamp + " ---" + MessageManager.lineBreak);
@@ -81,7 +124,7 @@ public class Logger {
         }
     }
 
-    public void debug(IUser author, String message, String info, Class clazz, boolean post) {
+    public void debug(IUser author, String message, String info, Class clazz) {
         String timeStamp = new SimpleDateFormat("yyyy/MM/dd-HH:mm:ss").format(Calendar.getInstance().getTime());
 
 
