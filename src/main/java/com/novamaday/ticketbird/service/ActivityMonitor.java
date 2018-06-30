@@ -8,6 +8,7 @@ import com.novamaday.ticketbird.message.MessageManager;
 import com.novamaday.ticketbird.objects.guild.GuildSettings;
 import com.novamaday.ticketbird.objects.guild.Ticket;
 import com.novamaday.ticketbird.utils.GlobalVars;
+import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IGuild;
 
 import java.util.TimerTask;
@@ -22,29 +23,33 @@ public class ActivityMonitor extends TimerTask {
             GuildSettings settings = DatabaseManager.getManager().getSettings(g.getLongID());
 
             for (Ticket t : DatabaseManager.getManager().getAllTickets(g.getLongID())) {
-                try {
-                    if (t.getCategory() == settings.getRespondedCategory() || t.getCategory() == settings.getAwaitingCategory()) {
-                        //Ticket not already closed or on hold.
-                        if (System.currentTimeMillis() - t.getLastActivity() > GlobalVars.oneWeekMs) {
-                            //Inactive...
-                            g.getChannelByID(t.getChannel()).changeCategory(g.getCategoryByID(settings.getCloseCategory()));
-                            t.setCategory(settings.getCloseCategory());
+                //Make sure ticket channel exists.
+                IChannel channel = g.getChannelByID(t.getChannel());
+                if (channel != null) {
+                    try {
+                        if (t.getCategory() == settings.getRespondedCategory() || t.getCategory() == settings.getAwaitingCategory()) {
+                            //Ticket not already closed or on hold.
+                            if (System.currentTimeMillis() - t.getLastActivity() > GlobalVars.oneWeekMs) {
+                                //Inactive...
+                                channel.changeCategory(g.getCategoryByID(settings.getCloseCategory()));
+                                t.setCategory(settings.getCloseCategory());
 
-                            DatabaseManager.getManager().updateTicket(t);
+                                DatabaseManager.getManager().updateTicket(t);
 
-                            MessageManager.sendMessage(MessageManager.getMessage("Tickets.Close.Inactive", "%creator%", g.getUserByID(t.getCreator()).mention(), settings), g.getChannelByID(t.getChannel()));
+                                MessageManager.sendMessage(MessageManager.getMessage("Tickets.Close.Inactive", "%creator%", g.getUserByID(t.getCreator()).mention(), settings), g.getChannelByID(t.getChannel()));
+                            }
+                        } else if (t.getCategory() == settings.getCloseCategory()) {
+                            //Ticket closed. Check time to purge.
+                            if (System.currentTimeMillis() - t.getLastActivity() > GlobalVars.oneDayMs) {
+                                //Purge ticket...
+                                ChannelManager.deleteChannelAsync(t.getChannel(), g);
+
+                                settings.setTotalClosed(settings.getTotalClosed() + 1);
+                            }
                         }
-                    } else if (t.getCategory() == settings.getCloseCategory()) {
-                        //Ticket closed. Check time to purge.
-                        if (System.currentTimeMillis() - t.getLastActivity() > GlobalVars.oneDayMs) {
-                            //Purge ticket...
-                            ChannelManager.deleteChannelAsync(t.getChannel(), g);
-
-                            settings.setTotalClosed(settings.getTotalClosed() + 1);
-                        }
+                    } catch (Exception e) {
+                        Logger.getLogger().exception(null, "Failed to handle ticket inactivity!", e, this.getClass());
                     }
-                } catch (Exception e) {
-                    Logger.getLogger().exception(null, "Failed to handle ticket inactivity!", e, this.getClass());
                 }
             }
         }
