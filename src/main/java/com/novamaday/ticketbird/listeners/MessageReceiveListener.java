@@ -2,6 +2,7 @@ package com.novamaday.ticketbird.listeners;
 
 import com.novamaday.ticketbird.Main;
 import com.novamaday.ticketbird.database.DatabaseManager;
+import com.novamaday.ticketbird.logger.Logger;
 import com.novamaday.ticketbird.message.ChannelManager;
 import com.novamaday.ticketbird.message.MessageManager;
 import com.novamaday.ticketbird.objects.guild.GuildSettings;
@@ -24,62 +25,66 @@ public class MessageReceiveListener {
             //Check if in support request channel
             if (event.getChannel().getLongID() == settings.getSupportChannel()) {
                 //Create a new ticket!
-                String content = event.getMessage().getContent();
+                try {
+                    String content = event.getMessage().getContent();
 
-                int ticketNumber = settings.getNextId();
-                settings.setNextId(ticketNumber + 1);
-                DatabaseManager.getManager().updateSettings(settings);
+                    int ticketNumber = settings.getNextId();
+                    settings.setNextId(ticketNumber + 1);
+                    DatabaseManager.getManager().updateSettings(settings);
 
-                IChannel channel = ChannelManager.createChannel("ticket-" + ticketNumber, event.getGuild());
-                channel.changeCategory(event.getGuild().getCategoryByID(settings.getAwaitingCategory()));
+                    IChannel channel = ChannelManager.createChannel("ticket-" + ticketNumber, event.getGuild());
+                    channel.changeCategory(event.getGuild().getCategoryByID(settings.getAwaitingCategory()));
 
-                //Set channel permissions...
-                EnumSet<Permissions> toAdd = EnumSet.noneOf(Permissions.class);
-                toAdd.add(Permissions.MENTION_EVERYONE);
-                toAdd.add(Permissions.ATTACH_FILES);
-                toAdd.add(Permissions.EMBED_LINKS);
-                toAdd.add(Permissions.SEND_MESSAGES);
-                toAdd.add(Permissions.READ_MESSAGES);
-                toAdd.add(Permissions.READ_MESSAGE_HISTORY);
+                    //Set channel permissions...
+                    EnumSet<Permissions> toAdd = EnumSet.noneOf(Permissions.class);
+                    toAdd.add(Permissions.MENTION_EVERYONE);
+                    toAdd.add(Permissions.ATTACH_FILES);
+                    toAdd.add(Permissions.EMBED_LINKS);
+                    toAdd.add(Permissions.SEND_MESSAGES);
+                    toAdd.add(Permissions.READ_MESSAGES);
+                    toAdd.add(Permissions.READ_MESSAGE_HISTORY);
 
-                EnumSet<Permissions> toRemove = EnumSet.allOf(Permissions.class);
+                    EnumSet<Permissions> toRemove = EnumSet.allOf(Permissions.class);
 
-                channel.overrideRolePermissions(event.getGuild().getEveryoneRole(), EnumSet.noneOf(Permissions.class), toRemove);
-                channel.overrideUserPermissions(event.getAuthor(), toAdd, EnumSet.noneOf(Permissions.class));
+                    channel.overrideRolePermissions(event.getGuild().getEveryoneRole(), EnumSet.noneOf(Permissions.class), toRemove);
+                    channel.overrideUserPermissions(event.getAuthor(), toAdd, EnumSet.noneOf(Permissions.class));
 
-                for (long uid : settings.getStaff()) {
-                    channel.overrideUserPermissions(event.getGuild().getUserByID(uid), toAdd, EnumSet.noneOf(Permissions.class));
+                    for (long uid: settings.getStaff()) {
+                        channel.overrideUserPermissions(event.getGuild().getUserByID(uid), toAdd, EnumSet.noneOf(Permissions.class));
+                    }
+
+                    //Register ticket in database.
+                    Ticket ticket = new Ticket(event.getGuild().getLongID(), ticketNumber);
+                    ticket.setChannel(channel.getLongID());
+                    ticket.setCategory(settings.getAwaitingCategory());
+                    ticket.setCreator(event.getAuthor().getLongID());
+                    ticket.setLastActivity(System.currentTimeMillis());
+                    DatabaseManager.getManager().updateTicket(ticket);
+
+                    //Send message
+                    String msgOr = MessageManager.getMessage("Ticket.Open", settings);
+                    String msg = msgOr.replace("%creator%", event.getAuthor().mention(true)).replace("%content%", content);
+
+                    EmbedBuilder em = new EmbedBuilder();
+                    em.withAuthorIcon(Main.getClient().getGuildByID(GlobalVars.serverId).getIconURL());
+                    em.withAuthorName("TicketBird");
+                    em.withTitle("Select a Project/Service!");
+                    em.withDesc("Send a message with **ONLY** the project/service's name so we can better help you!");
+                    for (Project p: DatabaseManager.getManager().getAllProjects(settings.getGuildID())) {
+                        em.appendField(p.getName(), p.getName(), false);
+                    }
+                    em.withColor(GlobalVars.embedColor);
+
+                    MessageManager.sendMessage(em.build(), msg, channel);
+
+                    //Delete message in support channel.
+                    event.getMessage().delete();
+
+                    //Lets update the static message!
+                    GeneralUtils.updateStaticMessage(event.getGuild(), settings);
+                } catch (Exception e) {
+                    Logger.getLogger().exception(event.getAuthor(), "Failed to handle new ticket creation!", e, MessageReceiveListener.class);
                 }
-
-                //Register ticket in database.
-                Ticket ticket = new Ticket(event.getGuild().getLongID(), ticketNumber);
-                ticket.setChannel(channel.getLongID());
-                ticket.setCategory(settings.getAwaitingCategory());
-                ticket.setCreator(event.getAuthor().getLongID());
-                ticket.setLastActivity(System.currentTimeMillis());
-                DatabaseManager.getManager().updateTicket(ticket);
-
-                //Send message
-                String msgOr = MessageManager.getMessage("Ticket.Open", settings);
-                String msg = msgOr.replace("%creator%", event.getAuthor().mention(true)).replace("%content%", content);
-
-                EmbedBuilder em = new EmbedBuilder();
-                em.withAuthorIcon(Main.getClient().getGuildByID(GlobalVars.serverId).getIconURL());
-                em.withAuthorName("TicketBird");
-                em.withTitle("Select a Project/Service!");
-                em.withDesc("Send a message with **ONLY** the project/service's name so we can better help you!");
-                for (Project p : DatabaseManager.getManager().getAllProjects(settings.getGuildID())) {
-                    em.appendField(p.getName(), p.getName(), false);
-                }
-                em.withColor(GlobalVars.embedColor);
-
-                MessageManager.sendMessage(em.build(), msg, channel);
-
-                //Delete message in support channel.
-                event.getMessage().delete();
-
-                //Lets update the static message!
-                GeneralUtils.updateStaticMessage(event.getGuild(), settings);
             } else {
                 //Check if in ticket channel...
                 try {
