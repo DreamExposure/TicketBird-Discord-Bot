@@ -1,5 +1,8 @@
 package com.novamaday.ticketbird.web.spark;
 
+import com.novamaday.ticketbird.database.DatabaseManager;
+import com.novamaday.ticketbird.logger.Logger;
+import com.novamaday.ticketbird.objects.api.UserAPIAccount;
 import com.novamaday.ticketbird.objects.bot.BotSettings;
 import spark.ModelAndView;
 
@@ -22,6 +25,44 @@ public class SparkManager {
                 return response.body();
             }));
 
+            //Register the API Endpoints
+            before("/api/*", (request, response) -> {
+                if (!request.requestMethod().equalsIgnoreCase("POST")) {
+                    Logger.getLogger().api("Denied '" + request.requestMethod() + "' access", request.ip());
+                    halt(405, "Method not allowed");
+                }
+                //Requires "Authorization Header
+                if (request.headers().contains("Authorization")) {
+                    String key = request.headers("Authorization");
+                    UserAPIAccount acc = DatabaseManager.getManager().getAPIAccount(key);
+                    if (acc != null) {
+                        if (acc.isBlocked()) {
+                            Logger.getLogger().api("Attempted to use blocked API Key: " + acc.getAPIKey(), request.ip());
+                            halt(401, "Unauthorized");
+                        } else {
+                            //Everything checks out!
+                            acc.setUses(acc.getUses() + 1);
+                            DatabaseManager.getManager().updateAPIAccount(acc);
+                        }
+                    } else {
+                        Logger.getLogger().api("Attempted to use invalid API Key: " + key, request.ip());
+                        halt(401, "Unauthorized");
+                    }
+                } else {
+                    Logger.getLogger().api("Attempted to use API without authorization header", request.ip());
+                    halt(400, "Bad Request");
+                }
+                //Only accept json because its easier to parse and handle.
+                if (!request.contentType().equalsIgnoreCase("application/json")) {
+                    halt(400, "Bad Request");
+                }
+            });
+
+            //API endpoints
+            path("/api/v1", () -> {
+                before("/*", (q, a) -> Logger.getLogger().api("Received API Call", q.ip(), q.host(), q.pathInfo()));
+
+            });
 
             Map<String, Object> m = new HashMap<>();
             m.put("loggedIn", false);

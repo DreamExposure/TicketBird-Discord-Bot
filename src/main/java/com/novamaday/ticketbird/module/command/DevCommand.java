@@ -1,9 +1,11 @@
 package com.novamaday.ticketbird.module.command;
 
 import com.novamaday.ticketbird.Main;
+import com.novamaday.ticketbird.crypto.KeyGenerator;
 import com.novamaday.ticketbird.database.DatabaseManager;
 import com.novamaday.ticketbird.logger.Logger;
 import com.novamaday.ticketbird.message.MessageManager;
+import com.novamaday.ticketbird.objects.api.UserAPIAccount;
 import com.novamaday.ticketbird.objects.command.CommandInfo;
 import com.novamaday.ticketbird.objects.guild.GuildSettings;
 import com.novamaday.ticketbird.utils.GlobalVars;
@@ -103,6 +105,12 @@ public class DevCommand implements ICommand {
                         break;
                     case "testshards":
                         moduleTestShards(event);
+                        break;
+                    case "api-register":
+                        registerApiKey(args, event);
+                        break;
+                    case "api-block":
+                        blockAPIKey(args, event);
                         break;
                     default:
                         MessageManager.sendMessage("Invalid sub command! Use `!help dev` to view valid sub commands!", event);
@@ -243,5 +251,47 @@ public class DevCommand implements ICommand {
         }
 
         MessageManager.sendMessage(r.toString(), event);
+    }
+
+    private void registerApiKey(String[] args, MessageReceivedEvent event) {
+        if (args.length == 2) {
+            MessageManager.sendMessage("Registering new API key...", event);
+
+            String userId = args[1];
+
+            UserAPIAccount account = new UserAPIAccount();
+            account.setUserId(userId);
+            account.setAPIKey(KeyGenerator.csRandomAlphaNumericString(64));
+            account.setTimeIssued(System.currentTimeMillis());
+            account.setBlocked(false);
+            account.setUses(0);
+
+            if (DatabaseManager.getManager().updateAPIAccount(account)) {
+                MessageManager.sendMessage("Check your DMs for the new API Key!", event);
+                MessageManager.sendDirectMessage(account.getAPIKey(), event.getAuthor());
+            } else {
+                MessageManager.sendMessage("Error occurred! Could not register new API key!", event);
+            }
+        } else {
+            MessageManager.sendMessage("Please specify the USER ID linked to the key!", event);
+        }
+    }
+
+    private void blockAPIKey(String[] args, MessageReceivedEvent event) {
+        if (args.length == 2) {
+            MessageManager.sendMessage("Blocking API key...", event);
+
+            String key = args[1];
+
+            UserAPIAccount account = DatabaseManager.getManager().getAPIAccount(key);
+            account.setBlocked(true);
+
+            if (DatabaseManager.getManager().updateAPIAccount(account))
+                MessageManager.sendMessage("Successfully blocked API key!", event);
+            else
+                MessageManager.sendMessage("Error occurred! Could not block API key!", event);
+        } else {
+            MessageManager.sendMessage("Please specify the API KEY!", event);
+        }
     }
 }

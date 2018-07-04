@@ -1,6 +1,7 @@
 package com.novamaday.ticketbird.database;
 
 import com.novamaday.ticketbird.logger.Logger;
+import com.novamaday.ticketbird.objects.api.UserAPIAccount;
 import com.novamaday.ticketbird.objects.bot.BotSettings;
 import com.novamaday.ticketbird.objects.guild.GuildSettings;
 import com.novamaday.ticketbird.objects.guild.Project;
@@ -71,6 +72,7 @@ public class DatabaseManager {
             String settingsTableName = String.format("%sguild_settings", databaseInfo.getPrefix());
             String projectTableName = String.format("%sprojects", databaseInfo.getPrefix());
             String ticketTableName = String.format("%stickets", databaseInfo.getPrefix());
+            String apiTableName = String.format("%sapi", databaseInfo.getPrefix());
             String createSettingsTable = "CREATE TABLE IF NOT EXISTS " + settingsTableName +
                     "(GUILD_ID VARCHAR(255) not NULL, " +
                     " LANG VARCHAR(255) not NULL, " +
@@ -99,9 +101,17 @@ public class DatabaseManager {
                     " CHANNEL LONG not NULL, " +
                     " CATEGORY LONG not NULL, " +
                     " LAST_ACTIVITY LONG not NULL)";
+            String createAPITable = "CREATE TABLE IF NOT EXISTS " + apiTableName +
+                    " (USER_ID varchar(255) not NULL, " +
+                    " API_KEY varchar(64) not NULL, " +
+                    " BLOCKED BOOLEAN not NULL, " +
+                    " TIME_ISSUED LONG not NULL, " +
+                    " USES INT not NULL, " +
+                    " PRIMARY KEY (USER_ID, API_KEY))";
             statement.executeUpdate(createSettingsTable);
             statement.executeUpdate(createProjectsTable);
             statement.executeUpdate(createTicketsTable);
+            statement.executeUpdate(createAPITable);
             statement.close();
             System.out.println("Successfully created needed tables in MySQL database!");
         } catch (SQLException e) {
@@ -109,6 +119,58 @@ public class DatabaseManager {
             Logger.getLogger().exception(null, "Creating MySQL tables failed", e, this.getClass());
             e.printStackTrace();
         }
+    }
+
+    public boolean updateAPIAccount(UserAPIAccount acc) {
+        try {
+            if (databaseInfo.getMySQL().checkConnection()) {
+                String tableName = String.format("%sapi", databaseInfo.getPrefix());
+
+                String query = "SELECT * FROM " + tableName + " WHERE API_KEY = '" + String.valueOf(acc.getAPIKey()) + "';";
+                PreparedStatement statement = databaseInfo.getConnection().prepareStatement(query);
+                ResultSet res = statement.executeQuery();
+
+                boolean hasStuff = res.next();
+
+                if (!hasStuff || res.getString("API_KEY") == null) {
+                    //Data not present, add to DB.
+                    String insertCommand = "INSERT INTO " + tableName +
+                            "(USER_ID, API_KEY, BLOCKED, TIME_ISSUED, USES)" +
+                            " VALUES (?, ?, ?, ?, ?);";
+                    PreparedStatement ps = databaseInfo.getConnection().prepareStatement(insertCommand);
+                    ps.setString(1, acc.getUserId());
+                    ps.setString(2, acc.getAPIKey());
+                    ps.setBoolean(3, acc.isBlocked());
+                    ps.setLong(4, acc.getTimeIssued());
+                    ps.setInt(5, acc.getUses());
+
+                    ps.executeUpdate();
+                    ps.close();
+                    statement.close();
+                } else {
+                    //Data present, update.
+                    String update = "UPDATE " + tableName
+                            + " SET USER_ID = ?, BLOCKED = ?,"
+                            + " USES = ? WHERE API_KEY = ?";
+                    PreparedStatement ps = databaseInfo.getConnection().prepareStatement(update);
+
+                    ps.setString(1, acc.getUserId());
+                    ps.setBoolean(2, acc.isBlocked());
+                    ps.setInt(3, acc.getUses());
+                    ps.setString(4, acc.getAPIKey());
+
+                    ps.executeUpdate();
+
+                    ps.close();
+                    statement.close();
+                }
+                return true;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            Logger.getLogger().exception(null, "Failed to update API account", e, this.getClass());
+        }
+        return false;
     }
 
     public boolean updateSettings(GuildSettings settings) {
@@ -286,6 +348,40 @@ public class DatabaseManager {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public UserAPIAccount getAPIAccount(String APIKey) {
+        try {
+            if (databaseInfo.getMySQL().checkConnection()) {
+                String dataTableName = String.format("%sapi", databaseInfo.getPrefix());
+
+                String query = "SELECT * FROM " + dataTableName + " WHERE API_KEY = '" + APIKey + "';";
+                PreparedStatement statement = databaseInfo.getConnection().prepareStatement(query);
+                ResultSet res = statement.executeQuery();
+
+                boolean hasStuff = res.next();
+
+                if (hasStuff && res.getString("API_KEY") != null) {
+                    UserAPIAccount account = new UserAPIAccount();
+                    account.setAPIKey(APIKey);
+                    account.setUserId(res.getString("USER_ID"));
+                    account.setBlocked(res.getBoolean("BLOCKED"));
+                    account.setTimeIssued(res.getLong("TIME_ISSUED"));
+                    account.setUses(res.getInt("USES"));
+
+                    statement.close();
+
+                    return account;
+                } else {
+                    //Data not present.
+                    statement.close();
+                    return null;
+                }
+            }
+        } catch (SQLException e) {
+            Logger.getLogger().exception(null, "Failed to get API Account.", e, this.getClass());
+        }
+        return null;
     }
 
     public GuildSettings getSettings(long guildId) {
