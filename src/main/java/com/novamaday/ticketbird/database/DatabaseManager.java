@@ -546,6 +546,31 @@ public class DatabaseManager {
         return tickets;
     }
 
+    public int getTotalTicketCount() {
+        int amount = -1;
+        try {
+            if (databaseInfo.getMySQL().checkConnection()) {
+                String ticketTableName = String.format("%stickets", databaseInfo.getPrefix());
+
+                String query = "SELECT COUNT(*) FROM " + ticketTableName + ";";
+                PreparedStatement statement = databaseInfo.getConnection().prepareStatement(query);
+                ResultSet res = statement.executeQuery();
+
+                if (res.next())
+                    amount = res.getInt(1);
+                else
+                    amount = 0;
+
+
+                res.close();
+                statement.close();
+            }
+        } catch (SQLException e) {
+            Logger.getLogger().exception(null, "Failed to get ticket count", e, this.getClass());
+        }
+        return amount;
+    }
+
     public boolean removeProject(long guildId, String projectName) {
         try {
             if (databaseInfo.getMySQL().checkConnection()) {

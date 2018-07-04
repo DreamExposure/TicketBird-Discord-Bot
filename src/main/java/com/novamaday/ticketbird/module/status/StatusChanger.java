@@ -1,6 +1,7 @@
 package com.novamaday.ticketbird.module.status;
 
 import com.novamaday.ticketbird.Main;
+import com.novamaday.ticketbird.database.DatabaseManager;
 import com.novamaday.ticketbird.utils.GlobalVars;
 import sx.blah.discord.handle.obj.ActivityType;
 import sx.blah.discord.handle.obj.StatusType;
@@ -24,6 +25,8 @@ public class StatusChanger extends TimerTask {
 
         statuses.add("%shards% shards!");
 
+        statuses.add("%tickets% total tickets!");
+
         statuses.add("Version " + GlobalVars.version);
         statuses.add("TicketBird is on Patreon!");
         statuses.add("Share TicketBird!!");
@@ -35,6 +38,7 @@ public class StatusChanger extends TimerTask {
         String status = statuses.get(index);
         status = status.replace("%guCount%", Main.getClient().getGuilds().size() + "");
         status = status.replace("%shards%", Main.getClient().getShardCount() + "");
+        status = status.replace("%tickets%", DatabaseManager.getManager().getTotalTicketCount() + "");
         Main.getClient().changePresence(StatusType.ONLINE, ActivityType.PLAYING, status);
 
         //Set new index.
