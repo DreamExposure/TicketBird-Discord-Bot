@@ -165,10 +165,14 @@ public class MessageReceiveListener {
                                     event.getChannel().changeCategory(event.getGuild().getCategoryByID(settings.getRespondedCategory()));
 
                                     //Let creator know it was reopened...
-                                    if (event.getGuild().getUserByID(ticket.getCreator()) != null) {
-                                        MessageManager.sendMessage(MessageManager.getMessage("Ticket.Reopen.Creator", "%creator%", event.getGuild().getUserByID(ticket.getCreator()).mention(), settings), event);
+                                    if (ticket.getCreator() == 0) {
+                                        MessageManager.sendMessage(MessageManager.getMessage("Ticket.Reopen.Creator", "%creator%", "NO CREATOR", settings), event);
                                     } else {
-                                        MessageManager.sendMessage(MessageManager.getMessage("Ticket.Reopen.Creator", "%creator%", Main.getClient().fetchUser(ticket.getCreator()).mention(), settings), event);
+                                        if (event.getGuild().getUserByID(ticket.getCreator()) != null) {
+                                            MessageManager.sendMessage(MessageManager.getMessage("Ticket.Reopen.Creator", "%creator%", event.getGuild().getUserByID(ticket.getCreator()).mention(), settings), event);
+                                        } else {
+                                            MessageManager.sendMessage(MessageManager.getMessage("Ticket.Reopen.Creator", "%creator%", Main.getClient().fetchUser(ticket.getCreator()).mention(), settings), event);
+                                        }
                                     }
 
                                     //Update database...
@@ -183,10 +187,14 @@ public class MessageReceiveListener {
                                     event.getChannel().changeCategory(event.getGuild().getCategoryByID(settings.getAwaitingCategory()));
 
                                     //Let creator know it was reopened...
-                                    if (event.getGuild().getUserByID(ticket.getCreator()) != null) {
-                                        MessageManager.sendMessage(MessageManager.getMessage("Ticket.Reopen.Creator", "%creator%", event.getGuild().getUserByID(ticket.getCreator()).mention(), settings), event);
+                                    if (ticket.getCreator() == 0) {
+                                        MessageManager.sendMessage(MessageManager.getMessage("Ticket.Reopen.Creator", "%creator%", "NO CREATOR", settings), event);
                                     } else {
-                                        MessageManager.sendMessage(MessageManager.getMessage("Ticket.Reopen.Creator", "%creator%", Main.getClient().fetchUser(ticket.getCreator()).mention(), settings), event);
+                                        if (event.getGuild().getUserByID(ticket.getCreator()) != null) {
+                                            MessageManager.sendMessage(MessageManager.getMessage("Ticket.Reopen.Creator", "%creator%", event.getGuild().getUserByID(ticket.getCreator()).mention(), settings), event);
+                                        } else {
+                                            MessageManager.sendMessage(MessageManager.getMessage("Ticket.Reopen.Creator", "%creator%", Main.getClient().fetchUser(ticket.getCreator()).mention(), settings), event);
+                                        }
                                     }
 
                                     //Update database...

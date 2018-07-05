@@ -78,10 +78,14 @@ public class HoldCommand implements ICommand {
                     MessageManager.deleteMessage(event.getMessage());
 
                     //Send message! :D
-                    if (event.getGuild().getUserByID(ticket.getCreator()) != null) {
-                        MessageManager.sendMessage(MessageManager.getMessage("Ticket.Hold.Success", "%creator%", event.getGuild().getUserByID(ticket.getCreator()).mention(), settings), event);
+                    if (ticket.getCreator() == 0) {
+                        MessageManager.sendMessage(MessageManager.getMessage("Ticket.Hold.Success", "%creator%", "NO CREATOR", settings), event);
                     } else {
-                        MessageManager.sendMessage(MessageManager.getMessage("Ticket.Hold.Success", "%creator%", Main.getClient().fetchUser(ticket.getCreator()).mention(), settings), event);
+                        if (event.getGuild().getUserByID(ticket.getCreator()) != null) {
+                            MessageManager.sendMessage(MessageManager.getMessage("Ticket.Hold.Success", "%creator%", event.getGuild().getUserByID(ticket.getCreator()).mention(), settings), event);
+                        } else {
+                            MessageManager.sendMessage(MessageManager.getMessage("Ticket.Hold.Success", "%creator%", Main.getClient().fetchUser(ticket.getCreator()).mention(), settings), event);
+                        }
                     }
 
                     //Lets update the static message!

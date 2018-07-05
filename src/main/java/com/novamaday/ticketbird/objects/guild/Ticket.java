@@ -15,6 +15,8 @@ public class Ticket {
         number = _number;
         project = "N/a";
         lastActivity = System.currentTimeMillis();
+
+        creator = 0;
     }
 
     //Getters

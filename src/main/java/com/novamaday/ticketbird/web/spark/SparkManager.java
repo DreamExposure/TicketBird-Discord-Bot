@@ -4,6 +4,7 @@ import com.novamaday.ticketbird.database.DatabaseManager;
 import com.novamaday.ticketbird.logger.Logger;
 import com.novamaday.ticketbird.objects.api.UserAPIAccount;
 import com.novamaday.ticketbird.objects.bot.BotSettings;
+import com.novamaday.ticketbird.web.api.v1.endpoints.TicketEndpoint;
 import spark.ModelAndView;
 
 import java.time.LocalDate;
@@ -61,7 +62,9 @@ public class SparkManager {
             //API endpoints
             path("/api/v1", () -> {
                 before("/*", (q, a) -> Logger.getLogger().api("Received API Call", q.ip(), q.host(), q.pathInfo()));
-
+                path("/ticket", () -> {
+                    post("/create", TicketEndpoint::createTicket);
+                });
             });
 
             Map<String, Object> m = new HashMap<>();
