@@ -83,11 +83,13 @@ public class GeneralUtils {
         ICategory awaiting = guild.getCategoryByID(settings.getAwaitingCategory());
         ICategory responded = guild.getCategoryByID(settings.getRespondedCategory());
         ICategory hold = guild.getCategoryByID(settings.getHoldCategory());
-        ICategory close = guild.getCategoryByID(settings.getCloseCategory());
+
+        int allTickets = settings.getNextId() - 1;
+        int closedCount = allTickets - awaiting.getChannels().size() - responded.getChannels().size() - hold.getChannels().size();
 
         msg = msg.replace("%open%", String.valueOf(awaiting.getChannels().size() + responded.getChannels().size()));
         msg = msg.replace("%hold%", hold.getChannels().size() + "");
-        msg = msg.replace("%closed%", (close.getChannels().size() + settings.getTotalClosed()) + "");
+        msg = msg.replace("%closed%", closedCount + "");
 
         return msg;
     }
@@ -98,11 +100,13 @@ public class GeneralUtils {
         ICategory awaiting = guild.getCategoryByID(settings.getAwaitingCategory());
         ICategory responded = guild.getCategoryByID(settings.getRespondedCategory());
         ICategory hold = guild.getCategoryByID(settings.getHoldCategory());
-        ICategory close = guild.getCategoryByID(settings.getCloseCategory());
+
+        int allTickets = settings.getNextId() - 1;
+        int closedCount = allTickets - awaiting.getChannels().size() - responded.getChannels().size() - hold.getChannels().size();
 
         msg = msg.replace("%open%", String.valueOf(awaiting.getChannels().size() + responded.getChannels().size()));
         msg = msg.replace("%hold%", hold.getChannels().size() + "");
-        msg = msg.replace("%closed%", (close.getChannels().size() + settings.getTotalClosed()) + "");
+        msg = msg.replace("%closed%", closedCount + "");
 
         return msg;
     }
