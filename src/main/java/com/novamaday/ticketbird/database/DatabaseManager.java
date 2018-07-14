@@ -433,8 +433,10 @@ public class DatabaseManager {
             if (databaseInfo.getMySQL().checkConnection()) {
                 String dataTableName = String.format("%sprojects", databaseInfo.getPrefix());
 
-                String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = '" + guildId + "' AND PROJECT_NAME = '" + projectName + "';";
+                String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = ? AND PROJECT_NAME = ?;";
                 PreparedStatement statement = databaseInfo.getConnection().prepareStatement(query);
+                statement.setString(1, guildId + "");
+                statement.setString(2, projectName);
                 ResultSet res = statement.executeQuery();
 
                 boolean hasStuff = res.next();
