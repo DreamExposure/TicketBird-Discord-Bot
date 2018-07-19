@@ -50,8 +50,9 @@ public class MessageReceiveListener {
                     channel.overrideRolePermissions(event.getGuild().getEveryoneRole(), EnumSet.noneOf(Permissions.class), toRemove);
                     channel.overrideUserPermissions(event.getAuthor(), toAdd, EnumSet.noneOf(Permissions.class));
 
-                    for (long uid: settings.getStaff()) {
-                        channel.overrideUserPermissions(event.getGuild().getUserByID(uid), toAdd, EnumSet.noneOf(Permissions.class));
+                    for (long uid : settings.getStaff()) {
+                        if (event.getGuild().getUserByID(uid) != null)
+                            channel.overrideUserPermissions(event.getGuild().getUserByID(uid), toAdd, EnumSet.noneOf(Permissions.class));
                     }
 
                     //Register ticket in database.
