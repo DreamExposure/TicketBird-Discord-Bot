@@ -65,12 +65,6 @@
             <version>RELEASE</version>
             <scope>compile</scope>
         </dependency>
-        <!--GSON API-->
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.7</version>
-        </dependency>
         <!--Spark API-->
         <dependency>
             <groupId>com.sparkjava</groupId>

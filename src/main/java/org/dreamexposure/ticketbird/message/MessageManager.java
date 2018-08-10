@@ -4,6 +4,8 @@ import org.dreamexposure.ticketbird.Main;
 import org.dreamexposure.ticketbird.file.ReadFile;
 import org.dreamexposure.ticketbird.logger.Logger;
 import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import sx.blah.discord.api.internal.json.objects.EmbedObject;
 import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 import sx.blah.discord.handle.obj.IChannel;
@@ -17,13 +19,14 @@ import sx.blah.discord.util.RequestBuffer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
+@SuppressWarnings("unchecked")
 public class MessageManager {
     public static String lineBreak = System.lineSeparator();
 
-    private static Map<String, Map<String, String>> langs;
+    private static JSONObject langs;
 
+    //Language handling
     public static void loadLangs() {
         langs = ReadFile.readAllLangFiles();
     }
@@ -39,49 +42,54 @@ public class MessageManager {
     }
 
     public static List<String> getLangs() {
-
         return new ArrayList<>(langs.keySet());
     }
 
     public static boolean isSupported(String _value) {
-        for (String l : langs.keySet()) {
-            if (l.equalsIgnoreCase(_value)) {
+        JSONArray names = langs.names();
+        for (int i = 0; i < names.length(); i++) {
+            if (_value.equalsIgnoreCase(names.getString(i)))
                 return true;
-            }
         }
         return false;
     }
 
     public static String getValidLang(String _value) {
-        for (String l : langs.keySet()) {
-            if (l.equalsIgnoreCase(_value)) {
-                return l;
-            }
+        JSONArray names = langs.names();
+        for (int i = 0; i < names.length(); i++) {
+            if (_value.equalsIgnoreCase(names.getString(i)))
+                return names.getString(i);
         }
         return "ENGLISH";
     }
 
+
     public static String getMessage(String key, GuildSettings settings) {
-        Map<String, String> messages;
+        JSONObject messages;
 
-        if (settings.getLang() != null && langs.containsKey(settings.getLang())) {
-            messages = langs.get(settings.getLang());
-        } else {
-            messages = langs.get("ENGLISH");
-        }
+        if (settings.getLang() != null && langs.has(settings.getLang()))
+            messages = langs.getJSONObject(settings.getLang());
+        else
+            messages = langs.getJSONObject("ENGLISH");
 
-        return messages.getOrDefault(key, "***FAILSAFE MESSAGE*** MESSAGE NOT FOUND!! Message requested: " + key).replace("%lb%", MessageManager.lineBreak);
+        if (messages.has(key))
+            return messages.getString(key).replace("%lb%", lineBreak);
+        else
+            return "***FAILSAFE MESSAGE*** MESSAGE NOT FOUND!! Message requested: " + key;
     }
 
     public static String getMessage(String key, String var, String replace, GuildSettings settings) {
-        Map<String, String> messages;
+        JSONObject messages;
 
-        if (settings.getLang() != null && langs.containsKey(settings.getLang())) {
-            messages = langs.get(settings.getLang());
-        } else {
-            messages = langs.get("ENGLISH");
-        }
-        return messages.getOrDefault(key, "***FAILSAFE MESSAGE*** MESSAGE NOT FOUND!! Message requested: " + key).replace(var, replace).replace("%lb%", MessageManager.lineBreak);
+        if (settings.getLang() != null && langs.has(settings.getLang()))
+            messages = langs.getJSONObject(settings.getLang());
+        else
+            messages = langs.getJSONObject("ENGLISH");
+
+        if (messages.has(key))
+            return messages.getString(key).replace(var, replace).replace("%lb%", lineBreak);
+        else
+            return "***FAILSAFE MESSAGE*** MESSAGE NOT FOUND!! Message requested: " + key;
     }
 
     public static IMessage sendMessage(String message, MessageReceivedEvent event) {

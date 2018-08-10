@@ -17,7 +17,7 @@ public class StatusChanger extends TimerTask {
      * Creates the StatusChanger and its Statuses list.
      */
     public StatusChanger() {
-        statuses.add("TicketBird");
+        statuses.add("TicketBird Bot!");
         statuses.add("=help for help");
         statuses.add("=ticketbird for info");
         statuses.add("Made by NovaFox161");
