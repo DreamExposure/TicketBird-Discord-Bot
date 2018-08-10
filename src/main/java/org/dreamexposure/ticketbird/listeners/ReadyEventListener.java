@@ -2,6 +2,8 @@ package org.dreamexposure.ticketbird.listeners;
 
 import org.dreamexposure.ticketbird.logger.Logger;
 import org.dreamexposure.ticketbird.message.MessageManager;
+import org.dreamexposure.ticketbird.network.UpdateDiscordBotsData;
+import org.dreamexposure.ticketbird.network.UpdateDiscordPwData;
 import org.dreamexposure.ticketbird.service.TimeManager;
 import sx.blah.discord.api.events.EventSubscriber;
 import sx.blah.discord.handle.impl.events.ReadyEvent;
@@ -13,9 +15,9 @@ public class ReadyEventListener {
         try {
             TimeManager.getManager().init();
 
-            //TODO: Handle Site Updates!
-            //UpdateDisBotData.init();
-            //UpdateDisPwData.init();
+            //Handle Site Updates!
+            UpdateDiscordBotsData.init();
+            UpdateDiscordPwData.init();
 
             MessageManager.reloadLangs();
 
