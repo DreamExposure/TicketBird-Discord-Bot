@@ -14,7 +14,7 @@
         <project.build.targetEncoding>UTF-8</project.build.targetEncoding>
     </properties>
 
-    <groupId>com.novamaday</groupId>
+    <groupId>org.dreamexposure</groupId>
     <artifactId>TicketBird</artifactId>
     <version>1.0.0</version>
 
@@ -149,7 +149,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>com.novamaday.ticketbird.Main</mainClass>
+                            <mainClass>org.dreamexposure.ticketbird.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
