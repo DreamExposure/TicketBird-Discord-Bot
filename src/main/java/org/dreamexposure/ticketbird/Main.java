@@ -6,7 +6,9 @@ import org.dreamexposure.ticketbird.logger.Logger;
 import org.dreamexposure.ticketbird.message.MessageManager;
 import org.dreamexposure.ticketbird.module.command.*;
 import org.dreamexposure.ticketbird.objects.bot.BotSettings;
-import org.dreamexposure.ticketbird.web.spark.SparkManager;
+import org.dreamexposure.ticketbird.web.spring.SpringController;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import sx.blah.discord.api.ClientBuilder;
 import sx.blah.discord.api.IDiscordClient;
 import sx.blah.discord.api.events.EventDispatcher;
@@ -17,6 +19,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
 
+@SpringBootApplication
 public class Main {
     private static IDiscordClient client;
 
@@ -42,11 +45,14 @@ public class Main {
         DatabaseManager.getManager().connectToMySQL();
         DatabaseManager.getManager().createTables();
 
-        //Start spark (catch any issues from it so only the site goes down without affecting bot....
-        try {
-            SparkManager.initSpark();
-        } catch (Exception e) {
-            Logger.getLogger().exception(null, "'Spark ERROR' by 'PANIC! AT THE WEBSITE'", e, Main.class);
+        //Start Spring (catch any issues from it so only the site goes down without affecting bot....
+        if (BotSettings.RUN_API.get().equalsIgnoreCase("true")) {
+            try {
+                SpringController.makeModel();
+                SpringApplication.run(Main.class, args);
+            } catch (Exception e) {
+                Logger.getLogger().exception(null, "'Spring ERROR' by 'PANIC! AT THE WEBSITE'", e, Main.class);
+            }
         }
 
         //Register commands.
