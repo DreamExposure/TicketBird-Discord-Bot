@@ -18,4 +18,6 @@ public class GlobalVars {
     public final static long oneDayMs = 86400000;
 
     public final static long oneHourMs = 3600000;
+
+    public final static String[] disallowed = new String[]{"!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "=", "+", "[", "]", "{", "}", "|", "\\", ";", ":", "'", "\"", ",", ".", "<", ">", "?", "/", "`", "~"};
 }

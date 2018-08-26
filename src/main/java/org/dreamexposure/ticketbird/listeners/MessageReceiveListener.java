@@ -103,7 +103,15 @@ public class MessageReceiveListener {
 
                             if (project != null) {
                                 //Valid project! Lets assign the prefix!
-                                event.getChannel().changeName(project.getPrefix().toLowerCase() + "-ticket-" + ticket.getNumber());
+
+                                //Parse prefix to remove disallowed characters...
+                                String prefix = project.getPrefix();
+
+                                for (String s : GlobalVars.disallowed) {
+                                    prefix = prefix.replace(s, "");
+                                }
+
+                                event.getChannel().changeName(prefix.toLowerCase() + "-ticket-" + ticket.getNumber());
 
                                 //Update database!
                                 ticket.setProject(project.getName());
