@@ -1,6 +1,7 @@
 package org.dreamexposure.ticketbird.utils;
 
 import org.dreamexposure.ticketbird.database.DatabaseManager;
+import org.dreamexposure.ticketbird.logger.Logger;
 import org.dreamexposure.ticketbird.message.MessageManager;
 import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
 import sx.blah.discord.handle.obj.ICategory;
@@ -112,18 +113,22 @@ public class GeneralUtils {
     }
 
     public static void updateStaticMessage(IGuild guild, GuildSettings settings) {
-        IChannel supportChannel = guild.getChannelByID(settings.getSupportChannel());
+        try {
+            IChannel supportChannel = guild.getChannelByID(settings.getSupportChannel());
 
-        IMessage staticMsg = supportChannel.fetchMessage(settings.getStaticMessage());
-        if (staticMsg != null) {
-            //Edit static message...
-            MessageManager.editMessage(staticMsg, GeneralUtils.getNormalStaticSupportMessage(guild, settings));
-        } else {
-            //Somehow the static message was deleted, let's just recreate it.
+            IMessage staticMsg = supportChannel.fetchMessage(settings.getStaticMessage());
+            if (staticMsg != null) {
+                //Edit static message...
+                MessageManager.editMessage(staticMsg, GeneralUtils.getNormalStaticSupportMessage(guild, settings));
+            } else {
+                //Somehow the static message was deleted, let's just recreate it.
 
-            settings.setStaticMessage(MessageManager.sendMessage(GeneralUtils.getNormalStaticSupportMessage(guild, settings), supportChannel).getLongID());
+                settings.setStaticMessage(MessageManager.sendMessage(GeneralUtils.getNormalStaticSupportMessage(guild, settings), supportChannel).getLongID());
 
-            DatabaseManager.getManager().updateSettings(settings);
+                DatabaseManager.getManager().updateSettings(settings);
+            }
+        } catch (Exception e) {
+            Logger.getLogger().exception(null, "Failed to handle Static Message update!", e, GeneralUtils.class);
         }
     }
 }
