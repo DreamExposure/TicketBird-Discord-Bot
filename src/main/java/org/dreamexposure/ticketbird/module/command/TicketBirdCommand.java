@@ -1,5 +1,14 @@
 package org.dreamexposure.ticketbird.module.command;
 
+import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.PermissionOverwrite;
+import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.Member;
+import discord4j.core.object.entity.Message;
+import discord4j.core.object.entity.TextChannel;
+import discord4j.core.object.util.Permission;
+import discord4j.core.object.util.PermissionSet;
+import discord4j.core.spec.EmbedCreateSpec;
 import org.dreamexposure.ticketbird.Main;
 import org.dreamexposure.ticketbird.database.DatabaseManager;
 import org.dreamexposure.ticketbird.message.ChannelManager;
@@ -9,12 +18,10 @@ import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
 import org.dreamexposure.ticketbird.utils.GeneralUtils;
 import org.dreamexposure.ticketbird.utils.GlobalVars;
 import org.dreamexposure.ticketbird.utils.UserUtils;
-import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
-import sx.blah.discord.handle.obj.*;
-import sx.blah.discord.util.EmbedBuilder;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
+import java.util.function.Consumer;
 
 public class TicketBirdCommand implements ICommand {
 
@@ -71,7 +78,7 @@ public class TicketBirdCommand implements ICommand {
      * @return <code>true</code> if successful, else <code>false</code>.
      */
     @Override
-    public Boolean issueCommand(String[] args, MessageReceivedEvent event, GuildSettings settings) {
+    public Boolean issueCommand(String[] args, MessageCreateEvent event, GuildSettings settings) {
         if (args.length < 1) {
             moduleTicketBirdInfo(event, settings);
         } else {
@@ -89,8 +96,6 @@ public class TicketBirdCommand implements ICommand {
                     moduleSettings(event, settings);
                     break;
                 case "language":
-                    moduleLanguage(args, event, settings);
-                    break;
                 case "lang":
                     moduleLanguage(args, event, settings);
                     break;
@@ -101,62 +106,58 @@ public class TicketBirdCommand implements ICommand {
                     moduleInvite(event, settings);
                     break;
                 default:
-                    MessageManager.sendMessage(MessageManager.getMessage("Notification.Args.Invalid", settings), event);
+                    MessageManager.sendMessageAsync(MessageManager.getMessage("Notification.Args.Invalid", settings), event);
                     break;
             }
         }
         return false;
     }
 
-    private void moduleTicketBirdInfo(MessageReceivedEvent event, GuildSettings settings) {
-        IGuild guild = event.getGuild();
-
-        EmbedBuilder em = new EmbedBuilder();
-        em.withAuthorIcon(Main.getClient().getGuildByID(GlobalVars.serverId).getIconURL());
-        em.withAuthorName("TicketBird!");
-        em.withTitle(MessageManager.getMessage("Embed.TicketBird.Info.Title", settings));
-        em.appendField(MessageManager.getMessage("Embed.TicketBird.Info.Developer", settings), "NovaFox161", true);
-        em.appendField(MessageManager.getMessage("Embed.TicketBird.Info.Version", settings), GlobalVars.version, true);
-        em.appendField(MessageManager.getMessage("Embed.TicketBird.Info.Library", settings), "Discord4J, version 2.9.2", false);
-        em.appendField(MessageManager.getMessage("Embed.TicketBird.Info.TotalGuilds", settings), Main.getClient().getGuilds().size() + "", true);
-        em.appendField("Total Tickets", DatabaseManager.getManager().getTotalTicketCount() + "", true);
-        em.appendField(MessageManager.getMessage("Embed.TicketBird.Info.Ping", "%shard%", (guild.getShard().getInfo()[0] + 1) + "/" + Main.getClient().getShardCount(), settings), guild.getShard().getResponseTime() + "ms", false);
-        em.withFooterText(MessageManager.getMessage("Embed.TicketBird.Info.Patron", settings) + ": https://www.patreon.com/Novafox");
-        em.withUrl("https://ticketbird.novamaday.com");
-        em.withColor(GlobalVars.embedColor);
-        MessageManager.sendMessage(em.build(), event);
+    private void moduleTicketBirdInfo(MessageCreateEvent event, GuildSettings settings) {
+        Consumer<EmbedCreateSpec> embed = spec -> {
+            spec.setAuthor("TicketBird", GlobalVars.siteUrl, GlobalVars.iconUrl);
+            spec.setTitle(MessageManager.getMessage("Embed.TicketBird.Info.Title", settings));
+            spec.addField(MessageManager.getMessage("Embed.TicketBird.Info.Developer", settings), "DreamExposure", true);
+            spec.addField(MessageManager.getMessage("Embed.TicketBird.Info.Version", settings), GlobalVars.version, true);
+            spec.addField(MessageManager.getMessage("Embed.TicketBird.Info.Library", settings), "Discord4J, version 3.0.2", false);
+            spec.addField(MessageManager.getMessage("Embed.TicketBird.Info.TotalGuilds", settings), Main.getClient().getGuilds().count().block() + "", true);
+            spec.addField("Total Tickets", DatabaseManager.getManager().getTotalTicketCount() + "", true);
+            spec.setFooter(MessageManager.getMessage("Embed.TicketBird.Info.Patron", settings) + ": https://www.patreon.com/Novafox", null);
+            spec.setUrl("https://ticketbird.novamaday.com");
+            spec.setColor(GlobalVars.embedColor);
+        };
+        MessageManager.sendMessageAsync(embed, event);
     }
 
-    private void moduleSettings(MessageReceivedEvent event, GuildSettings settings) {
-        EmbedBuilder em = new EmbedBuilder();
-        em.withAuthorIcon(Main.getClient().getGuildByID(GlobalVars.serverId).getIconURL());
-        em.withAuthorName("TicketBird");
-        em.withTitle(MessageManager.getMessage("Embed.TicketBird.Settings.Title", settings));
-        em.appendField(MessageManager.getMessage("Embed.TicketBird.Settings.Patron", settings), String.valueOf(settings.isPatronGuild()), true);
-        em.appendField(MessageManager.getMessage("Embed.TicketBird.Settings.Dev", settings), String.valueOf(settings.isDevGuild()), true);
-        em.appendField(MessageManager.getMessage("Embed.TicketBird.Settings.Language", settings), settings.getLang(), true);
-        em.appendField(MessageManager.getMessage("Embed.TicketBird.Settings.Prefix", settings), settings.getPrefix(), true);
-        //TODO: Add translations...
-        em.withFooterText(MessageManager.getMessage("Embed.TicketBird.Info.Patron", settings) + ": https://www.patreon.com/Novafox");
-        em.withUrl("https://www.novamaday.com/ticketbird/");
-        em.withColor(GlobalVars.embedColor);
-        MessageManager.sendMessage(em.build(), event);
+    private void moduleSettings(MessageCreateEvent event, GuildSettings settings) {
+        Consumer<EmbedCreateSpec> embed = spec -> {
+            spec.setAuthor("TicketBird", GlobalVars.siteUrl, GlobalVars.iconUrl);
+            spec.setTitle(MessageManager.getMessage("Embed.TicketBird.Settings.Title", settings));
+            spec.addField(MessageManager.getMessage("Embed.TicketBird.Settings.Patron", settings), String.valueOf(settings.isPatronGuild()), true);
+            spec.addField(MessageManager.getMessage("Embed.TicketBird.Settings.Dev", settings), String.valueOf(settings.isDevGuild()), true);
+            spec.addField(MessageManager.getMessage("Embed.TicketBird.Settings.Language", settings), settings.getLang(), true);
+            spec.addField(MessageManager.getMessage("Embed.TicketBird.Settings.Prefix", settings), settings.getPrefix(), true);
+            spec.setFooter(MessageManager.getMessage("Embed.TicketBird.Info.Patron", settings) + ": https://www.patreon.com/Novafox", null);
+            spec.setUrl("https://www.novamaday.com/ticketbird/");
+            spec.setColor(GlobalVars.embedColor);
+        };
+        MessageManager.sendMessageAsync(embed, event);
     }
 
-    private void modulePrefix(String[] args, MessageReceivedEvent event, GuildSettings settings) {
+    private void modulePrefix(String[] args, MessageCreateEvent event, GuildSettings settings) {
         if (args.length == 2) {
             String prefix = args[1];
 
             settings.setPrefix(prefix);
             DatabaseManager.getManager().updateSettings(settings);
 
-            MessageManager.sendMessage(MessageManager.getMessage("TicketBird.Prefix.Set", "%prefix%", prefix, settings), event);
+            MessageManager.sendMessageAsync(MessageManager.getMessage("TicketBird.Prefix.Set", "%prefix%", prefix, settings), event);
         } else {
-            MessageManager.sendMessage(MessageManager.getMessage("TicketBird.Prefix.Specify", settings), event);
+            MessageManager.sendMessageAsync(MessageManager.getMessage("TicketBird.Prefix.Specify", settings), event);
         }
     }
 
-    private void moduleLanguage(String[] args, MessageReceivedEvent event, GuildSettings settings) {
+    private void moduleLanguage(String[] args, MessageCreateEvent event, GuildSettings settings) {
         if (args.length == 2) {
             String value = args[1];
             if (MessageManager.isSupported(value)) {
@@ -165,100 +166,103 @@ public class TicketBirdCommand implements ICommand {
                 settings.setLang(valid);
                 DatabaseManager.getManager().updateSettings(settings);
 
-                MessageManager.sendMessage(MessageManager.getMessage("TicketBird.Lang.Success", settings), event);
+                MessageManager.sendMessageAsync(MessageManager.getMessage("TicketBird.Lang.Success", settings), event);
             } else {
                 String langs = MessageManager.getLangs().toString().replace("[", "").replace("]", "");
-                MessageManager.sendMessage(MessageManager.getMessage("TicketBird.Lang.Unsupported", "%values%", langs, settings), event);
+                MessageManager.sendMessageAsync(MessageManager.getMessage("TicketBird.Lang.Unsupported", "%values%", langs, settings), event);
             }
         } else {
             String langs = MessageManager.getLangs().toString().replace("[", "").replace("]", "");
-            MessageManager.sendMessage(MessageManager.getMessage("TicketBird.Lang.Specify", "%values%", langs, settings), event);
+            MessageManager.sendMessageAsync(MessageManager.getMessage("TicketBird.Lang.Specify", "%values%", langs, settings), event);
         }
     }
 
-    private void moduleInvite(MessageReceivedEvent event, GuildSettings settings) {
+    private void moduleInvite(MessageCreateEvent event, GuildSettings settings) {
         String INVITE_LINK = "https://discord.gg/2TFqyuy";
-        MessageManager.sendMessage(MessageManager.getMessage("TicketBird.InviteLink", "%link%", INVITE_LINK, settings), event);
+        MessageManager.sendMessageAsync(MessageManager.getMessage("TicketBird.InviteLink", "%link%", INVITE_LINK, settings), event);
     }
 
-    private void moduleSetup(MessageReceivedEvent event, GuildSettings settings) {
-        if (event.getGuild().getCategoryByID(settings.getCloseCategory()) == null) {
+    @SuppressWarnings("ConstantConditions")
+    private void moduleSetup(MessageCreateEvent event, GuildSettings settings) {
+        Guild guild = event.getGuild().block();
+
+        if (guild.getChannelById(settings.getCloseCategory()).block() == null) {
             //Do initial setup!
-            MessageManager.sendMessage(MessageManager.getMessage("Setup.Working", settings), event);
+            MessageManager.sendMessageAsync(MessageManager.getMessage("Setup.Working", settings), event);
 
             //Create categories...
             try {
-                settings.setAwaitingCategory(ChannelManager.createCategory("Tickets Awaiting Response", event.getGuild()).getLongID());
-                settings.setRespondedCategory(ChannelManager.createCategory("Tickets Responded To", event.getGuild()).getLongID());
-                settings.setHoldCategory(ChannelManager.createCategory("Tickets On Hold", event.getGuild()).getLongID());
-                settings.setCloseCategory(ChannelManager.createCategory("Tickets Closed", event.getGuild()).getLongID());
+                settings.setAwaitingCategory(ChannelManager.createCategory("Tickets Awaiting Response", guild).getId());
+                settings.setRespondedCategory(ChannelManager.createCategory("Tickets Responded To", guild).getId());
+                settings.setHoldCategory(ChannelManager.createCategory("Tickets On Hold", guild).getId());
+                settings.setCloseCategory(ChannelManager.createCategory("Tickets Closed", guild).getId());
 
-                settings.setSupportChannel(ChannelManager.createChannel("support-request", event.getGuild()).getLongID());
-
-                IChannel support = event.getGuild().getChannelByID(settings.getSupportChannel());
+                TextChannel support = ChannelManager.createChannel("support-request", MessageManager.getMessage("Support.DefaultTopic", settings), null, guild);
+                settings.setSupportChannel(support.getId());
 
                 //Set channel permissions...
-                EnumSet<Permissions> toAdd = EnumSet.noneOf(Permissions.class);
-                toAdd.add(Permissions.SEND_MESSAGES);
-                toAdd.add(Permissions.READ_MESSAGES);
-                toAdd.add(Permissions.READ_MESSAGE_HISTORY);
+                PermissionSet toAdd = PermissionSet.none();
+                toAdd.add(Permission.SEND_MESSAGES);
+                toAdd.add(Permission.READ_MESSAGE_HISTORY);
 
-                support.overrideRolePermissions(event.getGuild().getEveryoneRole(), toAdd, EnumSet.noneOf(Permissions.class));
+                PermissionOverwrite forEveryone = PermissionOverwrite.forRole(guild.getEveryoneRole().block().getId(), toAdd, PermissionSet.none());
 
-                support.changeTopic(MessageManager.getMessage("Support.DefaultTopic", settings));
-                IMessage staticMsg = MessageManager.sendMessage(GeneralUtils.getNormalStaticSupportMessage(event.getGuild(), settings), support);
+                support.addRoleOverwrite(guild.getEveryoneRole().block().getId(), forEveryone).subscribe();
 
-                settings.setStaticMessage(staticMsg.getLongID());
+                Message staticMsg = MessageManager.sendMessageSync(GeneralUtils.getNormalStaticSupportMessage(guild, settings), support);
+
+                settings.setStaticMessage(staticMsg.getId());
 
                 //Update database
                 DatabaseManager.getManager().updateSettings(settings);
 
-                MessageManager.sendMessage(MessageManager.getMessage("Setup.Complete", settings), event);
+                MessageManager.sendMessageAsync(MessageManager.getMessage("Setup.Complete", settings), event);
             } catch (NullPointerException e) {
-                MessageManager.sendMessage(MessageManager.getMessage("Notification.Perm.Bot", settings), event);
+                MessageManager.sendMessageAsync(MessageManager.getMessage("Notification.Perm.Bot", settings), event);
             }
 
         } else {
             //Setup has already been done.
-            MessageManager.sendMessage(MessageManager.getMessage("Setup.Already", settings), event);
+            MessageManager.sendMessageAsync(MessageManager.getMessage("Setup.Already", settings), event);
         }
     }
 
-    private void moduleStaff(String[] args, MessageReceivedEvent event, GuildSettings settings) {
+    @SuppressWarnings("ConstantConditions")
+    private void moduleStaff(String[] args, MessageCreateEvent event, GuildSettings settings) {
         if (args.length == 3) {
             String name = args[2];
-            IUser userFromName = event.getGuild().getUserByID(UserUtils.getUser(name, event.getGuild()));
+            Member userFromName = event.getGuild().block().getMemberById(UserUtils.getUser(name, event.getGuild().block())).onErrorResume(e -> Mono.empty()).block();
 
             if (userFromName == null) {
-                MessageManager.sendMessage(MessageManager.getMessage("Notification.User.NotFound", settings), event);
+                MessageManager.sendMessageAsync(MessageManager.getMessage("Notification.User.NotFound", settings), event);
                 return;
             }
 
             switch (args[1].toLowerCase()) {
                 case "add":
-                    if (settings.getStaff().contains(userFromName.getLongID())) {
-                        MessageManager.sendMessage(MessageManager.getMessage("Staff.Add.Already", settings), event);
+                    if (settings.getStaff().contains(userFromName.getId())) {
+                        MessageManager.sendMessageAsync(MessageManager.getMessage("Staff.Add.Already", settings), event);
                     } else {
-                        settings.getStaff().add(userFromName.getLongID());
+                        settings.getStaff().add(userFromName.getId());
                         DatabaseManager.getManager().updateSettings(settings);
-                        MessageManager.sendMessage(MessageManager.getMessage("Staff.Add.Success", settings), event);
+                        MessageManager.sendMessageAsync(MessageManager.getMessage("Staff.Add.Success", settings), event);
                     }
                     break;
                 case "remove":
-                    if (settings.getStaff().contains(userFromName.getLongID())) {
-                        settings.getStaff().remove(userFromName.getLongID());
+                    if (settings.getStaff().contains(userFromName.getId())) {
+                        settings.getStaff().remove(userFromName.getId());
                         DatabaseManager.getManager().updateSettings(settings);
-                        MessageManager.sendMessage(MessageManager.getMessage("Staff.Remove.Success", settings), event);
+                        MessageManager.sendMessageAsync(MessageManager.getMessage("Staff.Remove.Success", settings), event);
                     } else {
-                        MessageManager.sendMessage(MessageManager.getMessage("Staff.Remove.Not", settings), event);
+                        MessageManager.sendMessageAsync(MessageManager.getMessage("Staff.Remove.Not", settings), event);
                     }
                     break;
                 default:
-                    MessageManager.sendMessage(MessageManager.getMessage("Staff.Specify", settings), event);
+                    MessageManager.sendMessageAsync(MessageManager.getMessage("Staff.Specify", settings), event);
                     break;
             }
         } else {
-            MessageManager.sendMessage(MessageManager.getMessage("Staff.Specify", settings), event);
+            MessageManager.sendMessageAsync(MessageManager.getMessage("Staff.Specify", settings), event);
         }
     }
 }

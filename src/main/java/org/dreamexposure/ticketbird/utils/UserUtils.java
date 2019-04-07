@@ -1,39 +1,39 @@
 package org.dreamexposure.ticketbird.utils;
 
-import sx.blah.discord.handle.obj.IGuild;
-import sx.blah.discord.handle.obj.IUser;
+import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.Member;
+import discord4j.core.object.util.Snowflake;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
+@SuppressWarnings("ConstantConditions")
 public class UserUtils {
-    public static long getUser(String toLookFor, IGuild guild) {
+    public static Snowflake getUser(String toLookFor, Guild guild) {
         toLookFor = GeneralUtils.trim(toLookFor);
         final String lower = toLookFor.toLowerCase();
         if (lower.matches("@!?[0-9]+") || lower.matches("[0-9]+")) {
-            final String parse = toLookFor.replaceAll("[<@!>]", "");
-            IUser exists = guild.getUserByID(Long.parseLong(toLookFor.replaceAll("[<@!>]", "")));
-            if (exists != null) {
-                return exists.getLongID();
-            }
+            Member exists = guild.getMemberById(Snowflake.of(Long.parseLong(toLookFor.replaceAll("[<@!>]", "")))).onErrorResume(e -> Mono.empty()).block();
+            if (exists != null)
+                return exists.getId();
         }
 
 
-        List<IUser> users = new ArrayList<>();
-        List<IUser> us = guild.getUsers();
-        users.addAll(us.stream().filter(u -> u.getName().equalsIgnoreCase(lower)).collect(Collectors.toList()));
-        users.addAll(us.stream().filter(u -> u.getName().toLowerCase().contains(lower)).collect(Collectors.toList()));
-        users.addAll(us.stream().filter(u -> (u.getName() + "#" + u.getDiscriminator()).equalsIgnoreCase(lower)).collect(Collectors.toList()));
-        users.addAll(us.stream().filter(u -> u.getDiscriminator().equalsIgnoreCase(lower)).collect(Collectors.toList()));
-        users.addAll(us.stream().filter(u -> u.getDisplayName(guild).equalsIgnoreCase(lower)).collect(Collectors.toList()));
-        users.addAll(us.stream().filter(u -> u.getDisplayName(guild).toLowerCase().contains(lower)).collect(Collectors.toList()));
+        List<Member> users = new ArrayList<>();
+
+        users.addAll(guild.getMembers().filter(m -> m.getUsername().equalsIgnoreCase(lower)).collectList().block());
+        users.addAll(guild.getMembers().filter(m -> m.getUsername().toLowerCase().contains(lower)).collectList().block());
+        users.addAll(guild.getMembers().filter(m -> (m.getUsername() + "#" + m.getDiscriminator()).equalsIgnoreCase(lower)).collectList().block());
+        users.addAll(guild.getMembers().filter(m -> m.getDiscriminator().equalsIgnoreCase(lower)).collectList().block());
+        users.addAll(guild.getMembers().filter(m -> m.getDisplayName().equalsIgnoreCase(lower)).collectList().block());
+        users.addAll(guild.getMembers().filter(m -> m.getDisplayName().toLowerCase().contains(lower)).collectList().block());
 
 
-        if (!users.isEmpty()) {
-            return users.get(0).getLongID();
-        }
+        if (!users.isEmpty())
+            return users.get(0).getId();
 
-        return 0;
+        return null;
     }
+
 }

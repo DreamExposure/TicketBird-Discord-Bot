@@ -1,17 +1,17 @@
 package org.dreamexposure.ticketbird.module.status;
 
+import discord4j.core.object.presence.Activity;
+import discord4j.core.object.presence.Presence;
 import org.dreamexposure.ticketbird.Main;
-import org.dreamexposure.ticketbird.database.DatabaseManager;
+import org.dreamexposure.ticketbird.objects.bot.BotSettings;
 import org.dreamexposure.ticketbird.utils.GlobalVars;
-import sx.blah.discord.handle.obj.ActivityType;
-import sx.blah.discord.handle.obj.StatusType;
 
 import java.util.ArrayList;
 import java.util.TimerTask;
 
 public class StatusChanger extends TimerTask {
     private final ArrayList<String> statuses = new ArrayList<>();
-    private Integer index;
+    private int index;
 
     /**
      * Creates the StatusChanger and its Statuses list.
@@ -20,13 +20,9 @@ public class StatusChanger extends TimerTask {
         statuses.add("TicketBird Bot!");
         statuses.add("=help for help");
         statuses.add("=ticketbird for info");
-        statuses.add("Made by NovaFox161");
+        statuses.add("Powered by DreamExposure");
         statuses.add("Used on %guCount% guilds!");
-
         statuses.add("%shards% shards!");
-
-        statuses.add("%tickets% total tickets!");
-
         statuses.add("Version " + GlobalVars.version);
         statuses.add("TicketBird is on Patreon!");
         statuses.add("Share TicketBird!!");
@@ -36,10 +32,10 @@ public class StatusChanger extends TimerTask {
     @Override
     public void run() {
         String status = statuses.get(index);
-        status = status.replace("%guCount%", Main.getClient().getGuilds().size() + "");
-        status = status.replace("%shards%", Main.getClient().getShardCount() + "");
-        status = status.replace("%tickets%", DatabaseManager.getManager().getTotalTicketCount() + "");
-        Main.getClient().changePresence(StatusType.ONLINE, ActivityType.PLAYING, status);
+        status = status.replace("%guCount%", Main.getClient().getGuilds().count().block() + "");
+        status = status.replace("%shards%", BotSettings.SHARD_COUNT.get() + "");
+
+        Main.getClient().updatePresence(Presence.online(Activity.playing(status))).subscribe();
 
         //Set new index.
         if (index + 1 >= statuses.size())

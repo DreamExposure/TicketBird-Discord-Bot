@@ -31,9 +31,10 @@ public class UpdateDiscordPwData {
             timer.cancel();
     }
 
+    @SuppressWarnings("ConstantConditions")
     private static void updateSiteBotMeta() {
         try {
-            int serverCount = Main.getClient().getGuilds().size();
+            int serverCount = Main.getClient().getGuilds().count().block().intValue();
 
             JSONObject json = new JSONObject().put("server_count", serverCount);
 

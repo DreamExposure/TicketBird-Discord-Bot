@@ -1,26 +1,28 @@
 package org.dreamexposure.ticketbird.objects.guild;
 
+import discord4j.core.object.util.Snowflake;
+
 public class Ticket {
-    private final long guildId;
+    private final Snowflake guildId;
     private final int number;
     private String project;
-    private long creator;
-    private long channel;
-    private long category;
+    private Snowflake creator;
+    private Snowflake channel;
+    private Snowflake category;
 
     private long lastActivity;
 
-    public Ticket(long _guildId, int _number) {
+    public Ticket(Snowflake _guildId, int _number) {
         guildId = _guildId;
         number = _number;
         project = "N/a";
         lastActivity = System.currentTimeMillis();
 
-        creator = 0;
+        creator = null;
     }
 
     //Getters
-    public long getGuildId() {
+    public Snowflake getGuildId() {
         return guildId;
     }
 
@@ -32,15 +34,15 @@ public class Ticket {
         return project;
     }
 
-    public long getCreator() {
+    public Snowflake getCreator() {
         return creator;
     }
 
-    public long getChannel() {
+    public Snowflake getChannel() {
         return channel;
     }
 
-    public long getCategory() {
+    public Snowflake getCategory() {
         return category;
     }
 
@@ -53,15 +55,15 @@ public class Ticket {
         project = _project;
     }
 
-    public void setCreator(long _creator) {
+    public void setCreator(Snowflake _creator) {
         creator = _creator;
     }
 
-    public void setChannel(long _channel) {
+    public void setChannel(Snowflake _channel) {
         channel = _channel;
     }
 
-    public void setCategory(long _category) {
+    public void setCategory(Snowflake _category) {
         category = _category;
     }
 

@@ -1,36 +1,26 @@
 package org.dreamexposure.ticketbird.message;
 
-import org.dreamexposure.ticketbird.Main;
+import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.entity.Message;
+import discord4j.core.object.entity.TextChannel;
+import discord4j.core.object.entity.User;
+import discord4j.core.spec.EmbedCreateSpec;
 import org.dreamexposure.ticketbird.file.ReadFile;
 import org.dreamexposure.ticketbird.logger.Logger;
 import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
+import org.dreamexposure.ticketbird.utils.GlobalVars;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import sx.blah.discord.api.internal.json.objects.EmbedObject;
-import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
-import sx.blah.discord.handle.obj.IChannel;
-import sx.blah.discord.handle.obj.IMessage;
-import sx.blah.discord.handle.obj.IPrivateChannel;
-import sx.blah.discord.handle.obj.IUser;
-import sx.blah.discord.util.DiscordException;
-import sx.blah.discord.util.MessageBuilder;
-import sx.blah.discord.util.MissingPermissionsException;
-import sx.blah.discord.util.RequestBuffer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 @SuppressWarnings("unchecked")
 public class MessageManager {
-    public static String lineBreak = System.lineSeparator();
-
     private static JSONObject langs;
 
-    //Language handling
-    public static void loadLangs() {
-        langs = ReadFile.readAllLangFiles();
-    }
-
+    //Lang handling
     public static boolean reloadLangs() {
         try {
             langs = ReadFile.readAllLangFiles();
@@ -41,8 +31,10 @@ public class MessageManager {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public static List<String> getLangs() {
-        return new ArrayList<>(langs.keySet());
+
+        return new ArrayList<String>(langs.keySet());
     }
 
     public static boolean isSupported(String _value) {
@@ -63,7 +55,6 @@ public class MessageManager {
         return "ENGLISH";
     }
 
-
     public static String getMessage(String key, GuildSettings settings) {
         JSONObject messages;
 
@@ -73,7 +64,7 @@ public class MessageManager {
             messages = langs.getJSONObject("ENGLISH");
 
         if (messages.has(key))
-            return messages.getString(key).replace("%lb%", lineBreak);
+            return messages.getString(key).replace("%lb%", GlobalVars.lineBreak);
         else
             return "***FAILSAFE MESSAGE*** MESSAGE NOT FOUND!! Message requested: " + key;
     }
@@ -87,193 +78,107 @@ public class MessageManager {
             messages = langs.getJSONObject("ENGLISH");
 
         if (messages.has(key))
-            return messages.getString(key).replace(var, replace).replace("%lb%", lineBreak);
+            return messages.getString(key).replace(var, replace).replace("%lb%", GlobalVars.lineBreak);
         else
             return "***FAILSAFE MESSAGE*** MESSAGE NOT FOUND!! Message requested: " + key;
     }
 
-    public static IMessage sendMessage(String message, MessageReceivedEvent event) {
-        return RequestBuffer.request(() -> {
-            try {
-                return new MessageBuilder(Main.getClient()).appendContent(message).withChannel(event.getMessage().getChannel()).build();
-            } catch (DiscordException | MissingPermissionsException e) {
-                //Failed to send message.
-                return null;
-            }
-        }).get();
+    //Message sending
+    public static void sendMessageAsync(String message, TextChannel channel) {
+        channel.createMessage(spec -> spec.setContent(message)).subscribe();
     }
 
-    public static IMessage sendMessage(String message, IChannel channel) {
-        return RequestBuffer.request(() -> {
-            try {
-                return new MessageBuilder(Main.getClient()).appendContent(message).withChannel(channel).build();
-            } catch (DiscordException | MissingPermissionsException e) {
-                //Failed to send message.
-                return null;
-            }
-        }).get();
+    public static void sendMessageAsync(Consumer<EmbedCreateSpec> embed, TextChannel channel) {
+        channel.createMessage(spec -> spec.setEmbed(embed)).subscribe();
     }
 
-    public static IMessage sendMessage(EmbedObject embed, MessageReceivedEvent event) {
-        return RequestBuffer.request(() -> {
-            try {
-                return new MessageBuilder(Main.getClient()).withEmbed(embed).withChannel(event.getMessage().getChannel()).build();
-
-            } catch (DiscordException | MissingPermissionsException e) {
-                //Failed to send message.
-                return null;
-            }
-        }).get();
+    public static void sendMessageAsync(String message, Consumer<EmbedCreateSpec> embed, TextChannel channel) {
+        channel.createMessage(spec -> spec.setContent(message).setEmbed(embed)).subscribe();
     }
 
-    public static IMessage sendMessage(EmbedObject embed, IChannel channel) {
-        return RequestBuffer.request(() -> {
-            try {
-                return new MessageBuilder(Main.getClient()).withEmbed(embed).withChannel(channel).build();
-            } catch (DiscordException | MissingPermissionsException e) {
-                //Failed to send message.
-                return null;
-            }
-        }).get();
+    public static void sendMessageAsync(String message, MessageCreateEvent event) {
+        event.getMessage().getChannel().flatMap(c -> c.createMessage(spec -> spec.setContent(message))).subscribe();
     }
 
-    public static IMessage sendMessage(EmbedObject embed, String message, MessageReceivedEvent event) {
-        return RequestBuffer.request(() -> {
-            try {
-                return new MessageBuilder(Main.getClient()).appendContent(message).withEmbed(embed).withChannel(event.getMessage().getChannel()).build();
-            } catch (DiscordException | MissingPermissionsException e) {
-                //Failed to send message.
-                return null;
-            }
-        }).get();
+    public static void sendMessageAsync(Consumer<EmbedCreateSpec> embed, MessageCreateEvent event) {
+        event.getMessage().getChannel().flatMap(c -> c.createMessage(spec -> spec.setEmbed(embed))).subscribe();
     }
 
-    public static IMessage sendMessage(EmbedObject embed, String message, IChannel channel) {
-        return RequestBuffer.request(() -> {
-            try {
-                return new MessageBuilder(Main.getClient()).appendContent(message).withEmbed(embed).withChannel(channel).build();
-            } catch (DiscordException | MissingPermissionsException e) {
-                //Failed to send message.
-                return null;
-            }
-        }).get();
+    public static void sendMessageAsync(String message, Consumer<EmbedCreateSpec> embed, MessageCreateEvent event) {
+        event.getMessage().getChannel().flatMap(c -> c.createMessage(spec -> spec.setContent(message).setEmbed(embed))).subscribe();
     }
 
-    public static void sendMessageAsync(EmbedObject embedObject, String message, IChannel channel) {
-        RequestBuffer.request(() -> {
-            try {
-                new MessageBuilder(Main.getClient()).appendContent(message).withEmbed(embedObject).withChannel(channel).build();
-            } catch (DiscordException | MissingPermissionsException e) {
-                //No reason to print exception.
-            }
-        });
+    public static Message sendMessageSync(String message, MessageCreateEvent event) {
+        return event.getMessage().getChannel().flatMap(c -> c.createMessage(spec -> spec.setContent(message))).block();
     }
 
-    public static IMessage sendDirectMessage(String message, IUser user) {
-        return RequestBuffer.request(() -> {
-            try {
-                IPrivateChannel pc = user.getOrCreatePMChannel();
-                return new MessageBuilder(Main.getClient()).withChannel(pc).appendContent(message).build();
-            } catch (DiscordException | MissingPermissionsException e) {
-                //Failed to send message.
-                return null;
-            }
-        }).get();
+    public static Message sendMessageSync(Consumer<EmbedCreateSpec> embed, MessageCreateEvent event) {
+        return event.getMessage().getChannel().flatMap(c -> c.createMessage(spec -> spec.setEmbed(embed))).block();
     }
 
-    public static IMessage sendDirectMessage(EmbedObject embed, IUser user) {
-        return RequestBuffer.request(() -> {
-            try {
-                IPrivateChannel pc = user.getOrCreatePMChannel();
-                return new MessageBuilder(Main.getClient()).withChannel(pc).withEmbed(embed).build();
-            } catch (DiscordException | MissingPermissionsException e) {
-                //Failed to send message.
-                return null;
-            }
-        }).get();
+    public static Message sendMessageSync(String message, Consumer<EmbedCreateSpec> embed, MessageCreateEvent event) {
+        return event.getMessage().getChannel().flatMap(c -> c.createMessage(spec -> spec.setContent(message).setEmbed(embed))).block();
     }
 
-    public static IMessage sendDirectMessage(String message, EmbedObject embed, IUser user) {
-        return RequestBuffer.request(() -> {
-            try {
-                IPrivateChannel pc = user.getOrCreatePMChannel();
-                return new MessageBuilder(Main.getClient()).withChannel(pc).appendContent(message).withEmbed(embed).build();
-            } catch (DiscordException | MissingPermissionsException e) {
-                //Failed to send message.
-                return null;
-            }
-        }).get();
+    public static Message sendMessageSync(String message, TextChannel channel) {
+        return channel.createMessage(spec -> spec.setContent(message)).block();
     }
 
-    public static boolean deleteMessage(MessageReceivedEvent event) {
-        try {
-            return RequestBuffer.request(() -> {
-                try {
-                    if (!event.getMessage().isDeleted()) {
-                        event.getMessage().delete();
-                    }
-                    return true;
-                } catch (DiscordException | MissingPermissionsException e) {
-                    //Failed to delete
-                    return false;
-                }
-            }).get();
-        } catch (NullPointerException e) {
-            return false;
-        }
+    public static Message sendMessageSync(Consumer<EmbedCreateSpec> embed, TextChannel channel) {
+        return channel.createMessage(spec -> spec.setEmbed(embed)).block();
     }
 
-    public static boolean deleteMessage(IMessage message) {
-        try {
-            return RequestBuffer.request(() -> {
-                try {
-                    if (!message.isDeleted()) {
-                        message.delete();
-                    }
-                    return true;
-                } catch (DiscordException | MissingPermissionsException e) {
-                    //Failed to delete.
-                    return false;
-                }
-            }).get();
-        } catch (NullPointerException e) {
-            return false;
-        }
+    public static Message sendMessageSync(String message, Consumer<EmbedCreateSpec> embed, TextChannel channel) {
+        return channel.createMessage(spec -> spec.setContent(message).setEmbed(embed)).block();
     }
 
-    public static boolean editMessage(IMessage message, String content) {
-        try {
-            return RequestBuffer.request(() -> {
-                try {
-                    if (message != null && !message.isDeleted()) {
-                        message.edit(content);
-                    }
-                    return true;
-                } catch (DiscordException | MissingPermissionsException e) {
-                    //Failed to edit.
-                    return false;
-                }
-            }).get();
-        } catch (NullPointerException e) {
-            return false;
-        }
+    public static void sendDirectMessageAsync(String message, User user) {
+        user.getPrivateChannel().flatMap(c -> c.createMessage(spec -> spec.setContent(message))).subscribe();
     }
 
-    public static boolean editMessage(IMessage message, String content, EmbedObject embed) {
-        try {
-            return RequestBuffer.request(() -> {
-                try {
-                    if (!message.isDeleted()) {
-                        message.edit(content, embed);
-                    }
-                    return true;
-                } catch (DiscordException | MissingPermissionsException e) {
-                    //Failed to edit.
-                    return false;
-                }
-            }).get();
-        } catch (NullPointerException e) {
-            return false;
-        }
+    public static void sendDirectMessageAsync(Consumer<EmbedCreateSpec> embed, User user) {
+        user.getPrivateChannel().flatMap(c -> c.createMessage(spec -> spec.setEmbed(embed))).subscribe();
+    }
+
+    public static void sendDirectMessageAsync(String message, Consumer<EmbedCreateSpec> embed, User user) {
+        user.getPrivateChannel().flatMap(c -> c.createMessage(spec -> spec.setContent(message).setEmbed(embed))).subscribe();
+    }
+
+    public static Message sendDirectMessageSync(String message, User user) {
+        return user.getPrivateChannel().flatMap(c -> c.createMessage(spec -> spec.setContent(message))).block();
+    }
+
+    public static Message sendDirectMessageSync(Consumer<EmbedCreateSpec> embed, User user) {
+        return user.getPrivateChannel().flatMap(c -> c.createMessage(spec -> spec.setEmbed(embed))).block();
+    }
+
+    public static Message sendDirectMessageSync(String message, Consumer<EmbedCreateSpec> embed, User user) {
+        return user.getPrivateChannel().flatMap(c -> c.createMessage(spec -> spec.setContent(message).setEmbed(embed))).block();
+    }
+
+    //Message editing
+    public static void editMessage(String message, Message original) {
+        original.edit(spec -> spec.setContent(message)).subscribe();
+    }
+
+    public static void editMessage(String message, Consumer<EmbedCreateSpec> embed, Message original) {
+        original.edit(spec -> spec.setContent(message).setEmbed(embed)).subscribe();
+    }
+
+    public static void editMessage(String message, MessageCreateEvent event) {
+        event.getMessage().edit(spec -> spec.setContent(message)).subscribe();
+    }
+
+    public static void editMessage(String message, Consumer<EmbedCreateSpec> embed, MessageCreateEvent event) {
+        event.getMessage().edit(spec -> spec.setContent(message).setEmbed(embed)).subscribe();
+    }
+
+    //Message deleting
+    public static void deleteMessage(Message message) {
+        message.delete().subscribe();
+    }
+
+    public static void deleteMessage(MessageCreateEvent event) {
+        event.getMessage().delete().subscribe();
     }
 }

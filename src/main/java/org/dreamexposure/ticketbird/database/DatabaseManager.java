@@ -1,5 +1,7 @@
 package org.dreamexposure.ticketbird.database;
 
+import discord4j.core.object.util.Snowflake;
+import org.dreamexposure.novautils.database.MySQL;
 import org.dreamexposure.ticketbird.logger.Logger;
 import org.dreamexposure.ticketbird.objects.api.UserAPIAccount;
 import org.dreamexposure.ticketbird.objects.bot.BotSettings;
@@ -11,7 +13,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings({"SqlResolve", "UnusedReturnValue", "SqlNoDataSourceInspection"})
+@SuppressWarnings({"SqlResolve", "UnusedReturnValue", "SqlNoDataSourceInspection", "Duplicates"})
 public class DatabaseManager {
     private static DatabaseManager instance;
     private DatabaseInfo databaseInfo;
@@ -126,8 +128,10 @@ public class DatabaseManager {
             if (databaseInfo.getMySQL().checkConnection()) {
                 String tableName = String.format("%sapi", databaseInfo.getPrefix());
 
-                String query = "SELECT * FROM " + tableName + " WHERE API_KEY = '" + String.valueOf(acc.getAPIKey()) + "';";
+                String query = "SELECT * FROM " + tableName + " WHERE API_KEY = ?";
                 PreparedStatement statement = databaseInfo.getConnection().prepareStatement(query);
+                statement.setString(1, acc.getAPIKey());
+
                 ResultSet res = statement.executeQuery();
 
                 boolean hasStuff = res.next();
@@ -178,8 +182,10 @@ public class DatabaseManager {
             if (databaseInfo.getMySQL().checkConnection()) {
                 String dataTableName = String.format("%sguild_settings", databaseInfo.getPrefix());
 
-                String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = '" + String.valueOf(settings.getGuildID()) + "';";
+                String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = ?";
                 PreparedStatement statement = databaseInfo.getConnection().prepareStatement(query);
+                statement.setString(1, settings.getGuildID().asString());
+
                 ResultSet res = statement.executeQuery();
 
                 boolean hasStuff = res.next();
@@ -195,12 +201,12 @@ public class DatabaseManager {
                     ps.setString(3, settings.getPrefix());
                     ps.setBoolean(4, settings.isPatronGuild());
                     ps.setBoolean(5, settings.isDevGuild());
-                    ps.setLong(6, settings.getAwaitingCategory());
-                    ps.setLong(7, settings.getRespondedCategory());
-                    ps.setLong(8, settings.getHoldCategory());
-                    ps.setLong(9, settings.getCloseCategory());
-                    ps.setLong(10, settings.getSupportChannel());
-                    ps.setLong(11, settings.getStaticMessage());
+                    ps.setLong(6, settings.getAwaitingCategory().asLong());
+                    ps.setLong(7, settings.getRespondedCategory().asLong());
+                    ps.setLong(8, settings.getHoldCategory().asLong());
+                    ps.setLong(9, settings.getCloseCategory().asLong());
+                    ps.setLong(10, settings.getSupportChannel().asLong());
+                    ps.setLong(11, settings.getStaticMessage().asLong());
                     ps.setInt(12, settings.getNextId());
                     ps.setString(13, settings.getStaffString());
                     ps.setInt(14, settings.getTotalClosed());
@@ -222,16 +228,16 @@ public class DatabaseManager {
                     ps.setString(2, settings.getPrefix());
                     ps.setBoolean(3, settings.isPatronGuild());
                     ps.setBoolean(4, settings.isDevGuild());
-                    ps.setLong(5, settings.getAwaitingCategory());
-                    ps.setLong(6, settings.getRespondedCategory());
-                    ps.setLong(7, settings.getHoldCategory());
-                    ps.setLong(8, settings.getCloseCategory());
-                    ps.setLong(9, settings.getSupportChannel());
-                    ps.setLong(10, settings.getStaticMessage());
+                    ps.setLong(5, settings.getAwaitingCategory().asLong());
+                    ps.setLong(6, settings.getRespondedCategory().asLong());
+                    ps.setLong(7, settings.getHoldCategory().asLong());
+                    ps.setLong(8, settings.getCloseCategory().asLong());
+                    ps.setLong(9, settings.getSupportChannel().asLong());
+                    ps.setLong(10, settings.getStaticMessage().asLong());
                     ps.setInt(11, settings.getNextId());
                     ps.setString(12, settings.getStaffString());
                     ps.setInt(13, settings.getTotalClosed());
-                    ps.setString(14, settings.getGuildID() + "");
+                    ps.setString(14, settings.getGuildID().asString());
 
                     ps.executeUpdate();
 
@@ -253,8 +259,12 @@ public class DatabaseManager {
             if (databaseInfo.getMySQL().checkConnection()) {
                 String dataTableName = String.format("%sprojects", databaseInfo.getPrefix());
 
-                String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = '" + project.getGuildId() + "' AND PROJECT_NAME = '" + project.getName() + "';";
+                String query =
+                        "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = ? AND PROJECT_NAME = ?";
                 PreparedStatement statement = databaseInfo.getConnection().prepareStatement(query);
+                statement.setString(1, project.getGuildId().asString());
+                statement.setString(2, project.getName());
+
                 ResultSet res = statement.executeQuery();
 
                 boolean hasStuff = res.next();
@@ -264,7 +274,7 @@ public class DatabaseManager {
                     String insertCommand = "INSERT INTO " + dataTableName +
                             "(GUILD_ID, PROJECT_NAME, PROJECT_PREFIX) VALUES (?, ?, ?);";
                     PreparedStatement ps = databaseInfo.getConnection().prepareStatement(insertCommand);
-                    ps.setString(1, project.getGuildId() + "");
+                    ps.setString(1, project.getGuildId().asString());
                     ps.setString(2, project.getName());
                     ps.setString(3, project.getPrefix());
 
@@ -277,7 +287,7 @@ public class DatabaseManager {
                     PreparedStatement ps = databaseInfo.getConnection().prepareStatement(update);
 
                     ps.setString(1, project.getPrefix());
-                    ps.setString(2, project.getGuildId() + "");
+                    ps.setString(2, project.getGuildId().asString());
                     ps.setString(3, project.getName());
 
                     ps.executeUpdate();
@@ -300,8 +310,12 @@ public class DatabaseManager {
             if (databaseInfo.getMySQL().checkConnection()) {
                 String dataTableName = String.format("%stickets", databaseInfo.getPrefix());
 
-                String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = '" + ticket.getGuildId() + "' AND NUMBER = '" + ticket.getNumber() + "';";
+                String query =
+                        "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = ? AND NUMBER = ?";
                 PreparedStatement statement = databaseInfo.getConnection().prepareStatement(query);
+                statement.setString(1, ticket.getGuildId().asString());
+                statement.setInt(2, ticket.getNumber());
+
                 ResultSet res = statement.executeQuery();
 
                 boolean hasStuff = res.next();
@@ -311,12 +325,12 @@ public class DatabaseManager {
                     String insertCommand = "INSERT INTO " + dataTableName +
                             "(GUILD_ID, NUMBER, PROJECT, CREATOR, CHANNEL, CATEGORY, LAST_ACTIVITY) VALUES (?, ?, ?, ?, ?, ?, ?);";
                     PreparedStatement ps = databaseInfo.getConnection().prepareStatement(insertCommand);
-                    ps.setString(1, ticket.getGuildId() + "");
+                    ps.setString(1, ticket.getGuildId().asString());
                     ps.setInt(2, ticket.getNumber());
                     ps.setString(3, ticket.getProject());
-                    ps.setLong(4, ticket.getCreator());
-                    ps.setLong(5, ticket.getChannel());
-                    ps.setLong(6, ticket.getCategory());
+                    ps.setLong(4, ticket.getCreator().asLong());
+                    ps.setLong(5, ticket.getChannel().asLong());
+                    ps.setLong(6, ticket.getCategory().asLong());
                     ps.setLong(7, ticket.getLastActivity());
 
                     ps.executeUpdate();
@@ -328,11 +342,11 @@ public class DatabaseManager {
                     PreparedStatement ps = databaseInfo.getConnection().prepareStatement(update);
 
                     ps.setString(1, ticket.getProject());
-                    ps.setLong(2, ticket.getCreator());
-                    ps.setLong(3, ticket.getChannel());
-                    ps.setLong(4, ticket.getCategory());
+                    ps.setLong(2, ticket.getCreator().asLong());
+                    ps.setLong(3, ticket.getChannel().asLong());
+                    ps.setLong(4, ticket.getCategory().asLong());
                     ps.setLong(5, ticket.getLastActivity());
-                    ps.setString(6, ticket.getGuildId() + "");
+                    ps.setString(6, ticket.getGuildId().asString());
                     ps.setInt(7, ticket.getNumber());
 
                     ps.executeUpdate();
@@ -355,8 +369,10 @@ public class DatabaseManager {
             if (databaseInfo.getMySQL().checkConnection()) {
                 String dataTableName = String.format("%sapi", databaseInfo.getPrefix());
 
-                String query = "SELECT * FROM " + dataTableName + " WHERE API_KEY = '" + APIKey + "';";
+                String query = "SELECT * FROM " + dataTableName + " WHERE API_KEY = ?";
                 PreparedStatement statement = databaseInfo.getConnection().prepareStatement(query);
+                statement.setString(1, APIKey);
+
                 ResultSet res = statement.executeQuery();
 
                 boolean hasStuff = res.next();
@@ -384,14 +400,16 @@ public class DatabaseManager {
         return null;
     }
 
-    public GuildSettings getSettings(long guildId) {
+    public GuildSettings getSettings(Snowflake guildId) {
         GuildSettings settings = new GuildSettings(guildId);
         try {
             if (databaseInfo.getMySQL().checkConnection()) {
                 String dataTableName = String.format("%sguild_settings", databaseInfo.getPrefix());
 
-                String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = '" + guildId + "';";
+                String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = ?";
                 PreparedStatement statement = databaseInfo.getConnection().prepareStatement(query);
+                statement.setString(1, guildId.asString());
+
                 ResultSet res = statement.executeQuery();
 
                 boolean hasStuff = res.next();
@@ -402,12 +420,12 @@ public class DatabaseManager {
                     settings.setPatronGuild(res.getBoolean("PATRON_GUILD"));
                     settings.setDevGuild(res.getBoolean("DEV_GUILD"));
 
-                    settings.setAwaitingCategory(res.getLong("AWAITING_CATEGORY"));
-                    settings.setRespondedCategory(res.getLong("RESPONDED_CATEGORY"));
-                    settings.setHoldCategory(res.getLong("HOLD_CATEGORY"));
-                    settings.setCloseCategory(res.getLong("CLOSE_CATEGORY"));
-                    settings.setSupportChannel(res.getLong("SUPPORT_CHANNEL"));
-                    settings.setStaticMessage(res.getLong("STATIC_MESSAGE"));
+                    settings.setAwaitingCategory(Snowflake.of(res.getLong("AWAITING_CATEGORY")));
+                    settings.setRespondedCategory(Snowflake.of(res.getLong("RESPONDED_CATEGORY")));
+                    settings.setHoldCategory(Snowflake.of(res.getLong("HOLD_CATEGORY")));
+                    settings.setCloseCategory(Snowflake.of(res.getLong("CLOSE_CATEGORY")));
+                    settings.setSupportChannel(Snowflake.of(res.getLong("SUPPORT_CHANNEL")));
+                    settings.setStaticMessage(Snowflake.of(res.getLong("STATIC_MESSAGE")));
 
                     settings.setNextId(res.getInt("NEXT_ID"));
 
@@ -428,14 +446,14 @@ public class DatabaseManager {
         return settings;
     }
 
-    public Project getProject(long guildId, String projectName) {
+    public Project getProject(Snowflake guildId, String projectName) {
         try {
             if (databaseInfo.getMySQL().checkConnection()) {
                 String dataTableName = String.format("%sprojects", databaseInfo.getPrefix());
 
                 String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = ? AND PROJECT_NAME = ?;";
                 PreparedStatement statement = databaseInfo.getConnection().prepareStatement(query);
-                statement.setString(1, guildId + "");
+                statement.setString(1, guildId.asString());
                 statement.setString(2, projectName);
                 ResultSet res = statement.executeQuery();
 
@@ -459,13 +477,16 @@ public class DatabaseManager {
         return null;
     }
 
-    public Ticket getTicket(long guildId, int number) {
+    public Ticket getTicket(Snowflake guildId, int number) {
         try {
             if (databaseInfo.getMySQL().checkConnection()) {
                 String dataTableName = String.format("%stickets", databaseInfo.getPrefix());
 
-                String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = '" + guildId + "' AND NUMBER = '" + number + "';";
+                String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = ? AND NUMBER = ?";
                 PreparedStatement statement = databaseInfo.getConnection().prepareStatement(query);
+                statement.setString(1, guildId.asString());
+                statement.setInt(2, number);
+
                 ResultSet res = statement.executeQuery();
 
                 boolean hasStuff = res.next();
@@ -473,9 +494,9 @@ public class DatabaseManager {
                 if (hasStuff && res.getString("GUILD_ID") != null && res.getInt("NUMBER") > 0) {
                     Ticket ticket = new Ticket(guildId, number);
                     ticket.setProject(res.getString("PROJECT"));
-                    ticket.setCreator(res.getLong("CREATOR"));
-                    ticket.setChannel(res.getLong("CHANNEL"));
-                    ticket.setCategory(res.getLong("CATEGORY"));
+                    ticket.setCreator(Snowflake.of(res.getLong("CREATOR")));
+                    ticket.setChannel(Snowflake.of(res.getLong("CHANNEL")));
+                    ticket.setCategory(Snowflake.of(res.getLong("CATEGORY")));
                     ticket.setLastActivity(res.getLong("LAST_ACTIVITY"));
 
                     statement.close();
@@ -492,15 +513,17 @@ public class DatabaseManager {
         return null;
     }
 
-    public List<Project> getAllProjects(long guildId) {
+    public List<Project> getAllProjects(Snowflake guildId) {
         List<Project> projects = new ArrayList<>();
 
         try {
             if (databaseInfo.getMySQL().checkConnection()) {
                 String dataTableName = String.format("%sprojects", databaseInfo.getPrefix());
 
-                String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = '" + guildId + "';";
+                String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = ?";
                 PreparedStatement statement = databaseInfo.getConnection().prepareStatement(query);
+                statement.setString(1, guildId.asString());
+
                 ResultSet res = statement.executeQuery();
 
 
@@ -518,24 +541,26 @@ public class DatabaseManager {
         return projects;
     }
 
-    public List<Ticket> getAllTickets(long guildId) {
+    public List<Ticket> getAllTickets(Snowflake guildId) {
         List<Ticket> tickets = new ArrayList<>();
 
         try {
             if (databaseInfo.getMySQL().checkConnection()) {
                 String dataTableName = String.format("%stickets", databaseInfo.getPrefix());
 
-                String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = '" + guildId + "';";
+                String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = ?";
                 PreparedStatement statement = databaseInfo.getConnection().prepareStatement(query);
+                statement.setString(1, guildId.asString());
+
                 ResultSet res = statement.executeQuery();
 
 
                 while (res.next()) {
                     Ticket ticket = new Ticket(guildId, res.getInt("NUMBER"));
                     ticket.setProject(res.getString("PROJECT"));
-                    ticket.setCreator(res.getLong("CREATOR"));
-                    ticket.setChannel(res.getLong("CHANNEL"));
-                    ticket.setCategory(res.getLong("CATEGORY"));
+                    ticket.setCreator(Snowflake.of(res.getLong("CREATOR")));
+                    ticket.setChannel(Snowflake.of(res.getLong("CHANNEL")));
+                    ticket.setCategory(Snowflake.of(res.getLong("CATEGORY")));
                     ticket.setLastActivity(res.getLong("LAST_ACTIVITY"));
 
                     tickets.add(ticket);
@@ -573,7 +598,7 @@ public class DatabaseManager {
         return amount;
     }
 
-    public boolean removeProject(long guildId, String projectName) {
+    public boolean removeProject(Snowflake guildId, String projectName) {
         try {
             if (databaseInfo.getMySQL().checkConnection()) {
                 String dataTableName = String.format("%sprojects", databaseInfo.getPrefix());
@@ -582,7 +607,7 @@ public class DatabaseManager {
 
                 PreparedStatement preparedStmt = databaseInfo.getConnection().prepareStatement(query);
 
-                preparedStmt.setString(1, guildId + "");
+                preparedStmt.setString(1, guildId.asString());
                 preparedStmt.setString(2, projectName);
 
                 preparedStmt.execute();
@@ -595,7 +620,7 @@ public class DatabaseManager {
         return false;
     }
 
-    public boolean removeTicket(long guildId, int number) {
+    public boolean removeTicket(Snowflake guildId, int number) {
         try {
             if (databaseInfo.getMySQL().checkConnection()) {
                 String dataTableName = String.format("%stickets", databaseInfo.getPrefix());
@@ -604,7 +629,7 @@ public class DatabaseManager {
 
                 PreparedStatement preparedStmt = databaseInfo.getConnection().prepareStatement(query);
 
-                preparedStmt.setString(1, guildId + "");
+                preparedStmt.setString(1, guildId.asString());
                 preparedStmt.setInt(2, number);
 
                 preparedStmt.execute();

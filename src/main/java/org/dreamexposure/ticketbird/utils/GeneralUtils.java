@@ -1,16 +1,17 @@
 package org.dreamexposure.ticketbird.utils;
 
+import discord4j.core.object.entity.Category;
+import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.Message;
+import discord4j.core.object.entity.TextChannel;
 import org.dreamexposure.ticketbird.database.DatabaseManager;
 import org.dreamexposure.ticketbird.logger.Logger;
 import org.dreamexposure.ticketbird.message.MessageManager;
 import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
-import sx.blah.discord.handle.obj.ICategory;
-import sx.blah.discord.handle.obj.IChannel;
-import sx.blah.discord.handle.obj.IGuild;
-import sx.blah.discord.handle.obj.IMessage;
 
 import java.util.Random;
 
+@SuppressWarnings({"ConstantConditions", "Duplicates"})
 public class GeneralUtils {
     /**
      * Gets the contents of the message at a set offset.
@@ -78,52 +79,52 @@ public class GeneralUtils {
         return str.replace("<<", leftFace.toString()).replace(">>", rightFace.toString()).replace("<", "").replace(">", "").replace(leftFace.toString(), "<").replace(rightFace.toString(), ">");
     }
 
-    public static String getNormalStaticSupportMessage(IGuild guild, GuildSettings settings) {
+    public static String getNormalStaticSupportMessage(Guild guild, GuildSettings settings) {
         String msg = MessageManager.getMessage("Support.StaticMessage.Normal", settings);
 
-        ICategory awaiting = guild.getCategoryByID(settings.getAwaitingCategory());
-        ICategory responded = guild.getCategoryByID(settings.getRespondedCategory());
-        ICategory hold = guild.getCategoryByID(settings.getHoldCategory());
+        Category awaiting = guild.getChannelById(settings.getAwaitingCategory()).ofType(Category.class).block();
+        Category responded = guild.getChannelById(settings.getRespondedCategory()).ofType(Category.class).block();
+        Category hold = guild.getChannelById(settings.getHoldCategory()).ofType(Category.class).block();
 
         int allTickets = settings.getNextId() - 1;
-        int closedCount = allTickets - awaiting.getChannels().size() - responded.getChannels().size() - hold.getChannels().size();
+        long closedCount = allTickets - awaiting.getChannels().count().block() - responded.getChannels().count().block() - hold.getChannels().count().block();
 
-        msg = msg.replace("%open%", String.valueOf(awaiting.getChannels().size() + responded.getChannels().size()));
-        msg = msg.replace("%hold%", hold.getChannels().size() + "");
+        msg = msg.replace("%open%", String.valueOf(awaiting.getChannels().count().block() + responded.getChannels().count().block()));
+        msg = msg.replace("%hold%", hold.getChannels().count().block() + "");
         msg = msg.replace("%closed%", closedCount + "");
 
         return msg;
     }
 
-    public static String getHighVoluneStaticSupportMessage(IGuild guild, GuildSettings settings) {
+    public static String getHighVoluneStaticSupportMessage(Guild guild, GuildSettings settings) {
         String msg = MessageManager.getMessage("Support.StaticMessage.HighVolume", settings);
 
-        ICategory awaiting = guild.getCategoryByID(settings.getAwaitingCategory());
-        ICategory responded = guild.getCategoryByID(settings.getRespondedCategory());
-        ICategory hold = guild.getCategoryByID(settings.getHoldCategory());
+        Category awaiting = guild.getChannelById(settings.getAwaitingCategory()).ofType(Category.class).block();
+        Category responded = guild.getChannelById(settings.getRespondedCategory()).ofType(Category.class).block();
+        Category hold = guild.getChannelById(settings.getHoldCategory()).ofType(Category.class).block();
 
         int allTickets = settings.getNextId() - 1;
-        int closedCount = allTickets - awaiting.getChannels().size() - responded.getChannels().size() - hold.getChannels().size();
 
-        msg = msg.replace("%open%", String.valueOf(awaiting.getChannels().size() + responded.getChannels().size()));
-        msg = msg.replace("%hold%", hold.getChannels().size() + "");
+        long closedCount = allTickets - awaiting.getChannels().count().block() - responded.getChannels().count().block() - hold.getChannels().count().block();
+
+        msg = msg.replace("%open%", String.valueOf(awaiting.getChannels().count().block() + responded.getChannels().count().block()));
+        msg = msg.replace("%hold%", hold.getChannels().count().block() + "");
         msg = msg.replace("%closed%", closedCount + "");
 
         return msg;
     }
 
-    public static void updateStaticMessage(IGuild guild, GuildSettings settings) {
+    public static void updateStaticMessage(Guild guild, GuildSettings settings) {
         try {
-            IChannel supportChannel = guild.getChannelByID(settings.getSupportChannel());
+            TextChannel supportChannel = guild.getChannelById(settings.getSupportChannel()).ofType(TextChannel.class).block();
 
-            IMessage staticMsg = supportChannel.fetchMessage(settings.getStaticMessage());
+            Message staticMsg = supportChannel.getMessageById(settings.getStaticMessage()).block();
             if (staticMsg != null) {
                 //Edit static message...
-                MessageManager.editMessage(staticMsg, GeneralUtils.getNormalStaticSupportMessage(guild, settings));
+                MessageManager.editMessage(GeneralUtils.getNormalStaticSupportMessage(guild, settings), staticMsg);
             } else {
                 //Somehow the static message was deleted, let's just recreate it.
-
-                settings.setStaticMessage(MessageManager.sendMessage(GeneralUtils.getNormalStaticSupportMessage(guild, settings), supportChannel).getLongID());
+                settings.setStaticMessage(MessageManager.sendMessageSync(GeneralUtils.getNormalStaticSupportMessage(guild, settings), supportChannel).getId());
 
                 DatabaseManager.getManager().updateSettings(settings);
             }

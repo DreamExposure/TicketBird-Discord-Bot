@@ -7,6 +7,7 @@ import org.dreamexposure.ticketbird.objects.bot.BotSettings;
 import java.util.Timer;
 import java.util.TimerTask;
 
+@SuppressWarnings("ConstantConditions")
 public class UpdateDiscordBotsData {
     private static DiscordBotListAPI api;
     private static Timer timer;
@@ -32,7 +33,9 @@ public class UpdateDiscordBotsData {
     }
 
     private static void updateStats() {
-        if (api != null)
-            api.setStats(BotSettings.ID.get(), Main.getClient().getGuilds().size());
+        try {
+            if (api != null)
+                api.setStats(BotSettings.ID.get(), Main.getClient().getGuilds().count().block().intValue());
+        } catch (Exception ignore) {}
     }
 }

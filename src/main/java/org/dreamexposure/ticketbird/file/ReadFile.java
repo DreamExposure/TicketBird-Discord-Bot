@@ -11,7 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class ReadFile {
-    @SuppressWarnings({"unchecked", "ConstantConditions"})
+    @SuppressWarnings("ConstantConditions")
     public static JSONObject readAllLangFiles() {
         JSONObject langs = new JSONObject();
 

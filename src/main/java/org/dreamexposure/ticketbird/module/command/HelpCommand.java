@@ -1,15 +1,14 @@
 package org.dreamexposure.ticketbird.module.command;
 
-import org.dreamexposure.ticketbird.Main;
+import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.spec.EmbedCreateSpec;
 import org.dreamexposure.ticketbird.message.MessageManager;
 import org.dreamexposure.ticketbird.objects.command.CommandInfo;
 import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
 import org.dreamexposure.ticketbird.utils.GlobalVars;
-import sx.blah.discord.api.internal.json.objects.EmbedObject;
-import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
-import sx.blah.discord.util.EmbedBuilder;
 
 import java.util.ArrayList;
+import java.util.function.Consumer;
 
 public class HelpCommand implements ICommand {
     /**
@@ -56,29 +55,29 @@ public class HelpCommand implements ICommand {
      * @return <code>true</code> if successful, else <code>false</code>.
      */
     @Override
-    public Boolean issueCommand(String[] args, MessageReceivedEvent event, GuildSettings settings) {
+    public Boolean issueCommand(String[] args, MessageCreateEvent event, GuildSettings settings) {
         if (args.length < 1) {
-            EmbedBuilder em = new EmbedBuilder();
-            em.withAuthorIcon(Main.getClient().getGuildByID(GlobalVars.serverId).getIconURL());
-            em.withAuthorName("TicketBird");
-            em.withTitle("TicketBird Command Help");
-            for (ICommand c : CommandExecutor.getExecutor().getCommands()) {
-                if (c.getAliases().size() > 0) {
-                    String al = c.getAliases().toString();
-                    em.appendField(c.getCommand() + " " + al, c.getCommandInfo().getDescription(), true);
-                } else {
-                    em.appendField(c.getCommand(), c.getCommandInfo().getDescription(), true);
+            Consumer<EmbedCreateSpec> embed = spec -> {
+                spec.setAuthor("TicketBird", GlobalVars.siteUrl, GlobalVars.iconUrl);
+                spec.setTitle("TicketBird Command Help");
+                for (ICommand c : CommandExecutor.getExecutor().getCommands()) {
+                    if (c.getAliases().size() > 0) {
+                        String al = c.getAliases().toString();
+                        spec.addField(c.getCommand() + " " + al, c.getCommandInfo().getDescription(), true);
+                    } else {
+                        spec.addField(c.getCommand(), c.getCommandInfo().getDescription(), true);
+                    }
                 }
-            }
-            em.withFooterText("Check out the official site for more command info!");
-            em.withUrl("https://ticketbird.novamaday.com/commands");
-            em.withColor(GlobalVars.embedColor);
-            MessageManager.sendMessage(em.build(), event);
+                spec.setFooter("Check out the official site for more command info!", null);
+                spec.setUrl("https://ticketbird.novamaday.com/commands");
+                spec.setColor(GlobalVars.embedColor);
+            };
+            MessageManager.sendMessageAsync(embed, event);
         } else if (args.length == 1) {
             String cmdFor = args[0];
             ICommand cmd = CommandExecutor.getExecutor().getCommand(cmdFor);
             if (cmd != null) {
-                MessageManager.sendMessage(getCommandInfoEmbed(cmd), event);
+                MessageManager.sendMessageAsync(getCommandInfoEmbed(cmd), event);
             }
         } else if (args.length == 2) {
             //Display sub command info
@@ -86,10 +85,10 @@ public class HelpCommand implements ICommand {
             ICommand cmd = CommandExecutor.getExecutor().getCommand(cmdFor);
             if (cmd != null) {
                 if (cmd.getCommandInfo().getSubCommands().containsKey(args[1].toLowerCase())) {
-                    MessageManager.sendMessage(getSubCommandEmbed(cmd, args[1].toLowerCase()), event);
+                    MessageManager.sendMessageAsync(getSubCommandEmbed(cmd, args[1].toLowerCase()), event);
                 } else {
                     //Sub command does not exist.
-                    MessageManager.sendMessage(MessageManager.getMessage("Notification.Args.InvalidSubCmd", settings), event);
+                    MessageManager.sendMessageAsync(MessageManager.getMessage("Notification.Args.InvalidSubCmd", settings), event);
                 }
             }
         }
@@ -98,45 +97,42 @@ public class HelpCommand implements ICommand {
     }
 
     //Embed formatters
-    private EmbedObject getCommandInfoEmbed(ICommand cmd) {
-        EmbedBuilder em = new EmbedBuilder();
-        em.withAuthorIcon(Main.getClient().getGuildByID(GlobalVars.serverId).getIconURL());
-        em.withAuthorName("TicketBird");
-        em.appendField("Command", cmd.getCommand(), true);
-        em.appendField("Description", cmd.getCommandInfo().getDescription(), true);
-        em.appendField("Example", cmd.getCommandInfo().getExample(), true);
+    private Consumer<EmbedCreateSpec> getCommandInfoEmbed(ICommand cmd) {
+        return spec -> {
+            spec.setAuthor("TicketBird", GlobalVars.siteUrl, GlobalVars.iconUrl);
+            spec.addField("Command", cmd.getCommand(), true);
+            spec.addField("Description", cmd.getCommandInfo().getDescription(), true);
+            spec.addField("Example", cmd.getCommandInfo().getExample(), true);
 
-        //Loop through sub commands
-        if (cmd.getCommandInfo().getSubCommands().size() > 0) {
-            String subs = cmd.getCommandInfo().getSubCommands().keySet().toString();
-            subs = subs.replace("[", "").replace("]", "");
-            em.appendField("Sub-Commands", subs, false);
-        }
+            //Loop through sub commands
+            if (cmd.getCommandInfo().getSubCommands().size() > 0) {
+                String subs = cmd.getCommandInfo().getSubCommands().keySet().toString();
+                subs = subs.replace("[", "").replace("]", "");
+                spec.addField("Sub-Commands", subs, false);
+            }
 
-        em.withFooterText("<> = required | () = optional");
+            spec.setFooter("<> = required | () = optional", null);
 
-        em.withUrl("https://ticketbird.novamaday.com/commands");
+            spec.setUrl("https://ticketbird.novamaday.com/commands");
 
-        em.withColor(GlobalVars.embedColor);
+            spec.setColor(GlobalVars.embedColor);
 
-        return em.build();
+        };
     }
 
-    private EmbedObject getSubCommandEmbed(ICommand cmd, String subCommand) {
-        EmbedBuilder em = new EmbedBuilder();
-        em.withAuthorIcon(Main.getClient().getGuildByID(GlobalVars.serverId).getIconURL());
-        em.withAuthorName("TicketBird");
-        em.appendField("Command", cmd.getCommand(), true);
-        em.appendField("Sub Command", subCommand, true);
+    private Consumer<EmbedCreateSpec> getSubCommandEmbed(ICommand cmd, String subCommand) {
+        return spec -> {
+            spec.setAuthor("TicketBird", GlobalVars.siteUrl, GlobalVars.iconUrl);
+            spec.addField("Command", cmd.getCommand(), true);
+            spec.addField("Sub Command", subCommand, true);
 
-        em.appendField("Usage", cmd.getCommandInfo().getSubCommands().get(subCommand), false);
+            spec.addField("Usage", cmd.getCommandInfo().getSubCommands().get(subCommand), false);
 
-        em.withFooterText("<> = required | () = optional");
+            spec.setFooter("<> = required | () = optional", null);
 
-        em.withUrl("https://ticketbird.novamaday.com/commands");
+            spec.setUrl("https://ticketbird.novamaday.com/commands");
 
-        em.withColor(GlobalVars.embedColor);
-
-        return em.build();
+            spec.setColor(GlobalVars.embedColor);
+        };
     }
 }

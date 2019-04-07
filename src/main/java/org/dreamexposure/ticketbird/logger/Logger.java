@@ -1,13 +1,13 @@
 package org.dreamexposure.ticketbird.logger;
 
+import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.TextChannel;
+import discord4j.core.object.entity.User;
+import discord4j.core.spec.EmbedCreateSpec;
 import org.dreamexposure.ticketbird.Main;
 import org.dreamexposure.ticketbird.message.MessageManager;
 import org.dreamexposure.ticketbird.objects.bot.BotSettings;
 import org.dreamexposure.ticketbird.utils.GlobalVars;
-import sx.blah.discord.handle.obj.IChannel;
-import sx.blah.discord.handle.obj.IGuild;
-import sx.blah.discord.handle.obj.IUser;
-import sx.blah.discord.util.EmbedBuilder;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -15,6 +15,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.function.Consumer;
 
 public class Logger {
     private static Logger instance;
@@ -57,7 +58,7 @@ public class Logger {
         }
     }
 
-    public void exception(IUser author, String message, Exception e, Class clazz) {
+    public void exception(User author, String message, Exception e, Class clazz) {
         String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(Calendar.getInstance().getTime());
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
@@ -70,76 +71,77 @@ public class Logger {
             //Can ignore silently...
         }
 
-        if (Main.getClient().getOurUser() != null && Main.getClient().isLoggedIn()) {
-            IUser bot = Main.getClient().getOurUser();
-
+        if (Main.getClient().getSelf().block() != null && Main.getClient().isConnected()) {
             String shortError = error;
             if (error.length() > 1250)
                 shortError = error.substring(0, 1250);
 
 
-            EmbedBuilder em = new EmbedBuilder();
-            if (bot != null)
-                em.withAuthorIcon(bot.getAvatarURL());
+            Consumer<EmbedCreateSpec> embed = spec -> {
+                spec.setAuthor("TicketBird", GlobalVars.siteUrl, GlobalVars.iconUrl);
 
-            if (author != null) {
-                em.withAuthorName(author.getName());
-                em.withThumbnail(author.getAvatarURL());
-            }
-            em.withColor(239, 15, 0);
-            em.withFooterText(clazz.getName());
+                if (author != null) {
+                    spec.addField("Author", author.getUsername(), false);
+                    spec.setThumbnail(author.getAvatarUrl());
+                }
+                spec.setColor(GlobalVars.embedColor);
+                spec.setFooter(clazz.getName(), null);
 
-            //Send to discord!
-            em.appendField("Time", timeStamp, true);
-            if (e.getMessage() != null) {
-                if (e.getMessage().length() > 1024)
-                    em.appendField("Exception", e.getMessage().substring(0, 1024), true);
-                else
-                    em.appendField("Exception", e.getMessage(), true);
-            }
-            if (message != null)
-                em.appendField("Message", message, true);
+                //Send to discord!
+                spec.addField("Time", timeStamp, true);
+                if (e.getMessage() != null) {
+                    if (e.getMessage().length() > 1024)
+                        spec.addField("Exception", e.getMessage().substring(0, 1024), true);
+                    else
+                        spec.addField("Exception", e.getMessage(), true);
+                }
+                if (message != null)
+                    spec.addField("Message", message, true);
+            };
 
 
             //Get DisCal guild and channel..
-            IGuild guild = Main.getClient().getGuildByID(GlobalVars.serverId);
-            IChannel channel = guild.getChannelByID(GlobalVars.errorLogId);
+            Guild guild = Main.getClient().getGuildById(GlobalVars.serverId).block();
+            if (guild != null) {
+                TextChannel channel = (TextChannel) guild.getChannelById(GlobalVars.errorLogId).block();
 
-            MessageManager.sendMessage(em.build(), "```" + shortError + "```", channel);
+                if (channel != null)
+                    MessageManager.sendMessageAsync("```" + shortError + "```", embed, channel);
+            }
         }
 
         try {
             FileWriter exceptions = new FileWriter(exceptionsFile, true);
-            exceptions.write("ERROR --- " + timeStamp + " ---" + MessageManager.lineBreak);
+            exceptions.write("ERROR --- " + timeStamp + " ---" + GlobalVars.lineBreak);
             if (author != null) {
-                exceptions.write("user: " + author.getName() + "#" + author.getDiscriminator() + MessageManager.lineBreak);
+                exceptions.write("user: " + author.getUsername() + "#" + author.getDiscriminator() + GlobalVars.lineBreak);
             }
             if (message != null) {
-                exceptions.write("message: " + message + MessageManager.lineBreak);
+                exceptions.write("message: " + message + GlobalVars.lineBreak);
             }
-            exceptions.write(error + MessageManager.lineBreak);
+            exceptions.write(error + GlobalVars.lineBreak);
             exceptions.close();
         } catch (IOException io) {
             io.printStackTrace();
         }
     }
 
-    public void debug(IUser author, String message, String info, Class clazz) {
+    public void debug(User author, String message, String info, Class clazz) {
         String timeStamp = new SimpleDateFormat("yyyy/MM/dd-HH:mm:ss").format(Calendar.getInstance().getTime());
 
 
         //ALWAYS LOG TO FILE!
         try {
             FileWriter file = new FileWriter(debugFile, true);
-            file.write("DEBUG --- " + timeStamp + " ---" + MessageManager.lineBreak);
+            file.write("DEBUG --- " + timeStamp + " ---" + GlobalVars.lineBreak);
             if (author != null) {
-                file.write("user: " + author.getName() + "#" + author.getDiscriminator() + MessageManager.lineBreak);
+                file.write("user: " + author.getUsername() + "#" + author.getDiscriminator() + GlobalVars.lineBreak);
             }
             if (message != null) {
-                file.write("message: " + message + MessageManager.lineBreak);
+                file.write("message: " + message + GlobalVars.lineBreak);
             }
             if (info != null) {
-                file.write("info: " + info + MessageManager.lineBreak);
+                file.write("info: " + info + GlobalVars.lineBreak);
             }
             file.close();
         } catch (IOException io) {
@@ -152,9 +154,9 @@ public class Logger {
 
         try {
             FileWriter file = new FileWriter(debugFile, true);
-            file.write("DEBUG --- " + timeStamp + " ---" + MessageManager.lineBreak);
+            file.write("DEBUG --- " + timeStamp + " ---" + GlobalVars.lineBreak);
             if (message != null) {
-                file.write("info: " + message + MessageManager.lineBreak);
+                file.write("info: " + message + GlobalVars.lineBreak);
             }
             file.close();
         } catch (IOException io) {
@@ -167,8 +169,8 @@ public class Logger {
 
         try {
             FileWriter file = new FileWriter(apiFile, true);
-            file.write("API --- " + timeStamp + " ---" + MessageManager.lineBreak);
-            file.write("info: " + message + MessageManager.lineBreak);
+            file.write("API --- " + timeStamp + " ---" + GlobalVars.lineBreak);
+            file.write("info: " + message + GlobalVars.lineBreak);
             file.close();
         } catch (IOException io) {
             io.printStackTrace();
@@ -180,9 +182,9 @@ public class Logger {
 
         try {
             FileWriter file = new FileWriter(apiFile, true);
-            file.write("API --- " + timeStamp + " ---" + MessageManager.lineBreak);
-            file.write("info: " + message + MessageManager.lineBreak);
-            file.write("IP: " + ip + MessageManager.lineBreak);
+            file.write("API --- " + timeStamp + " ---" + GlobalVars.lineBreak);
+            file.write("info: " + message + GlobalVars.lineBreak);
+            file.write("IP: " + ip + GlobalVars.lineBreak);
             file.close();
         } catch (IOException io) {
             io.printStackTrace();
@@ -194,11 +196,11 @@ public class Logger {
 
         try {
             FileWriter file = new FileWriter(apiFile, true);
-            file.write("API --- " + timeStamp + " ---" + MessageManager.lineBreak);
-            file.write("info: " + message + MessageManager.lineBreak);
-            file.write("IP: " + ip + MessageManager.lineBreak);
-            file.write("Host: " + host + MessageManager.lineBreak);
-            file.write("Endpoint: " + endpoint + MessageManager.lineBreak);
+            file.write("API --- " + timeStamp + " ---" + GlobalVars.lineBreak);
+            file.write("info: " + message + GlobalVars.lineBreak);
+            file.write("IP: " + ip + GlobalVars.lineBreak);
+            file.write("Host: " + host + GlobalVars.lineBreak);
+            file.write("Endpoint: " + endpoint + GlobalVars.lineBreak);
             file.close();
         } catch (IOException io) {
             io.printStackTrace();

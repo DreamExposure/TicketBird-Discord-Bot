@@ -1,5 +1,9 @@
 package org.dreamexposure.ticketbird.module.command;
 
+import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.TextChannel;
+import discord4j.core.spec.TextChannelEditSpec;
 import org.dreamexposure.ticketbird.Main;
 import org.dreamexposure.ticketbird.database.DatabaseManager;
 import org.dreamexposure.ticketbird.message.MessageManager;
@@ -7,9 +11,10 @@ import org.dreamexposure.ticketbird.objects.command.CommandInfo;
 import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
 import org.dreamexposure.ticketbird.objects.guild.Ticket;
 import org.dreamexposure.ticketbird.utils.GeneralUtils;
-import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
+import java.util.function.Consumer;
 
 public class CloseCommand implements ICommand {
 
@@ -56,9 +61,10 @@ public class CloseCommand implements ICommand {
      * @param event The event received.
      * @return <code>true</code> if successful, else <code>false</code>.
      */
+    @SuppressWarnings("ConstantConditions")
     @Override
-    public Boolean issueCommand(String[] args, MessageReceivedEvent event, GuildSettings settings) {
-        String channelName = event.getChannel().getName();
+    public Boolean issueCommand(String[] args, MessageCreateEvent event, GuildSettings settings) {
+        String channelName = event.getMessage().getChannel().ofType(TextChannel.class).block().getName();
         //Channel name format [prefix]-ticket-[number]
         try {
             int ticketNumber;
@@ -68,13 +74,15 @@ public class CloseCommand implements ICommand {
             } else {
                 ticketNumber = Integer.valueOf(channelName.split("-")[2]);
             }
-            Ticket ticket = DatabaseManager.getManager().getTicket(event.getGuild().getLongID(), ticketNumber);
+            Ticket ticket = DatabaseManager.getManager().getTicket(settings.getGuildID(), ticketNumber);
 
             if (ticket != null) {
+                Guild guild = event.getGuild().block();
                 //Check if already closed..
-                if (!event.getChannel().getCategory().equals(event.getGuild().getCategoryByID(settings.getCloseCategory()))) {
+                if (!event.getMessage().getChannel().ofType(TextChannel.class).block().getCategory().block().getId().equals(settings.getCloseCategory())) {
                     //Not closed, lets close it.
-                    event.getChannel().changeCategory(event.getGuild().getCategoryByID(settings.getCloseCategory()));
+                    Consumer<TextChannelEditSpec> editChannel = spec -> spec.setParentId(settings.getCloseCategory());
+                    event.getMessage().getChannel().ofType(TextChannel.class).flatMap(c -> c.edit(editChannel)).subscribe();
 
                     //Update database info
                     ticket.setCategory(settings.getCloseCategory());
@@ -85,26 +93,29 @@ public class CloseCommand implements ICommand {
                     MessageManager.deleteMessage(event.getMessage());
 
                     //Send message! :D
-                    if (ticket.getCreator() == 0) {
-                        MessageManager.sendMessage(MessageManager.getMessage("Ticket.Close.Success", "%creator%", "NO CREATOR", settings), event);
+                    if (ticket.getCreator() == null) {
+                        MessageManager.sendMessageAsync(MessageManager.getMessage("Ticket.Close.Success", "%creator%", "NO " +
+                                "CREATOR", settings), event);
                     } else {
-                        if (event.getGuild().getUserByID(ticket.getCreator()) != null) {
-                            MessageManager.sendMessage(MessageManager.getMessage("Ticket.Close.Success", "%creator%", event.getGuild().getUserByID(ticket.getCreator()).mention(), settings), event);
+                        if (guild.getMemberById(ticket.getCreator()).onErrorResume(e -> Mono.empty()).block() != null) {
+                            MessageManager.sendMessageAsync(MessageManager.getMessage("Ticket.Close.Success", "%creator%",
+                                    guild.getMemberById(ticket.getCreator()).block().getMention(), settings), event);
                         } else {
-                            MessageManager.sendMessage(MessageManager.getMessage("Ticket.Close.Success", "%creator%", Main.getClient().fetchUser(ticket.getCreator()).mention(), settings), event);
+                            MessageManager.sendMessageAsync(MessageManager.getMessage("Ticket.Close.Success", "%creator%",
+                                    Main.getClient().getUserById(ticket.getCreator()).onErrorResume(e -> Mono.empty()).block().getMention(), settings), event);
                         }
                     }
 
                     //Lets update the static message!
-                    GeneralUtils.updateStaticMessage(event.getGuild(), settings);
+                    GeneralUtils.updateStaticMessage(event.getGuild().block(), settings);
                 }
             } else {
                 //Not a ticket/invalid ticket.
-                MessageManager.sendMessage(MessageManager.getMessage("Ticket.Close.InvalidChannel", settings), event);
+                MessageManager.sendMessageAsync(MessageManager.getMessage("Ticket.Close.InvalidChannel", settings), event);
             }
         } catch (NumberFormatException | IndexOutOfBoundsException ignore) {
             //Not a ticket channel.
-            MessageManager.sendMessage(MessageManager.getMessage("Ticket.Close.InvalidChannel", settings), event);
+            MessageManager.sendMessageAsync(MessageManager.getMessage("Ticket.Close.InvalidChannel", settings), event);
         }
 
         return false;

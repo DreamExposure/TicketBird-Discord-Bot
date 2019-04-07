@@ -1,29 +1,31 @@
 package org.dreamexposure.ticketbird.listeners;
 
+import discord4j.core.event.domain.lifecycle.ReadyEvent;
+import discord4j.core.object.util.Image;
+import org.dreamexposure.ticketbird.Main;
 import org.dreamexposure.ticketbird.logger.Logger;
 import org.dreamexposure.ticketbird.message.MessageManager;
-import org.dreamexposure.ticketbird.network.UpdateDiscordBotsData;
-import org.dreamexposure.ticketbird.network.UpdateDiscordPwData;
 import org.dreamexposure.ticketbird.service.TimeManager;
-import sx.blah.discord.api.events.EventSubscriber;
-import sx.blah.discord.handle.impl.events.ReadyEvent;
+import org.dreamexposure.ticketbird.utils.GlobalVars;
 
+@SuppressWarnings({"OptionalGetWithoutIsPresent", "ConstantConditions"})
 public class ReadyEventListener {
-    @EventSubscriber
-    public void onReadyEvent(ReadyEvent event) {
+
+    public static void handle(ReadyEvent event) {
         Logger.getLogger().debug("Ready!");
         try {
+            //Start keep-alive
+            //KeepAliveHandler.startKeepAlive(60);
+
             TimeManager.getManager().init();
 
-            //Handle Site Updates!
-            UpdateDiscordBotsData.init();
-            UpdateDiscordPwData.init();
+            GlobalVars.iconUrl = Main.getClient().getApplicationInfo().block().getIcon(Image.Format.PNG).get();
 
             MessageManager.reloadLangs();
 
-            Logger.getLogger().debug("[ReadyEvent] Connection success!");
+            Logger.getLogger().debug("[ReadyEvent] Connection success! Session ID: " + event.getSessionId());
         } catch (Exception e) {
-            Logger.getLogger().exception(null, "BAD!!!", e, this.getClass());
+            Logger.getLogger().exception(null, "BAD!!!", e, ReadyEventListener.class);
         }
     }
 }

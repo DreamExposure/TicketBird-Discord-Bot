@@ -1,5 +1,12 @@
 package org.dreamexposure.ticketbird.web.api.v1.endpoints;
 
+import discord4j.core.object.PermissionOverwrite;
+import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.Member;
+import discord4j.core.object.entity.TextChannel;
+import discord4j.core.object.util.Permission;
+import discord4j.core.object.util.PermissionSet;
+import discord4j.core.object.util.Snowflake;
 import org.dreamexposure.ticketbird.Main;
 import org.dreamexposure.ticketbird.database.DatabaseManager;
 import org.dreamexposure.ticketbird.logger.Logger;
@@ -18,15 +25,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import sx.blah.discord.handle.obj.IChannel;
-import sx.blah.discord.handle.obj.IGuild;
-import sx.blah.discord.handle.obj.IUser;
-import sx.blah.discord.handle.obj.Permissions;
+import reactor.core.publisher.Mono;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.EnumSet;
 
+@SuppressWarnings("ConstantConditions")
 @RestController
 @RequestMapping("/api/v1/ticket")
 public class TicketEndpoint {
@@ -44,52 +48,64 @@ public class TicketEndpoint {
         try {
             JSONObject rBody = new JSONObject(requestBody);
             if (rBody.has("project") && rBody.has("reason") && rBody.has("guild-id")) {
-                IGuild guild = Main.getClient().getGuildByID(rBody.getLong("guild-id"));
+                Guild guild = Main.getClient().getGuildById(Snowflake.of(rBody.getLong("guild-id"))).block();
 
                 if (guild != null) {
-                    Project project = DatabaseManager.getManager().getProject(guild.getLongID(), rBody.getString("project"));
+                    Project project = DatabaseManager.getManager().getProject(guild.getId(), rBody.getString("project"));
 
                     if (project != null) {
-                        GuildSettings settings = DatabaseManager.getManager().getSettings(guild.getLongID());
+                        GuildSettings settings = DatabaseManager.getManager().getSettings(guild.getId());
 
                         int ticketNumber = settings.getNextId();
                         settings.setNextId(ticketNumber + 1);
                         DatabaseManager.getManager().updateSettings(settings);
 
 
-                        IChannel channel = ChannelManager.createChannel("ticket-" + ticketNumber, guild);
-                        channel.changeCategory(guild.getCategoryByID(settings.getAwaitingCategory()));
+                        TextChannel channel = ChannelManager.createChannel("ticket-" + ticketNumber, "", settings.getAwaitingCategory(), guild);
 
                         //Set channel permissions...
-                        EnumSet<Permissions> toAdd = EnumSet.noneOf(Permissions.class);
-                        toAdd.add(Permissions.MENTION_EVERYONE);
-                        toAdd.add(Permissions.ATTACH_FILES);
-                        toAdd.add(Permissions.EMBED_LINKS);
-                        toAdd.add(Permissions.SEND_MESSAGES);
-                        toAdd.add(Permissions.READ_MESSAGES);
-                        toAdd.add(Permissions.READ_MESSAGE_HISTORY);
+                        PermissionSet toAdd = PermissionSet.none();
+                        toAdd.add(Permission.MENTION_EVERYONE);
+                        toAdd.add(Permission.ATTACH_FILES);
+                        toAdd.add(Permission.EMBED_LINKS);
+                        toAdd.add(Permission.SEND_MESSAGES);
+                        toAdd.add(Permission.READ_MESSAGE_HISTORY);
 
-                        EnumSet<Permissions> toRemove = EnumSet.allOf(Permissions.class);
+                        PermissionSet toRemove = PermissionSet.all();
 
-                        IUser creator = null;
+                        Member creator = null;
                         if (rBody.has("creator-id")) {
-                            creator = guild.getUserByID(rBody.getLong("creator-id"));
+                            creator = guild.getMemberById(Snowflake.of(rBody.getLong("creator-id"))).onErrorResume(e -> Mono.empty()).block();
                         }
 
-                        channel.overrideRolePermissions(guild.getEveryoneRole(), EnumSet.noneOf(Permissions.class), toRemove);
-                        if (creator != null)
-                            channel.overrideUserPermissions(creator, toAdd, EnumSet.noneOf(Permissions.class));
+                        //Handle permissions for everyone
+                        PermissionOverwrite forEveryone = PermissionOverwrite.forRole(guild.getEveryoneRole().block().getId(), PermissionSet.none(), toRemove);
 
-                        for (long uid : settings.getStaff()) {
-                            channel.overrideUserPermissions(guild.getUserByID(uid), toAdd, EnumSet.noneOf(Permissions.class));
+                        channel.addRoleOverwrite(guild.getEveryoneRole().block().getId(),forEveryone, "New Ticket Created, deny everyone access").subscribe();
+
+                        //Handle permissions for ticket creator
+                        if (creator != null) {
+                            PermissionOverwrite forCreator = PermissionOverwrite.forMember(creator.getId(), toAdd, PermissionSet.none());
+
+                            channel.addMemberOverwrite(creator.getId(), forCreator, "New Ticket Created, allow creator access").subscribe();
+                        }
+
+
+                        //Handle permissions for ticketbird staff
+                        for (Snowflake uid : settings.getStaff()) {
+                            if (guild.getMemberById(uid).onErrorResume(e -> Mono.empty()).block() != null) {
+                                PermissionOverwrite overwrite = PermissionOverwrite.forMember(uid, toAdd, PermissionSet.none());
+
+                                channel.addMemberOverwrite(uid, overwrite, "New Ticket Created, allow staff access").subscribe();
+                            }
                         }
 
                         //Register ticket in database.
-                        Ticket ticket = new Ticket(guild.getLongID(), ticketNumber);
-                        ticket.setChannel(channel.getLongID());
+                        Ticket ticket = new Ticket(guild.getId(), ticketNumber);
+                        ticket.setChannel(channel.getId());
                         ticket.setCategory(settings.getAwaitingCategory());
                         if (creator != null)
-                            ticket.setCreator(creator.getLongID());
+                            ticket.setCreator(creator.getId());
                         ticket.setLastActivity(System.currentTimeMillis());
 
                         DatabaseManager.getManager().updateTicket(ticket);
@@ -98,18 +114,18 @@ public class TicketEndpoint {
                         String msgOr = MessageManager.getMessage("Ticket.Open", settings);
                         String msg;
                         if (creator != null)
-                            msg = msgOr.replace("%creator%", creator.mention(true)).replace("%content%", rBody.getString("reason"));
+                            msg = msgOr.replace("%creator%", creator.getMention()).replace("%content%", rBody.getString("reason"));
                         else
                             msg = msgOr.replace("%creator%", "").replace("%content%", rBody.getString("reason"));
 
-                        MessageManager.sendMessage(msg, channel);
+                        MessageManager.sendMessageAsync(msg, channel);
 
                         //Check some other stuffs....
                         if (rBody.has("description"))
-                            MessageManager.sendMessage("Further info: ```" + rBody.getString("description") + "```", channel);
+                            MessageManager.sendMessageAsync("Further info: ```" + rBody.getString("description") + "```", channel);
 
                         if (rBody.has("link"))
-                            MessageManager.sendMessage("Link: " + rBody.getString("link"), channel);
+                            MessageManager.sendMessageAsync("Link: " + rBody.getString("link"), channel);
 
                         //Set response....
                         response.setContentType("application/json");

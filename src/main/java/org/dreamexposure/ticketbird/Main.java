@@ -1,5 +1,14 @@
 package org.dreamexposure.ticketbird;
 
+import discord4j.core.DiscordClient;
+import discord4j.core.DiscordClientBuilder;
+import discord4j.core.event.domain.lifecycle.ReadyEvent;
+import discord4j.core.object.data.stored.*;
+import discord4j.store.api.mapping.MappingStoreService;
+import discord4j.store.jdk.JdkStoreService;
+import discord4j.store.redis.RedisStoreService;
+import io.lettuce.core.RedisClient;
+import io.lettuce.core.RedisURI;
 import org.dreamexposure.ticketbird.database.DatabaseManager;
 import org.dreamexposure.ticketbird.listeners.ReadyEventListener;
 import org.dreamexposure.ticketbird.logger.Logger;
@@ -9,10 +18,6 @@ import org.dreamexposure.ticketbird.objects.bot.BotSettings;
 import org.dreamexposure.ticketbird.web.spring.SpringController;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import sx.blah.discord.api.ClientBuilder;
-import sx.blah.discord.api.IDiscordClient;
-import sx.blah.discord.api.events.EventDispatcher;
-import sx.blah.discord.util.DiscordException;
 
 import java.io.File;
 import java.io.FileReader;
@@ -21,7 +26,7 @@ import java.util.Properties;
 
 @SpringBootApplication
 public class Main {
-    private static IDiscordClient client;
+    private static DiscordClient client;
 
     public static void main(String[] args) throws IOException {
         //Get bot settings
@@ -31,15 +36,12 @@ public class Main {
 
         Logger.getLogger().init();
 
-        client = createClient(BotSettings.TOKEN.get());
+        client = createClient();
         if (getClient() == null)
             throw new NullPointerException("Failed to build! Client cannot be null!");
 
-        //Register events
-        EventDispatcher dispatcher = getClient().getDispatcher();
-        dispatcher.registerListener(new ReadyEventListener());
-
-        getClient().login();
+        //Register discord events
+        client.getEventDispatcher().on(ReadyEvent.class).subscribe(ReadyEventListener::handle);
 
         //Connect to MySQL server
         DatabaseManager.getManager().connectToMySQL();
@@ -65,21 +67,43 @@ public class Main {
         executor.registerCommand(new DevCommand());
 
         //Load language files.
-        MessageManager.loadLangs();
+        MessageManager.reloadLangs();
+
+        client.login().block();
     }
 
-    public static IDiscordClient getClient() {
-        return client;
-    }
+    private static DiscordClient createClient() {
+        DiscordClientBuilder clientBuilder = new DiscordClientBuilder(BotSettings.TOKEN.get());
+        //Handle shard count and index for multiple java instances
+        clientBuilder.setShardIndex(Integer.valueOf(BotSettings.SHARD_INDEX.get()));
+        clientBuilder.setShardCount(Integer.valueOf(BotSettings.SHARD_COUNT.get()));
 
-    private static IDiscordClient createClient(String token) {
-        ClientBuilder clientBuilder = new ClientBuilder(); // Creates the ClientBuilder instance
-        clientBuilder.withToken(token).withRecommendedShardCount(); // Adds the login info to the builder
-        try {
-            return clientBuilder.build();
-        } catch (DiscordException e) {
-            e.printStackTrace();
+
+        //Redis info + store service for caching
+        if (BotSettings.USE_REDIS_STORES.get().equalsIgnoreCase("true")) {
+            RedisURI uri = RedisURI.Builder
+                    .redis(BotSettings.REDIS_HOSTNAME.get(), Integer.valueOf(BotSettings.REDIS_PORT.get()))
+                    .withPassword(BotSettings.REDIS_PASSWORD.get())
+                    .build();
+
+            RedisStoreService rss = new RedisStoreService(RedisClient.create(uri));
+
+            MappingStoreService mapping = MappingStoreService.create()
+                    .setMapping(MessageBean.class, rss)
+                    .setMapping(ChannelBean.class, rss)
+                    .setMapping(TextChannelBean.class, rss)
+                    .setMapping(CategoryBean.class, rss)
+                    .setMapping(GuildBean.class, rss)
+                    .setFallback(new JdkStoreService());
+
+            clientBuilder.setStoreService(mapping);
         }
-        return null;
+
+        return clientBuilder.build();
+    }
+
+    //Public stuffs
+    public static DiscordClient getClient() {
+        return client;
     }
 }

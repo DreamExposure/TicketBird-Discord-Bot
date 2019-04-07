@@ -1,8 +1,8 @@
 package org.dreamexposure.ticketbird.module.command;
 
+import discord4j.core.event.domain.message.MessageCreateEvent;
 import org.dreamexposure.ticketbird.objects.command.CommandInfo;
 import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
-import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
 
 import java.util.ArrayList;
 
@@ -37,5 +37,5 @@ interface ICommand {
      * @param event The event received.
      * @return <code>true</code> if successful, else <code>false</code>.
      */
-    Boolean issueCommand(String[] args, MessageReceivedEvent event, GuildSettings settings);
+    Boolean issueCommand(String[] args, MessageCreateEvent event, GuildSettings settings);
 }

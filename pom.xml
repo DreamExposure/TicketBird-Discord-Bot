@@ -14,19 +14,19 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.build.targetEncoding>UTF-8</project.build.targetEncoding>
 
-        <thymeleaf.version>3.0.9.RELEASE</thymeleaf.version>
-        <thymeleaf-layout-dialect.version>2.2.1</thymeleaf-layout-dialect.version>
+        <thymeleaf.version>3.0.11.RELEASE</thymeleaf.version>
+        <thymeleaf-layout-dialect.version>2.3.0</thymeleaf-layout-dialect.version>
+
+        <spring.version>2.1.3.RELEASE</spring.version>
+        <spring.security.version>5.1.4.RELEASE</spring.security.version>
+
+        <discord4j.version>3.0.2</discord4j.version>
+        <discord4j.stores.version>3.0.2</discord4j.stores.version>
     </properties>
 
     <groupId>org.dreamexposure</groupId>
     <artifactId>TicketBird</artifactId>
     <version>1.0.0</version>
-
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.5.6.RELEASE</version>
-    </parent>
 
     <repositories>
         <repository>
@@ -41,6 +41,10 @@
             <id>spring-releases</id>
             <url>https://repo.spring.io/libs-release</url>
         </repository>
+        <repository>
+            <id>noa-public</id>
+            <url>http://repo.novafox161.com/repositories/nova-public</url>
+        </repository>
     </repositories>
 
     <pluginRepositories>
@@ -51,39 +55,50 @@
     </pluginRepositories>
 
     <dependencies>
+        <!--NovaLib API-->
+        <dependency>
+            <groupId>org.dreamexposure</groupId>
+            <artifactId>NovaUtils</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
         <!--Discord4J API-->
         <dependency>
-            <groupId>com.github.discord4j</groupId>
-            <artifactId>Discord4J</artifactId>
-            <version>LATEST</version>
-            <scope>compile</scope>
+            <groupId>com.discord4j</groupId>
+            <artifactId>discord4j-core</artifactId>
+            <version>${discord4j.version}</version>
+        </dependency>
+        <!--Discord4J Redis Stores-->
+        <dependency>
+            <groupId>com.discord4j</groupId>
+            <artifactId>stores-redis</artifactId>
+            <version>${discord4j.stores.version}</version>
         </dependency>
         <!-- Allows you to log events from Discord4J -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.1.7</version>
+            <version>1.3.0-alpha4</version>
             <scope>compile</scope>
         </dependency>
         <!--MySQL Driver-->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>LATEST</version>
+            <version>8.0.15</version>
             <scope>compile</scope>
         </dependency>
         <!--JSON API-->
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20140107</version>
+            <version>20180813</version>
             <scope>compile</scope>
         </dependency>
         <!--For Annotations-->
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
-            <version>RELEASE</version>
+            <version>17.0.0</version>
             <scope>compile</scope>
         </dependency>
         <!--Thymeleaf-->
@@ -91,52 +106,76 @@
             <groupId>org.thymeleaf</groupId>
             <artifactId>thymeleaf</artifactId>
             <version>${thymeleaf.version}</version>
+            <scope>compile</scope>
         </dependency>
+        <!--Thymeleaf 5 for Spring-->
         <dependency>
             <groupId>org.thymeleaf</groupId>
             <artifactId>thymeleaf-spring5</artifactId>
             <version>${thymeleaf.version}</version>
+            <scope>compile</scope>
         </dependency>
+        <!--Thymeleaf dialect-->
         <dependency>
             <groupId>nz.net.ultraq.thymeleaf</groupId>
             <artifactId>thymeleaf-layout-dialect</artifactId>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/commons-logging/commons-logging -->
-        <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-            <version>1.1.1</version>
-            <scope>compile</scope>
-        </dependency>
-        <!--OkHTTP API-->
-        <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>okhttp</artifactId>
-            <version>3.10.0</version>
+            <version>${thymeleaf-layout-dialect.version}</version>
             <scope>compile</scope>
         </dependency>
         <!--Spring Boot starter Thymeleaf API-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
+            <version>${spring.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <!--Spring Boot starter web API-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <version>${spring.version}</version>
+            <scope>compile</scope>
         </dependency>
         <!--Spring Session API-->
         <dependency>
             <groupId>org.springframework.session</groupId>
-            <artifactId>spring-session</artifactId>
-            <version>1.3.1.RELEASE</version>
+            <artifactId>spring-session-data-redis</artifactId>
+            <version>${spring.version}</version>
+            <scope>compile</scope>
         </dependency>
         <!--Spring Security-->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
-            <version>5.0.7.RELEASE</version>
+            <version>${spring.security.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/commons-logging/commons-logging -->
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>1.2</version>
+            <scope>compile</scope>
+        </dependency>
+        <!--OkHTTP API-->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>3.14.0</version>
+            <scope>compile</scope>
         </dependency>
         <!--discordbots.net API library-->
         <dependency>
             <groupId>com.github.DiscordBotList</groupId>
             <artifactId>Java-Wrapper</artifactId>
             <version>v1.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <!--Discord Webhooks library for simpler webhook handling-->
+        <dependency>
+            <groupId>club.minnced</groupId>
+            <artifactId>discord-webhooks</artifactId>
+            <version>0.1.7</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
@@ -174,6 +213,13 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

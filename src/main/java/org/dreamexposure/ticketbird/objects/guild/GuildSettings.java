@@ -1,10 +1,12 @@
 package org.dreamexposure.ticketbird.objects.guild;
 
+import discord4j.core.object.util.Snowflake;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class GuildSettings {
-    private final long guildID;
+    private final Snowflake guildID;
 
     private String lang;
     private String prefix;
@@ -12,21 +14,21 @@ public class GuildSettings {
     private boolean patronGuild;
     private boolean devGuild;
 
-    private long awaitingCategory;
-    private long respondedCategory;
-    private long holdCategory;
-    private long closeCategory;
+    private Snowflake awaitingCategory;
+    private Snowflake respondedCategory;
+    private Snowflake holdCategory;
+    private Snowflake closeCategory;
 
-    private long supportChannel;
-    private long staticMessage;
+    private Snowflake supportChannel;
+    private Snowflake staticMessage;
 
     private int nextId;
 
     private int totalClosed;
 
-    private List<Long> staff = new ArrayList<>();
+    private List<Snowflake> staff = new ArrayList<>();
 
-    public GuildSettings(long _guildId) {
+    public GuildSettings(Snowflake _guildId) {
         guildID = _guildId;
 
         lang = "ENGLISH";
@@ -40,7 +42,7 @@ public class GuildSettings {
     }
 
     //Getters
-    public long getGuildID() {
+    public Snowflake getGuildID() {
         return guildID;
     }
 
@@ -60,27 +62,27 @@ public class GuildSettings {
         return devGuild;
     }
 
-    public long getAwaitingCategory() {
+    public Snowflake getAwaitingCategory() {
         return awaitingCategory;
     }
 
-    public long getRespondedCategory() {
+    public Snowflake getRespondedCategory() {
         return respondedCategory;
     }
 
-    public long getHoldCategory() {
+    public Snowflake getHoldCategory() {
         return holdCategory;
     }
 
-    public long getCloseCategory() {
+    public Snowflake getCloseCategory() {
         return closeCategory;
     }
 
-    public long getSupportChannel() {
+    public Snowflake getSupportChannel() {
         return supportChannel;
     }
 
-    public long getStaticMessage() {
+    public Snowflake getStaticMessage() {
         return staticMessage;
     }
 
@@ -92,14 +94,14 @@ public class GuildSettings {
         return totalClosed;
     }
 
-    public List<Long> getStaff() {
+    public List<Snowflake> getStaff() {
         return staff;
     }
 
     public String getStaffString() {
         StringBuilder list = new StringBuilder();
-        for (long l : staff) {
-            list.append(l).append(",");
+        for (Snowflake s : staff) {
+            list.append(s.asString()).append(",");
         }
 
         return list.toString();
@@ -122,27 +124,27 @@ public class GuildSettings {
         devGuild = _devGuild;
     }
 
-    public void setAwaitingCategory(long _awaiting) {
+    public void setAwaitingCategory(Snowflake _awaiting) {
         awaitingCategory = _awaiting;
     }
 
-    public void setRespondedCategory(long _responded) {
+    public void setRespondedCategory(Snowflake _responded) {
         respondedCategory = _responded;
     }
 
-    public void setHoldCategory(long _hold) {
+    public void setHoldCategory(Snowflake _hold) {
         holdCategory = _hold;
     }
 
-    public void setCloseCategory(long _close) {
+    public void setCloseCategory(Snowflake _close) {
         closeCategory = _close;
     }
 
-    public void setSupportChannel(long _support) {
+    public void setSupportChannel(Snowflake _support) {
         supportChannel = _support;
     }
 
-    public void setStaticMessage(long _static) {
+    public void setStaticMessage(Snowflake _static) {
         staticMessage = _static;
     }
 
@@ -157,7 +159,7 @@ public class GuildSettings {
     public void setStaffFromString(String _staff) {
         for (String s : _staff.split(",")) {
             try {
-                staff.add(Long.valueOf(s));
+                staff.add(Snowflake.of(s));
             } catch (NumberFormatException ignore) {
             }
         }

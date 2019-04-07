@@ -1,16 +1,16 @@
 package org.dreamexposure.ticketbird.module.command;
 
-import org.dreamexposure.ticketbird.Main;
+import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.spec.EmbedCreateSpec;
 import org.dreamexposure.ticketbird.database.DatabaseManager;
 import org.dreamexposure.ticketbird.message.MessageManager;
 import org.dreamexposure.ticketbird.objects.command.CommandInfo;
 import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
 import org.dreamexposure.ticketbird.objects.guild.Project;
 import org.dreamexposure.ticketbird.utils.GlobalVars;
-import sx.blah.discord.handle.impl.events.guild.channel.message.MessageReceivedEvent;
-import sx.blah.discord.util.EmbedBuilder;
 
 import java.util.ArrayList;
+import java.util.function.Consumer;
 
 public class ProjectCommand implements ICommand {
 
@@ -62,10 +62,10 @@ public class ProjectCommand implements ICommand {
      * @return <code>true</code> if successful, else <code>false</code>.
      */
     @Override
-    public Boolean issueCommand(String[] args, MessageReceivedEvent event, GuildSettings settings) {
+    public Boolean issueCommand(String[] args, MessageCreateEvent event, GuildSettings settings) {
         if (args.length < 1) {
             //Too few args
-            MessageManager.sendMessage(MessageManager.getMessage("Notification.Args.Few", settings), event);
+            MessageManager.sendMessageAsync(MessageManager.getMessage("Notification.Args.Few", settings), event);
         } else {
             switch (args[0].toLowerCase()) {
                 case "add":
@@ -81,14 +81,14 @@ public class ProjectCommand implements ICommand {
                     moduleList(event, settings);
                     break;
                 default:
-                    MessageManager.sendMessage(MessageManager.getMessage("Notification.Args.Invalid", settings), event);
+                    MessageManager.sendMessageAsync(MessageManager.getMessage("Notification.Args.Invalid", settings), event);
                     break;
             }
         }
         return false;
     }
 
-    private void moduleAdd(String[] args, MessageReceivedEvent event, GuildSettings settings) {
+    private void moduleAdd(String[] args, MessageCreateEvent event, GuildSettings settings) {
         //=project add <name> <prefix>
         if (args.length == 3) {
             String name = args[1];
@@ -96,50 +96,49 @@ public class ProjectCommand implements ICommand {
             if (args[2].length() > 16)
                 prefix = prefix.substring(0, 15); //Cap at 16 just to prevent people from being dumb.
 
-            if (DatabaseManager.getManager().getProject(event.getGuild().getLongID(), name) == null) {
-                Project project = new Project(event.getGuild().getLongID(), name);
+            if (DatabaseManager.getManager().getProject(settings.getGuildID(), name) == null) {
+                Project project = new Project(settings.getGuildID(), name);
                 project.setPrefix(prefix);
                 DatabaseManager.getManager().updateProject(project);
 
-                MessageManager.sendMessage(MessageManager.getMessage("Project.Add.Success", settings), event);
+                MessageManager.sendMessageAsync(MessageManager.getMessage("Project.Add.Success", settings), event);
             } else {
-                MessageManager.sendMessage(MessageManager.getMessage("Project.Add.Already", settings), event);
+                MessageManager.sendMessageAsync(MessageManager.getMessage("Project.Add.Already", settings), event);
             }
         } else {
-            MessageManager.sendMessage(MessageManager.getMessage("Notification.Args.Few", settings), event);
+            MessageManager.sendMessageAsync(MessageManager.getMessage("Notification.Args.Few", settings), event);
         }
     }
 
-    private void moduleRemove(String[] args, MessageReceivedEvent event, GuildSettings settings) {
+    private void moduleRemove(String[] args, MessageCreateEvent event, GuildSettings settings) {
         //=project remove <name>
         if (args.length == 2) {
             String name = args[1];
-            if (DatabaseManager.getManager().getProject(event.getGuild().getLongID(), name) != null) {
-                DatabaseManager.getManager().removeProject(event.getGuild().getLongID(), name);
-                MessageManager.sendMessage(MessageManager.getMessage("Project.Remove.Success", settings), event);
+            if (DatabaseManager.getManager().getProject(settings.getGuildID(), name) != null) {
+                DatabaseManager.getManager().removeProject(settings.getGuildID(), name);
+                MessageManager.sendMessageAsync(MessageManager.getMessage("Project.Remove.Success", settings), event);
             } else {
-                MessageManager.sendMessage(MessageManager.getMessage("Project.Remove.Not", settings), event);
+                MessageManager.sendMessageAsync(MessageManager.getMessage("Project.Remove.Not", settings), event);
             }
         } else {
-            MessageManager.sendMessage(MessageManager.getMessage("Notification.Args.Few", settings), event);
+            MessageManager.sendMessageAsync(MessageManager.getMessage("Notification.Args.Few", settings), event);
         }
     }
 
-    private void moduleList(MessageReceivedEvent event, GuildSettings settings) {
-        EmbedBuilder em = new EmbedBuilder();
+    private void moduleList(MessageCreateEvent event, GuildSettings settings) {
+        Consumer<EmbedCreateSpec> embed = spec -> {
+            spec.setAuthor("TicketBird", GlobalVars.siteUrl, GlobalVars.iconUrl);
+            spec.setTitle("All Current Projects/Services");
 
-        em.withAuthorIcon(Main.getClient().getGuildByID(GlobalVars.serverId).getIconURL());
-        em.withAuthorName("TicketBird");
-        em.withTitle("All Current Projects/Services");
+            for (Project p : DatabaseManager.getManager().getAllProjects(settings.getGuildID())) {
+                spec.addField(p.getName(), p.getPrefix(), true);
+            }
 
-        for (Project p : DatabaseManager.getManager().getAllProjects(settings.getGuildID())) {
-            em.appendField(p.getName(), p.getPrefix(), true);
-        }
+            spec.setFooter("List of all Projects with their prefix for tickets.", null);
 
-        em.withFooterText("List of all Projects with their prefix for tickets.");
+            spec.setColor(GlobalVars.embedColor);
+        };
 
-        em.withColor(GlobalVars.embedColor);
-
-        MessageManager.sendMessage(em.build(), event);
+        MessageManager.sendMessageAsync(embed, event);
     }
 }
