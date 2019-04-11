@@ -21,7 +21,7 @@ public class ActivityMonitor extends TimerTask {
 
     @Override
     public void run() {
-        Logger.getLogger().debug("Running ticket inactivity close task.");
+        Logger.getLogger().debug("Running ticket inactivity close task.", false);
         for (Guild g : Main.getClient().getGuilds().toIterable()) {
             GuildSettings settings = DatabaseManager.getManager().getSettings(g.getId());
 
@@ -61,11 +61,11 @@ public class ActivityMonitor extends TimerTask {
                             }
                         }
                     } catch (Exception e) {
-                        Logger.getLogger().exception(null, "Failed to handle ticket inactivity!", e, this.getClass());
+                        Logger.getLogger().exception(null, "Failed to handle ticket inactivity!", e, true, this.getClass());
                     }
                 }
             }
         }
-        Logger.getLogger().debug("Finished ticket inactivity close/purge task.");
+        Logger.getLogger().debug("Finished ticket inactivity close/purge task.", false);
     }
 }

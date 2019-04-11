@@ -53,7 +53,7 @@ public class Main {
                 SpringController.makeModel();
                 SpringApplication.run(Main.class, args);
             } catch (Exception e) {
-                Logger.getLogger().exception(null, "'Spring ERROR' by 'PANIC! AT THE WEBSITE'", e, Main.class);
+                Logger.getLogger().exception(null, "'Spring ERROR' by 'PANIC! AT THE WEBSITE'", e, true, Main.class);
             }
         }
 

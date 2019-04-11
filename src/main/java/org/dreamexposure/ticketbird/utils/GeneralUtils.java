@@ -129,7 +129,7 @@ public class GeneralUtils {
                 DatabaseManager.getManager().updateSettings(settings);
             }
         } catch (Exception e) {
-            Logger.getLogger().exception(null, "Failed to handle Static Message update!", e, GeneralUtils.class);
+            Logger.getLogger().exception(null, "Failed to handle Static Message update!", e, true, GeneralUtils.class);
         }
     }
 }

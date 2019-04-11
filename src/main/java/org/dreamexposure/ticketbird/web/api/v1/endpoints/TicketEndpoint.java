@@ -30,7 +30,7 @@ import reactor.core.publisher.Mono;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@SuppressWarnings("ConstantConditions")
+@SuppressWarnings({"ConstantConditions", "Duplicates"})
 @RestController
 @RequestMapping("/api/v1/ticket")
 public class TicketEndpoint {
@@ -161,7 +161,7 @@ public class TicketEndpoint {
             response.setStatus(400);
             return ResponseUtils.getJsonResponseMessage("Bad Request");
         } catch (Exception e) {
-            Logger.getLogger().exception(null, "[WEB-API] Internal get guild settings error", e, TicketEndpoint.class);
+            Logger.getLogger().exception(null, "[WEB-API] Internal get guild settings error", e, true, TicketEndpoint.class);
 
             response.setContentType("application/json");
             response.setStatus(500);

@@ -46,7 +46,7 @@ public class DatabaseManager {
         } catch (Exception e) {
             System.out.println("Failed to connect to MySQL database! Is it properly configured?");
             e.printStackTrace();
-            Logger.getLogger().exception(null, "Connecting to MySQL server failed.", e, this.getClass());
+            Logger.getLogger().exception(null, "Connecting to MySQL server failed.", e, true, this.getClass());
         }
     }
 
@@ -59,7 +59,7 @@ public class DatabaseManager {
                 databaseInfo.getMySQL().closeConnection();
                 System.out.println("Successfully disconnected from MySQL Database!");
             } catch (SQLException e) {
-                Logger.getLogger().exception(null, "Disconnecting from MySQL failed.", e, this.getClass());
+                Logger.getLogger().exception(null, "Disconnecting from MySQL failed.", e, true, this.getClass());
                 System.out.println("MySQL Connection may not have closed properly! Data may be invalidated!");
             }
         }
@@ -118,7 +118,7 @@ public class DatabaseManager {
             System.out.println("Successfully created needed tables in MySQL database!");
         } catch (SQLException e) {
             System.out.println("Failed to created database tables! Something must be wrong.");
-            Logger.getLogger().exception(null, "Creating MySQL tables failed", e, this.getClass());
+            Logger.getLogger().exception(null, "Creating MySQL tables failed", e, true, this.getClass());
             e.printStackTrace();
         }
     }
@@ -172,7 +172,7 @@ public class DatabaseManager {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            Logger.getLogger().exception(null, "Failed to update API account", e, this.getClass());
+            Logger.getLogger().exception(null, "Failed to update API account", e, true, this.getClass());
         }
         return false;
     }
@@ -248,7 +248,7 @@ public class DatabaseManager {
             }
         } catch (SQLException e) {
             System.out.println("Failed to input data into database! Error Code: 00101");
-            Logger.getLogger().exception(null, "Failed to update/insert guild settings.", e, this.getClass());
+            Logger.getLogger().exception(null, "Failed to update/insert guild settings.", e, true, this.getClass());
             e.printStackTrace();
         }
         return false;
@@ -299,7 +299,7 @@ public class DatabaseManager {
             }
         } catch (SQLException e) {
             System.out.println("Failed to input data into database! Error Code: 00101");
-            Logger.getLogger().exception(null, "Failed to update/insert project settings.", e, this.getClass());
+            Logger.getLogger().exception(null, "Failed to update/insert project settings.", e, true, this.getClass());
             e.printStackTrace();
         }
         return false;
@@ -358,7 +358,7 @@ public class DatabaseManager {
             }
         } catch (SQLException e) {
             System.out.println("Failed to input data into database! Error Code: 00101");
-            Logger.getLogger().exception(null, "Failed to update/insert ticket data.", e, this.getClass());
+            Logger.getLogger().exception(null, "Failed to update/insert ticket data.", e, true, this.getClass());
             e.printStackTrace();
         }
         return false;
@@ -395,7 +395,7 @@ public class DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            Logger.getLogger().exception(null, "Failed to get API Account.", e, this.getClass());
+            Logger.getLogger().exception(null, "Failed to get API Account.", e, true, this.getClass());
         }
         return null;
     }
@@ -441,7 +441,7 @@ public class DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            Logger.getLogger().exception(null, "Failed to get Guild Settings.", e, this.getClass());
+            Logger.getLogger().exception(null, "Failed to get Guild Settings.", e, true, this.getClass());
         }
         return settings;
     }
@@ -472,7 +472,7 @@ public class DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            Logger.getLogger().exception(null, "Failed to get Project.", e, this.getClass());
+            Logger.getLogger().exception(null, "Failed to get Project.", e, true, this.getClass());
         }
         return null;
     }
@@ -508,7 +508,7 @@ public class DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            Logger.getLogger().exception(null, "Failed to get Ticket Data.", e, this.getClass());
+            Logger.getLogger().exception(null, "Failed to get Ticket Data.", e, true, this.getClass());
         }
         return null;
     }
@@ -535,7 +535,7 @@ public class DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            Logger.getLogger().exception(null, "Failed to get Projects for guild.", e, this.getClass());
+            Logger.getLogger().exception(null, "Failed to get Projects for guild.", e, true, this.getClass());
         }
 
         return projects;
@@ -567,7 +567,7 @@ public class DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            Logger.getLogger().exception(null, "Failed to get Tickets for guild.", e, this.getClass());
+            Logger.getLogger().exception(null, "Failed to get Tickets for guild.", e, true, this.getClass());
         }
 
         return tickets;
@@ -593,7 +593,7 @@ public class DatabaseManager {
                 statement.close();
             }
         } catch (SQLException e) {
-            Logger.getLogger().exception(null, "Failed to get ticket count", e, this.getClass());
+            Logger.getLogger().exception(null, "Failed to get ticket count", e, true, this.getClass());
         }
         return amount;
     }
@@ -615,7 +615,7 @@ public class DatabaseManager {
                 return true;
             }
         } catch (SQLException e) {
-            Logger.getLogger().exception(null, "Failed to delete project.", e, this.getClass());
+            Logger.getLogger().exception(null, "Failed to delete project.", e, true, this.getClass());
         }
         return false;
     }
@@ -637,7 +637,7 @@ public class DatabaseManager {
                 return true;
             }
         } catch (SQLException e) {
-            Logger.getLogger().exception(null, "Failed to delete ticket.", e, this.getClass());
+            Logger.getLogger().exception(null, "Failed to delete ticket.", e, true, this.getClass());
         }
         return false;
     }

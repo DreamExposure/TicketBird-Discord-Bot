@@ -12,7 +12,7 @@ import org.dreamexposure.ticketbird.utils.GlobalVars;
 public class ReadyEventListener {
 
     public static void handle(ReadyEvent event) {
-        Logger.getLogger().debug("Ready!");
+        Logger.getLogger().debug("Ready!", false);
         try {
             //Start keep-alive
             //KeepAliveHandler.startKeepAlive(60);
@@ -23,9 +23,11 @@ public class ReadyEventListener {
 
             MessageManager.reloadLangs();
 
-            Logger.getLogger().debug("[ReadyEvent] Connection success! Session ID: " + event.getSessionId());
+            Logger.getLogger().debug("[ReadyEvent] Connection success! Session ID: " + event.getSessionId(), false);
+
+            Logger.getLogger().status("Ready Event Success!", null);
         } catch (Exception e) {
-            Logger.getLogger().exception(null, "BAD!!!", e, ReadyEventListener.class);
+            Logger.getLogger().exception(null, "BAD!!!", e, true, ReadyEventListener.class);
         }
     }
 }

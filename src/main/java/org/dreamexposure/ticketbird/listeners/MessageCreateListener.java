@@ -95,7 +95,7 @@ public class MessageCreateListener {
                     //Lets update the static message!
                     GeneralUtils.updateStaticMessage(guild, settings);
                 } catch (Exception e) {
-                    Logger.getLogger().exception(event.getMember().get(), "Failed to handle new ticket creation!", e, MessageCreateListener.class);
+                    Logger.getLogger().exception(event.getMember().get(), "Failed to handle new ticket creation!", e, true, MessageCreateListener.class);
                 }
             } else {
                 //Check if in ticket channel...

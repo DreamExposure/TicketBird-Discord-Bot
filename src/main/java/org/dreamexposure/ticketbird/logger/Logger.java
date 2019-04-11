@@ -1,44 +1,56 @@
 package org.dreamexposure.ticketbird.logger;
 
-import discord4j.core.object.entity.Guild;
-import discord4j.core.object.entity.TextChannel;
+import club.minnced.discord.webhook.WebhookClient;
+import club.minnced.discord.webhook.send.WebhookEmbed;
+import club.minnced.discord.webhook.send.WebhookEmbedBuilder;
 import discord4j.core.object.entity.User;
-import discord4j.core.spec.EmbedCreateSpec;
-import org.dreamexposure.ticketbird.Main;
-import org.dreamexposure.ticketbird.message.MessageManager;
 import org.dreamexposure.ticketbird.objects.bot.BotSettings;
 import org.dreamexposure.ticketbird.utils.GlobalVars;
 
+import javax.annotation.Nullable;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Calendar;
-import java.util.function.Consumer;
 
+@SuppressWarnings("Duplicates")
 public class Logger {
     private static Logger instance;
+    private WebhookClient debugClient;
+    private WebhookClient exceptionClient;
+    private WebhookClient statusClient;
+
     private String exceptionsFile;
     private String apiFile;
+    private String announcementsFile;
     private String debugFile;
 
     private Logger() {
     } //Prevent initialization
 
     public static Logger getLogger() {
-        if (instance == null) {
+        if (instance == null)
             instance = new Logger();
-        }
         return instance;
     }
 
     public void init() {
+        //Create webhook clients.
+        if (BotSettings.USE_WEBHOOKS.get().equalsIgnoreCase("true")) {
+            debugClient = WebhookClient.withUrl(BotSettings.DEBUG_WEBHOOK.get());
+            exceptionClient = WebhookClient.withUrl(BotSettings.ERROR_WEBHOOK.get());
+            statusClient = WebhookClient.withUrl(BotSettings.STATUS_WEBHOOK.get());
+        }
+
         //Create files...
         String timestamp = new SimpleDateFormat("dd-MM-yyyy-hh.mm.ss").format(System.currentTimeMillis());
 
         exceptionsFile = BotSettings.LOG_FOLDER.get() + "/" + timestamp + "-exceptions.log";
         apiFile = BotSettings.LOG_FOLDER.get() + "/" + timestamp + "-api.log";
+        announcementsFile = BotSettings.LOG_FOLDER.get() + "/" + timestamp + "-announcements.log";
         debugFile = BotSettings.LOG_FOLDER.get() + "/" + timestamp + "-debug.log";
 
         try {
@@ -50,6 +62,10 @@ public class Logger {
             api.println("INIT --- " + timestamp + " ---");
             api.close();
 
+            PrintWriter announcement = new PrintWriter(announcementsFile, "UTF-8");
+            announcement.println("INIT --- " + timestamp + " ---");
+            announcement.close();
+
             PrintWriter debug = new PrintWriter(debugFile, "UTF-8");
             debug.println("INIT --- " + timestamp + " ---");
             debug.close();
@@ -58,7 +74,7 @@ public class Logger {
         }
     }
 
-    public void exception(User author, String message, Exception e, Class clazz) {
+    public void exception(@Nullable User author, @Nullable String message, Exception e, boolean postWebhook, Class clazz) {
         String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(Calendar.getInstance().getTime());
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
@@ -71,96 +87,117 @@ public class Logger {
             //Can ignore silently...
         }
 
-        if (Main.getClient().getSelf().block() != null && Main.getClient().isConnected()) {
-            String shortError = error;
-            if (error.length() > 1250)
-                shortError = error.substring(0, 1250);
-
-
-            Consumer<EmbedCreateSpec> embed = spec -> {
-                spec.setAuthor("TicketBird", GlobalVars.siteUrl, GlobalVars.iconUrl);
-
-                if (author != null) {
-                    spec.addField("Author", author.getUsername(), false);
-                    spec.setThumbnail(author.getAvatarUrl());
-                }
-                spec.setColor(GlobalVars.embedColor);
-                spec.setFooter(clazz.getName(), null);
-
-                //Send to discord!
-                spec.addField("Time", timeStamp, true);
-                if (e.getMessage() != null) {
-                    if (e.getMessage().length() > 1024)
-                        spec.addField("Exception", e.getMessage().substring(0, 1024), true);
-                    else
-                        spec.addField("Exception", e.getMessage(), true);
-                }
-                if (message != null)
-                    spec.addField("Message", message, true);
-            };
-
-
-            //Get DisCal guild and channel..
-            Guild guild = Main.getClient().getGuildById(GlobalVars.serverId).block();
-            if (guild != null) {
-                TextChannel channel = (TextChannel) guild.getChannelById(GlobalVars.errorLogId).block();
-
-                if (channel != null)
-                    MessageManager.sendMessageAsync("```" + shortError + "```", embed, channel);
-            }
-        }
-
+        //ALWAYS LOG TO FILE!
         try {
             FileWriter exceptions = new FileWriter(exceptionsFile, true);
             exceptions.write("ERROR --- " + timeStamp + " ---" + GlobalVars.lineBreak);
-            if (author != null) {
+            if (author != null)
                 exceptions.write("user: " + author.getUsername() + "#" + author.getDiscriminator() + GlobalVars.lineBreak);
-            }
-            if (message != null) {
+
+            if (message != null)
                 exceptions.write("message: " + message + GlobalVars.lineBreak);
-            }
+
+            exceptions.write("Class:" + clazz.getName() + GlobalVars.lineBreak);
+
             exceptions.write(error + GlobalVars.lineBreak);
             exceptions.close();
         } catch (IOException io) {
             io.printStackTrace();
         }
+
+        //Post to webhook if wanted.
+        if (BotSettings.USE_WEBHOOKS.get().equalsIgnoreCase("true") && postWebhook) {
+            WebhookEmbedBuilder builder = new WebhookEmbedBuilder()
+                    .setTitle(new WebhookEmbed.EmbedTitle("Debug", null))
+                    .addField(new WebhookEmbed
+                            .EmbedField(true, "Shard Index", BotSettings.SHARD_INDEX.get()))
+                    .addField(new WebhookEmbed
+                            .EmbedField(false, "Class", clazz.getName()))
+                    .setDescription(error)
+                    .setColor(GlobalVars.embedColor.getRGB())
+                    .setTimestamp(Instant.now());
+
+            if (author != null) {
+                builder.setAuthor(new WebhookEmbed
+                        .EmbedAuthor(author.getUsername(), author.getAvatarUrl(), null));
+            }
+            if (message != null) {
+                builder.addField(new WebhookEmbed.EmbedField(false, "Message", message));
+            }
+
+            exceptionClient.send(builder.build());
+        }
     }
 
-    public void debug(User author, String message, String info, Class clazz) {
+    public void debug(@Nullable User author, String message, @Nullable String info, boolean postWebhook, Class clazz) {
         String timeStamp = new SimpleDateFormat("yyyy/MM/dd-HH:mm:ss").format(Calendar.getInstance().getTime());
-
-
         //ALWAYS LOG TO FILE!
         try {
             FileWriter file = new FileWriter(debugFile, true);
             file.write("DEBUG --- " + timeStamp + " ---" + GlobalVars.lineBreak);
-            if (author != null) {
+            if (author != null)
                 file.write("user: " + author.getUsername() + "#" + author.getDiscriminator() + GlobalVars.lineBreak);
-            }
-            if (message != null) {
+
+            if (message != null)
                 file.write("message: " + message + GlobalVars.lineBreak);
-            }
-            if (info != null) {
+
+            if (info != null)
                 file.write("info: " + info + GlobalVars.lineBreak);
-            }
+
+            file.write("Class: " + clazz.getName() + GlobalVars.lineBreak);
+
             file.close();
         } catch (IOException io) {
             io.printStackTrace();
         }
+
+        //Post to webhook if wanted.
+        if (BotSettings.USE_WEBHOOKS.get().equalsIgnoreCase("true") && postWebhook) {
+            WebhookEmbedBuilder builder = new WebhookEmbedBuilder()
+                    .setTitle(new WebhookEmbed.EmbedTitle("Debug", null))
+                    .addField(new WebhookEmbed
+                            .EmbedField(true, "Shard Index", BotSettings.SHARD_INDEX.get()))
+                    .setDescription(message)
+                    .setColor(GlobalVars.embedColor.getRGB())
+                    .setTimestamp(Instant.now());
+
+            if (author != null) {
+                builder.setAuthor(new WebhookEmbed
+                        .EmbedAuthor(author.getUsername(), author.getAvatarUrl(), null));
+            }
+            if (info != null) {
+                builder.addField(new WebhookEmbed.EmbedField(false, "Info", info));
+            }
+
+            debugClient.send(builder.build());
+        }
     }
 
-    public void debug(String message) {
+    public void debug(String message, boolean postWebhook) {
         String timeStamp = new SimpleDateFormat("yyyy/MM/dd-HH:mm:ss").format(Calendar.getInstance().getTime());
 
         try {
             FileWriter file = new FileWriter(debugFile, true);
             file.write("DEBUG --- " + timeStamp + " ---" + GlobalVars.lineBreak);
-            if (message != null) {
+            if (message != null)
                 file.write("info: " + message + GlobalVars.lineBreak);
-            }
+
             file.close();
         } catch (IOException io) {
             io.printStackTrace();
+        }
+
+        //Post to webhook if wanted.
+        if (BotSettings.USE_WEBHOOKS.get().equalsIgnoreCase("true") && postWebhook) {
+            WebhookEmbedBuilder builder = new WebhookEmbedBuilder()
+                    .setTitle(new WebhookEmbed.EmbedTitle("Debug", null))
+                    .addField(new WebhookEmbed
+                            .EmbedField(true, "Shard Index", BotSettings.SHARD_INDEX.get()))
+                    .setDescription(message)
+                    .setColor(GlobalVars.embedColor.getRGB())
+                    .setTimestamp(Instant.now());
+
+            debugClient.send(builder.build());
         }
     }
 
@@ -204,6 +241,55 @@ public class Logger {
             file.close();
         } catch (IOException io) {
             io.printStackTrace();
+        }
+    }
+
+    public void announcement(String message) {
+        String timeStamp = new SimpleDateFormat("yyyy/MM/dd-HH:mm:ss").format(Calendar.getInstance().getTime());
+
+        try {
+            FileWriter file = new FileWriter(announcementsFile, true);
+            file.write("ANNOUNCEMENT --- " + timeStamp + " ---" + GlobalVars.lineBreak);
+            file.write("info: " + message + GlobalVars.lineBreak);
+            file.close();
+        } catch (IOException io) {
+            io.printStackTrace();
+        }
+    }
+
+    public void announcement(String message, String guildId, String announcementId, String eventId) {
+        String timeStamp = new SimpleDateFormat("yyyy/MM/dd-HH:mm:ss").format(Calendar.getInstance().getTime());
+
+        try {
+            FileWriter file = new FileWriter(announcementsFile, true);
+            file.write("ANNOUNCEMENT --- " + timeStamp + " ---" + GlobalVars.lineBreak);
+            file.write("info: " + message + GlobalVars.lineBreak);
+            file.write("guild Id: " + guildId + GlobalVars.lineBreak);
+            file.write("announcement Id: " + announcementId + GlobalVars.lineBreak);
+            file.write("event id: " + eventId + GlobalVars.lineBreak);
+            file.close();
+        } catch (IOException io) {
+            io.printStackTrace();
+        }
+    }
+
+    public void status(String message, @Nullable String info) {
+        //Post to webhook if wanted.
+        if (BotSettings.USE_WEBHOOKS.get().equalsIgnoreCase("true")) {
+            WebhookEmbedBuilder builder = new WebhookEmbedBuilder()
+                    .setTitle(new WebhookEmbed.EmbedTitle("Debug", null))
+                    .addField(new WebhookEmbed
+                            .EmbedField(true, "Shard Index", BotSettings.SHARD_INDEX.get()))
+                    .setDescription(message)
+                    .setColor(GlobalVars.embedColor.getRGB())
+                    .setTimestamp(Instant.now());
+
+            if (info != null) {
+                builder.addField(new WebhookEmbed
+                        .EmbedField(false, "Info", info));
+            }
+
+            statusClient.send(builder.build());
         }
     }
 }
