@@ -3,8 +3,13 @@ package org.dreamexposure.ticketbird.objects.bot;
 import java.util.Properties;
 
 public enum BotSettings {
-    SQL_HOST, SQL_USER, SQL_PASSWORD,
-    SQL_DB, SQL_PORT, SQL_PREFIX,
+    SQL_MASTER_HOST, SQL_MASTER_PORT,
+    SQL_MASTER_USER, SQL_MASTER_PASS,
+
+    SQL_SLAVE_HOST, SQL_SLAVE_PORT,
+    SQL_SLAVE_USER, SQL_SLAVE_PASS,
+
+    SQL_DB, SQL_PREFIX,
 
     REDIS_HOSTNAME, REDIS_PORT,
     REDIS_PASSWORD,
@@ -12,7 +17,7 @@ public enum BotSettings {
     LOG_FOLDER, LANG_PATH,
 
     TOKEN, SECRET, ID,
-    PW_TOKEN, DBO_TOKEN,
+    GG_TOKEN, DBO_TOKEN,
 
     UPDATE_SITES, RUN_API, USE_REDIS_STORES, USE_WEBHOOKS,
 

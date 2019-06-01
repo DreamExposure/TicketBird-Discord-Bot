@@ -3,7 +3,9 @@ package org.dreamexposure.ticketbird;
 import discord4j.core.DiscordClient;
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
-import discord4j.core.object.data.stored.*;
+import discord4j.core.object.data.stored.ChannelBean;
+import discord4j.core.object.data.stored.GuildBean;
+import discord4j.core.object.data.stored.MessageBean;
 import discord4j.store.api.mapping.MappingStoreService;
 import discord4j.store.jdk.JdkStoreService;
 import discord4j.store.redis.RedisStoreService;
@@ -89,11 +91,7 @@ public class Main {
             RedisStoreService rss = new RedisStoreService(RedisClient.create(uri));
 
             MappingStoreService mapping = MappingStoreService.create()
-                    .setMapping(MessageBean.class, rss)
-                    .setMapping(ChannelBean.class, rss)
-                    .setMapping(TextChannelBean.class, rss)
-                    .setMapping(CategoryBean.class, rss)
-                    .setMapping(GuildBean.class, rss)
+                    .setMappings(rss, MessageBean.class, ChannelBean.class, GuildBean.class)
                     .setFallback(new JdkStoreService());
 
             clientBuilder.setStoreService(mapping);

@@ -9,7 +9,7 @@ import org.json.JSONObject;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class UpdateDiscordPwData {
+public class UpdateDiscordBotsGgData {
     private static Timer timer;
 
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
@@ -36,26 +36,28 @@ public class UpdateDiscordPwData {
         try {
             int serverCount = Main.getClient().getGuilds().count().block().intValue();
 
-            JSONObject json = new JSONObject().put("server_count", serverCount);
+            JSONObject json = new JSONObject()
+                    .put("guildCount", serverCount)
+                    .put("shardCount", Integer.valueOf(BotSettings.SHARD_COUNT.get()));
 
             OkHttpClient client = new OkHttpClient();
 
             RequestBody body = RequestBody.create(JSON, json.toString());
             Request request = new Request.Builder()
-                    .url("https://bots.discord.pw/api/bots/456140067220750336/stats")
+                    .url("https://discord.bots.gg/api/v1/bots/456140067220750336/stats")
                     .post(body)
-                    .header("Authorization", BotSettings.PW_TOKEN.get())
+                    .header("Authorization", BotSettings.GG_TOKEN.get())
                     .header("Content-Type", "application/json")
                     .build();
 
             Response response = client.newCall(request).execute();
 
             if (response.code() == 200)
-                Logger.getLogger().debug("Successfully updated Discord PW List!", false);
+                Logger.getLogger().debug("Successfully updated Discord Bots.gg List!", false);
         } catch (Exception e) {
             //Handle issue.
-            System.out.println("Failed to update Discord PW list metadata!");
-            Logger.getLogger().exception(null, "Failed to update Discord PW list.", e, true, UpdateDiscordPwData.class);
+            System.out.println("Failed to update Discord Bots.gg list metadata!");
+            Logger.getLogger().exception(null, "Failed to update Discord Bots.gg list.", e, true, UpdateDiscordBotsGgData.class);
             e.printStackTrace();
         }
     }

@@ -2,7 +2,7 @@ package org.dreamexposure.ticketbird.service;
 
 import org.dreamexposure.ticketbird.module.status.StatusChanger;
 import org.dreamexposure.ticketbird.network.UpdateDiscordBotsData;
-import org.dreamexposure.ticketbird.network.UpdateDiscordPwData;
+import org.dreamexposure.ticketbird.network.UpdateDiscordBotsGgData;
 import org.dreamexposure.ticketbird.utils.GlobalVars;
 
 import java.util.ArrayList;
@@ -44,7 +44,7 @@ public class TimeManager {
 
         //Start the bot site updates
         UpdateDiscordBotsData.init();
-        UpdateDiscordPwData.init();
+        UpdateDiscordBotsGgData.init();
     }
 
     /**
