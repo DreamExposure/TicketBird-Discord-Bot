@@ -44,12 +44,12 @@ public class MessageCreateListener {
                     TextChannel channel = ChannelManager.createChannel("ticket-" + ticketNumber, "", settings.getAwaitingCategory(), guild);
 
                     //Set channel permissions...
-                    PermissionSet toAdd = PermissionSet.none();
-                    toAdd.add(Permission.MENTION_EVERYONE);
-                    toAdd.add(Permission.ATTACH_FILES);
-                    toAdd.add(Permission.EMBED_LINKS);
-                    toAdd.add(Permission.SEND_MESSAGES);
-                    toAdd.add(Permission.READ_MESSAGE_HISTORY);
+                    PermissionSet toAdd = PermissionSet
+                            .of(Permission.MENTION_EVERYONE,
+                                    Permission.ATTACH_FILES,
+                                    Permission.EMBED_LINKS,
+                                    Permission.SEND_MESSAGES,
+                                    Permission.READ_MESSAGE_HISTORY);
                     PermissionSet toRemove = PermissionSet.all();
 
                     PermissionOverwrite everyoneOverride = PermissionOverwrite.forRole(guild.getEveryoneRole().block().getId(), PermissionSet.none(), toRemove);
