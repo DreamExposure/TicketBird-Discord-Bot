@@ -95,6 +95,8 @@ public class Main {
                     .setFallback(new JdkStoreService());
 
             clientBuilder.setStoreService(mapping);
+        } else {
+            clientBuilder.setStoreService(new JdkStoreService());
         }
 
         return clientBuilder.build();
