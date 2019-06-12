@@ -49,7 +49,8 @@ public class MessageCreateListener {
                                     Permission.ATTACH_FILES,
                                     Permission.EMBED_LINKS,
                                     Permission.SEND_MESSAGES,
-                                    Permission.READ_MESSAGE_HISTORY);
+                                    Permission.READ_MESSAGE_HISTORY,
+                                    Permission.VIEW_CHANNEL);
                     PermissionSet toRemove = PermissionSet.all();
 
                     PermissionOverwrite everyoneOverride = PermissionOverwrite.forRole(guild.getEveryoneRole().block().getId(), PermissionSet.none(), toRemove);

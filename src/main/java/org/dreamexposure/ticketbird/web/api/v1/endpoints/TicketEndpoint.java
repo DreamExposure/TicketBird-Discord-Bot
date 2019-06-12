@@ -69,7 +69,8 @@ public class TicketEndpoint {
                                         Permission.ATTACH_FILES,
                                         Permission.EMBED_LINKS,
                                         Permission.SEND_MESSAGES,
-                                        Permission.READ_MESSAGE_HISTORY);
+                                        Permission.READ_MESSAGE_HISTORY,
+                                        Permission.VIEW_CHANNEL);
                         PermissionSet toRemove = PermissionSet.all();
 
                         Member creator = null;
