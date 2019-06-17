@@ -13,6 +13,7 @@ import org.dreamexposure.ticketbird.Main;
 import org.dreamexposure.ticketbird.database.DatabaseManager;
 import org.dreamexposure.ticketbird.message.ChannelManager;
 import org.dreamexposure.ticketbird.message.MessageManager;
+import org.dreamexposure.ticketbird.objects.bot.BotSettings;
 import org.dreamexposure.ticketbird.objects.command.CommandInfo;
 import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
 import org.dreamexposure.ticketbird.utils.GeneralUtils;
@@ -119,7 +120,8 @@ public class TicketBirdCommand implements ICommand {
             spec.setTitle(MessageManager.getMessage("Embed.TicketBird.Info.Title", settings));
             spec.addField(MessageManager.getMessage("Embed.TicketBird.Info.Developer", settings), "DreamExposure", true);
             spec.addField(MessageManager.getMessage("Embed.TicketBird.Info.Version", settings), GlobalVars.version, true);
-            spec.addField(MessageManager.getMessage("Embed.TicketBird.Info.Library", settings), "Discord4J, version 3.0.2", false);
+            spec.addField(MessageManager.getMessage("Embed.TicketBird.Info.Library", settings), "Discord4J, version " + GlobalVars.d4jVersion, true);
+            spec.addField("Shard Index", BotSettings.SHARD_INDEX.get() + "/" + BotSettings.SHARD_COUNT.get(), true);
             spec.addField(MessageManager.getMessage("Embed.TicketBird.Info.TotalGuilds", settings), Main.getClient().getGuilds().count().block() + "", true);
             spec.addField("Total Tickets", DatabaseManager.getManager().getTotalTicketCount() + "", true);
             spec.setFooter(MessageManager.getMessage("Embed.TicketBird.Info.Patron", settings) + ": https://www.patreon.com/Novafox", null);
