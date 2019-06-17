@@ -42,24 +42,6 @@ public class GeneralUtils {
     }
 
     /**
-     * Combines the arguments of a String array
-     *
-     * @param args  The string array
-     * @param start What index to start at
-     * @return The combines arguments
-     */
-    public static String combineArgs(String[] args, int start) {
-        if (start >= args.length)
-            throw new IllegalArgumentException("You can not start at an index that doesn't exit!");
-
-        StringBuilder res = new StringBuilder();
-        for (int i = start; i < args.length; i++) {
-            res.append(args[i]).append(" ");
-        }
-        return res.toString().trim();
-    }
-
-    /**
      * This is an overkill parser made by xaanit. You can thank him for this nightmare.
      * <br> <br>
      * regardless, it works, and therefore we will use it because generally speaking it seems some users do not understand that "<" and ">" are not in fact required and are just symbols <b>CLEARLY DEFINED</b> in our documentation.
@@ -96,7 +78,7 @@ public class GeneralUtils {
         return msg;
     }
 
-    public static String getHighVoluneStaticSupportMessage(Guild guild, GuildSettings settings) {
+    public static String getHighVolumeStaticSupportMessage(Guild guild, GuildSettings settings) {
         String msg = MessageManager.getMessage("Support.StaticMessage.HighVolume", settings);
 
         Category awaiting = guild.getChannelById(settings.getAwaitingCategory()).ofType(Category.class).block();

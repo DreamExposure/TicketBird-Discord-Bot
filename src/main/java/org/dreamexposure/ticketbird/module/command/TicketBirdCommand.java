@@ -123,7 +123,7 @@ public class TicketBirdCommand implements ICommand {
             spec.addField(MessageManager.getMessage("Embed.TicketBird.Info.TotalGuilds", settings), Main.getClient().getGuilds().count().block() + "", true);
             spec.addField("Total Tickets", DatabaseManager.getManager().getTotalTicketCount() + "", true);
             spec.setFooter(MessageManager.getMessage("Embed.TicketBird.Info.Patron", settings) + ": https://www.patreon.com/Novafox", null);
-            spec.setUrl("https://ticketbird.novamaday.com");
+            spec.setUrl("https://ticketbird.dreamexposure.org");
             spec.setColor(GlobalVars.embedColor);
         };
         MessageManager.sendMessageAsync(embed, event);
@@ -138,7 +138,7 @@ public class TicketBirdCommand implements ICommand {
             spec.addField(MessageManager.getMessage("Embed.TicketBird.Settings.Language", settings), settings.getLang(), true);
             spec.addField(MessageManager.getMessage("Embed.TicketBird.Settings.Prefix", settings), settings.getPrefix(), true);
             spec.setFooter(MessageManager.getMessage("Embed.TicketBird.Info.Patron", settings) + ": https://www.patreon.com/Novafox", null);
-            spec.setUrl("https://www.novamaday.com/ticketbird/");
+            spec.setUrl("https://ticketbird.dreamexposure.org");
             spec.setColor(GlobalVars.embedColor);
         };
         MessageManager.sendMessageAsync(embed, event);

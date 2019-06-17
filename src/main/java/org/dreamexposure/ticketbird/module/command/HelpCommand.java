@@ -69,7 +69,7 @@ public class HelpCommand implements ICommand {
                     }
                 }
                 spec.setFooter("Check out the official site for more command info!", null);
-                spec.setUrl("https://ticketbird.novamaday.com/commands");
+                spec.setUrl("https://ticketbird.dreamexposure.org/commands");
                 spec.setColor(GlobalVars.embedColor);
             };
             MessageManager.sendMessageAsync(embed, event);
@@ -113,7 +113,7 @@ public class HelpCommand implements ICommand {
 
             spec.setFooter("<> = required | () = optional", null);
 
-            spec.setUrl("https://ticketbird.novamaday.com/commands");
+            spec.setUrl("https://ticketbird.dreamexposure.org/commands");
 
             spec.setColor(GlobalVars.embedColor);
 
@@ -130,7 +130,7 @@ public class HelpCommand implements ICommand {
 
             spec.setFooter("<> = required | () = optional", null);
 
-            spec.setUrl("https://ticketbird.novamaday.com/commands");
+            spec.setUrl("https://ticketbird.dreamexposure.org/commands");
 
             spec.setColor(GlobalVars.embedColor);
         };

@@ -1,6 +1,6 @@
 # TicketBird
 
-Website: https://ticketbird.novamaday.com
+Website: https://ticketbird.dreamexposure.org
 
 A bot built in Java with D4J for handling tickets for projects and products inside of Discord.
 
