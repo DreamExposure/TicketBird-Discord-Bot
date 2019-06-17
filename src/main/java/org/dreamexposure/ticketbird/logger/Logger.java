@@ -25,7 +25,6 @@ public class Logger {
 
     private String exceptionsFile;
     private String apiFile;
-    private String announcementsFile;
     private String debugFile;
 
     private Logger() {
@@ -50,7 +49,6 @@ public class Logger {
 
         exceptionsFile = BotSettings.LOG_FOLDER.get() + "/" + timestamp + "-exceptions.log";
         apiFile = BotSettings.LOG_FOLDER.get() + "/" + timestamp + "-api.log";
-        announcementsFile = BotSettings.LOG_FOLDER.get() + "/" + timestamp + "-announcements.log";
         debugFile = BotSettings.LOG_FOLDER.get() + "/" + timestamp + "-debug.log";
 
         try {
@@ -61,10 +59,6 @@ public class Logger {
             PrintWriter api = new PrintWriter(apiFile, "UTF-8");
             api.println("INIT --- " + timestamp + " ---");
             api.close();
-
-            PrintWriter announcement = new PrintWriter(announcementsFile, "UTF-8");
-            announcement.println("INIT --- " + timestamp + " ---");
-            announcement.close();
 
             PrintWriter debug = new PrintWriter(debugFile, "UTF-8");
             debug.println("INIT --- " + timestamp + " ---");
@@ -107,8 +101,11 @@ public class Logger {
 
         //Post to webhook if wanted.
         if (BotSettings.USE_WEBHOOKS.get().equalsIgnoreCase("true") && postWebhook) {
+            if (error.length() > 1500)
+                error = error.substring(0, 1500);
+
             WebhookEmbedBuilder builder = new WebhookEmbedBuilder()
-                    .setTitle(new WebhookEmbed.EmbedTitle("Debug", null))
+                    .setTitle(new WebhookEmbed.EmbedTitle("Exception", null))
                     .addField(new WebhookEmbed
                             .EmbedField(true, "Shard Index", BotSettings.SHARD_INDEX.get()))
                     .addField(new WebhookEmbed
@@ -244,40 +241,11 @@ public class Logger {
         }
     }
 
-    public void announcement(String message) {
-        String timeStamp = new SimpleDateFormat("yyyy/MM/dd-HH:mm:ss").format(Calendar.getInstance().getTime());
-
-        try {
-            FileWriter file = new FileWriter(announcementsFile, true);
-            file.write("ANNOUNCEMENT --- " + timeStamp + " ---" + GlobalVars.lineBreak);
-            file.write("info: " + message + GlobalVars.lineBreak);
-            file.close();
-        } catch (IOException io) {
-            io.printStackTrace();
-        }
-    }
-
-    public void announcement(String message, String guildId, String announcementId, String eventId) {
-        String timeStamp = new SimpleDateFormat("yyyy/MM/dd-HH:mm:ss").format(Calendar.getInstance().getTime());
-
-        try {
-            FileWriter file = new FileWriter(announcementsFile, true);
-            file.write("ANNOUNCEMENT --- " + timeStamp + " ---" + GlobalVars.lineBreak);
-            file.write("info: " + message + GlobalVars.lineBreak);
-            file.write("guild Id: " + guildId + GlobalVars.lineBreak);
-            file.write("announcement Id: " + announcementId + GlobalVars.lineBreak);
-            file.write("event id: " + eventId + GlobalVars.lineBreak);
-            file.close();
-        } catch (IOException io) {
-            io.printStackTrace();
-        }
-    }
-
     public void status(String message, @Nullable String info) {
         //Post to webhook if wanted.
         if (BotSettings.USE_WEBHOOKS.get().equalsIgnoreCase("true")) {
             WebhookEmbedBuilder builder = new WebhookEmbedBuilder()
-                    .setTitle(new WebhookEmbed.EmbedTitle("Debug", null))
+                    .setTitle(new WebhookEmbed.EmbedTitle("Status", null))
                     .addField(new WebhookEmbed
                             .EmbedField(true, "Shard Index", BotSettings.SHARD_INDEX.get()))
                     .setDescription(message)
