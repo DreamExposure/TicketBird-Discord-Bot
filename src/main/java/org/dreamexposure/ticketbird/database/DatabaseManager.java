@@ -529,6 +529,9 @@ public class DatabaseManager {
 
                 projects.add(project);
             }
+
+            res.close();
+            statement.close();
         } catch (SQLException e) {
             Logger.getLogger().exception(null, "Failed to get Projects for guild.", e, true, this.getClass());
         }
@@ -558,6 +561,9 @@ public class DatabaseManager {
 
                 tickets.add(ticket);
             }
+
+            res.close();
+            statement.close();
         } catch (SQLException e) {
             Logger.getLogger().exception(null, "Failed to get Tickets for guild.", e, true, this.getClass());
         }

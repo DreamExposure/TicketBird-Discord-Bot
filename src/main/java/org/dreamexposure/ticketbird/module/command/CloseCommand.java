@@ -94,8 +94,7 @@ public class CloseCommand implements ICommand {
 
                     //Send message! :D
                     if (ticket.getCreator() == null) {
-                        MessageManager.sendMessageAsync(MessageManager.getMessage("Ticket.Close.Success", "%creator%", "NO " +
-                                "CREATOR", settings), event);
+                        MessageManager.sendMessageAsync(MessageManager.getMessage("Ticket.Close.Success", "%creator%", "NO CREATOR", settings), event);
                     } else {
                         if (guild.getMemberById(ticket.getCreator()).onErrorResume(e -> Mono.empty()).block() != null) {
                             MessageManager.sendMessageAsync(MessageManager.getMessage("Ticket.Close.Success", "%creator%",
