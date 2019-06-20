@@ -11,7 +11,9 @@ import org.slf4j.Marker;
 import java.util.Arrays;
 import java.util.List;
 
-@SuppressWarnings("unused")
+/**
+ * Taken from Discord4J, used with permission. Licensed under LGPL3.
+ */
 public class GatewayEventFilter extends TurboFilter {
 
     private String include;
@@ -24,7 +26,7 @@ public class GatewayEventFilter extends TurboFilter {
         if (params != null && logger.getName().startsWith("discord4j.gateway.inbound")) {
             for (Object param : params) {
                 if (param instanceof GatewayPayload) {
-                    GatewayPayload<?> payload = (GatewayPayload) param;
+                    GatewayPayload<?> payload = (GatewayPayload<?>) param;
                     if (Opcode.DISPATCH.equals(payload.getOp())) {
                         if (excludedEvents != null) {
                             if (excludedEvents.contains(payload.getType())) {

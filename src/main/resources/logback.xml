@@ -3,7 +3,7 @@
     <logger name="org.springframework.web" level="INFO"/>
     <logger name="io.netty" level="INFO"/>
     <logger name="reactor" level="INFO"/>
-    <logger name="proxy" level="info"/>
+    <logger name="proxy" level="INFO"/>
     <logger name="reactor.retry" level="DEBUG"/>
     <logger name="discord4j.core" level="DEBUG"/>
     <logger name="discord4j.gateway" level="INFO"/>
@@ -11,8 +11,7 @@
     <logger name="io.lettuce" level="INFO"/>
 
     <turboFilter class="org.dreamexposure.ticketbird.filter.GatewayEventFilter">
-        <Exclude>PRESENCE_UPDATE</Exclude>
-        <Exclude>GUILD_CREATE</Exclude>
+        <Exclude>PRESENCE_UPDATE,GUILD_CREATE,GUILD_MEMBERS_CHUNK</Exclude>
     </turboFilter>
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
