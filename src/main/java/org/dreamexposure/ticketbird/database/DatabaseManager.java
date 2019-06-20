@@ -200,7 +200,7 @@ public class DatabaseManager {
                         "(GUILD_ID, LANG, PREFIX, PATRON_GUILD, DEV_GUILD, AWAITING_CATEGORY, RESPONDED_CATEGORY, HOLD_CATEGORY, CLOSE_CATEGORY, SUPPORT_CHANNEL, STATIC_MESSAGE, NEXT_ID, STAFF, CLOSED_TOTAL)" +
                         " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
                 PreparedStatement ps = masterConnection.prepareStatement(insertCommand);
-                ps.setString(1, settings.getGuildID() + "");
+                ps.setString(1, settings.getGuildID().asString());
                 ps.setString(2, settings.getLang());
                 ps.setString(3, settings.getPrefix());
                 ps.setBoolean(4, settings.isPatronGuild());
