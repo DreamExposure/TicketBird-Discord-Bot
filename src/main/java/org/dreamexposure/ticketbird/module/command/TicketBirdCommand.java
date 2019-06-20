@@ -188,7 +188,7 @@ public class TicketBirdCommand implements ICommand {
     private void moduleSetup(MessageCreateEvent event, GuildSettings settings) {
         Guild guild = event.getGuild().block();
 
-        if (guild.getChannelById(settings.getCloseCategory()).block() == null) {
+        if (settings.getCloseCategory() == null || guild.getChannelById(settings.getCloseCategory()).onErrorResume(e -> Mono.empty()).block() == null) {
             //Do initial setup!
             MessageManager.sendMessageAsync(MessageManager.getMessage("Setup.Working", settings), event);
 
@@ -203,9 +203,7 @@ public class TicketBirdCommand implements ICommand {
                 settings.setSupportChannel(support.getId());
 
                 //Set channel permissions...
-                PermissionSet toAdd = PermissionSet.none();
-                toAdd.add(Permission.SEND_MESSAGES);
-                toAdd.add(Permission.READ_MESSAGE_HISTORY);
+                PermissionSet toAdd = PermissionSet.of(Permission.SEND_MESSAGES, Permission.VIEW_CHANNEL, Permission.READ_MESSAGE_HISTORY);
 
                 PermissionOverwrite forEveryone = PermissionOverwrite.forRole(guild.getEveryoneRole().block().getId(), toAdd, PermissionSet.none());
 
