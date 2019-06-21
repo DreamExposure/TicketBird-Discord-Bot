@@ -11,6 +11,7 @@ import discord4j.core.object.util.PermissionSet;
 import discord4j.core.spec.EmbedCreateSpec;
 import org.dreamexposure.ticketbird.Main;
 import org.dreamexposure.ticketbird.database.DatabaseManager;
+import org.dreamexposure.ticketbird.logger.Logger;
 import org.dreamexposure.ticketbird.message.ChannelManager;
 import org.dreamexposure.ticketbird.message.MessageManager;
 import org.dreamexposure.ticketbird.objects.bot.BotSettings;
@@ -217,7 +218,9 @@ public class TicketBirdCommand implements ICommand {
                 DatabaseManager.getManager().updateSettings(settings);
 
                 MessageManager.sendMessageAsync(MessageManager.getMessage("Setup.Complete", settings), event);
-            } catch (NullPointerException e) {
+            } catch (Exception e) {
+                //noinspection OptionalGetWithoutIsPresent
+                Logger.getLogger().exception(event.getMember().get(), "Setup Failed", e, true, getClass());
                 MessageManager.sendMessageAsync(MessageManager.getMessage("Notification.Perm.Bot", settings), event);
             }
 
