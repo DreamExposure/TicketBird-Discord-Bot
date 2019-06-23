@@ -9,10 +9,16 @@ import org.dreamexposure.ticketbird.objects.bot.BotSettings;
 import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
 import org.dreamexposure.ticketbird.objects.guild.Project;
 import org.dreamexposure.ticketbird.objects.guild.Ticket;
+import org.flywaydb.core.Flyway;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings({"SqlResolve", "UnusedReturnValue", "SqlNoDataSourceInspection", "Duplicates"})
 public class DatabaseManager {
@@ -68,61 +74,23 @@ public class DatabaseManager {
         }
     }
 
-    /**
-     * Creates all required tables in the database if they do not exist.
-     */
-    public void createTables() {
-        try (final Connection connection = masterInfo.getSource().getConnection()) {
-            Statement statement = connection.createStatement();
-            String settingsTableName = String.format("%sguild_settings", masterInfo.getSettings().getPrefix());
-            String projectTableName = String.format("%sprojects", masterInfo.getSettings().getPrefix());
-            String ticketTableName = String.format("%stickets", masterInfo.getSettings().getPrefix());
-            String apiTableName = String.format("%sapi", masterInfo.getSettings().getPrefix());
-            String createSettingsTable = "CREATE TABLE IF NOT EXISTS " + settingsTableName +
-                    "(GUILD_ID VARCHAR(255) not NULL, " +
-                    " LANG VARCHAR(255) not NULL, " +
-                    " PREFIX VARCHAR(16) not NULL, " +
-                    " PATRON_GUILD BOOLEAN not NULL, " +
-                    " DEV_GUILD BOOLEAN not NULL, " +
-                    " AWAITING_CATEGORY LONG not NULL, " +
-                    " RESPONDED_CATEGORY LONG not NULL, " +
-                    " HOLD_CATEGORY LONG not NULL, " +
-                    " CLOSE_CATEGORY LONG not NULL, " +
-                    " SUPPORT_CHANNEL LONG not NULL, " +
-                    " STATIC_MESSAGE LONG not NULL, " +
-                    " NEXT_ID INTEGER not NULL, " +
-                    " STAFF LONGTEXT not NULL, " +
-                    " CLOSED_TOTAL INTEGER not NULL, " +
-                    " PRIMARY KEY (GUILD_ID))";
-            String createProjectsTable = "CREATE TABLE IF NOT EXISTS " + projectTableName +
-                    "(GUILD_ID VARCHAR(255) not NULL, " +
-                    " PROJECT_NAME LONGTEXT not NULL, " +
-                    " PROJECT_PREFIX VARCHAR(16) not NULL)";
-            String createTicketsTable = "CREATE TABLE IF NOT EXISTS " + ticketTableName +
-                    "(GUILD_ID VARCHAR(255) not NULL, " +
-                    " NUMBER INTEGER not NULL, " +
-                    " PROJECT LONGTEXT not NULL, " +
-                    " CREATOR LONG not NULL, " +
-                    " CHANNEL LONG not NULL, " +
-                    " CATEGORY LONG not NULL, " +
-                    " LAST_ACTIVITY LONG not NULL)";
-            String createAPITable = "CREATE TABLE IF NOT EXISTS " + apiTableName +
-                    " (USER_ID varchar(255) not NULL, " +
-                    " API_KEY varchar(64) not NULL, " +
-                    " BLOCKED BOOLEAN not NULL, " +
-                    " TIME_ISSUED LONG not NULL, " +
-                    " USES INT not NULL, " +
-                    " PRIMARY KEY (USER_ID, API_KEY))";
-            statement.executeUpdate(createSettingsTable);
-            statement.executeUpdate(createProjectsTable);
-            statement.executeUpdate(createTicketsTable);
-            statement.executeUpdate(createAPITable);
-            statement.close();
-            System.out.println("Successfully created needed tables in MySQL database!");
-        } catch (SQLException e) {
-            System.out.println("Failed to created database tables! Something must be wrong.");
-            Logger.getLogger().exception(null, "Creating MySQL tables failed", e, true, this.getClass());
-            e.printStackTrace();
+    public void handleMigrations() {
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put("prefix", BotSettings.SQL_PREFIX.get());
+
+        try {
+            Flyway flyway = Flyway.configure()
+                    .dataSource(masterInfo.getSource())
+                    .cleanDisabled(true)
+                    .baselineOnMigrate(true)
+                    .table(BotSettings.SQL_PREFIX.get() + "schema_history")
+                    .placeholders(placeholders)
+                    .load();
+            int sm = flyway.migrate();
+            Logger.getLogger().debug("Migrations Successful, " + sm + " migrations applied!", true);
+        } catch (Exception e) {
+            Logger.getLogger().exception(null, "Migrations Failure", e, true, getClass());
+            System.exit(2);
         }
     }
 

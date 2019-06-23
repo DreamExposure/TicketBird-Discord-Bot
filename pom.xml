@@ -170,12 +170,11 @@
             <version>0.1.7</version>
             <scope>compile</scope>
         </dependency>
-        <!--Connection pooling-->
+        <!--FlywayDB API for Database Migrations-->
         <dependency>
-            <groupId>com.zaxxer</groupId>
-            <artifactId>HikariCP</artifactId>
-            <version>3.3.1</version>
-            <scope>compile</scope>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <version>5.2.4</version>
         </dependency>
     </dependencies>
 

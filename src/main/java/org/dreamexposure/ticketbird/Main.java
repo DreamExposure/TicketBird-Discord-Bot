@@ -49,7 +49,7 @@ public class Main {
 
         //Connect to MySQL server
         DatabaseManager.getManager().connectToMySQL();
-        DatabaseManager.getManager().createTables();
+        DatabaseManager.getManager().handleMigrations();
 
         //Start Spring (catch any issues from it so only the site goes down without affecting bot....
         if (BotSettings.RUN_API.get().equalsIgnoreCase("true")) {
