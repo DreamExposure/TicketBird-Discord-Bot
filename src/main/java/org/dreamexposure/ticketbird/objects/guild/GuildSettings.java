@@ -1,9 +1,9 @@
 package org.dreamexposure.ticketbird.objects.guild;
 
-import discord4j.core.object.util.Snowflake;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import discord4j.core.object.util.Snowflake;
 
 public class GuildSettings {
     private final Snowflake guildID;
@@ -13,6 +13,8 @@ public class GuildSettings {
 
     private boolean patronGuild;
     private boolean devGuild;
+
+    private boolean useProjects;
 
     private Snowflake awaitingCategory;
     private Snowflake respondedCategory;
@@ -60,6 +62,10 @@ public class GuildSettings {
 
     public boolean isDevGuild() {
         return devGuild;
+    }
+
+    public boolean isUseProjects() {
+        return useProjects;
     }
 
     public Snowflake getAwaitingCategory() {
@@ -122,6 +128,10 @@ public class GuildSettings {
 
     public void setDevGuild(boolean _devGuild) {
         devGuild = _devGuild;
+    }
+
+    public void setUseProjects(boolean useProjects) {
+        this.useProjects = useProjects;
     }
 
     public void setAwaitingCategory(Snowflake _awaiting) {

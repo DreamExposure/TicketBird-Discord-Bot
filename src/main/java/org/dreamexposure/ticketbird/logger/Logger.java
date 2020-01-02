@@ -1,13 +1,8 @@
 package org.dreamexposure.ticketbird.logger;
 
-import club.minnced.discord.webhook.WebhookClient;
-import club.minnced.discord.webhook.send.WebhookEmbed;
-import club.minnced.discord.webhook.send.WebhookEmbedBuilder;
-import discord4j.core.object.entity.User;
 import org.dreamexposure.ticketbird.objects.bot.BotSettings;
 import org.dreamexposure.ticketbird.utils.GlobalVars;
 
-import javax.annotation.Nullable;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -16,7 +11,14 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Calendar;
 
-@SuppressWarnings("Duplicates")
+import javax.annotation.Nullable;
+
+import club.minnced.discord.webhook.WebhookClient;
+import club.minnced.discord.webhook.send.WebhookEmbed;
+import club.minnced.discord.webhook.send.WebhookEmbedBuilder;
+import discord4j.core.object.entity.User;
+
+@SuppressWarnings({"Duplicates", "rawtypes"})
 public class Logger {
     private static Logger instance;
     private WebhookClient debugClient;

@@ -1,7 +1,5 @@
 package org.dreamexposure.ticketbird.module.command;
 
-import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.spec.EmbedCreateSpec;
 import org.dreamexposure.ticketbird.database.DatabaseManager;
 import org.dreamexposure.ticketbird.message.MessageManager;
 import org.dreamexposure.ticketbird.objects.command.CommandInfo;
@@ -11,6 +9,9 @@ import org.dreamexposure.ticketbird.utils.GlobalVars;
 
 import java.util.ArrayList;
 import java.util.function.Consumer;
+
+import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.spec.EmbedCreateSpec;
 
 public class ProjectCommand implements ICommand {
 
@@ -62,7 +63,12 @@ public class ProjectCommand implements ICommand {
      * @return <code>true</code> if successful, else <code>false</code>.
      */
     @Override
-    public Boolean issueCommand(String[] args, MessageCreateEvent event, GuildSettings settings) {
+    public boolean issueCommand(String[] args, MessageCreateEvent event, GuildSettings settings) {
+        //noinspection OptionalGetWithoutIsPresent
+        if (!settings.getStaff().contains(event.getMember().get().getId())) {
+            MessageManager.sendMessageAsync(MessageManager.getMessage("Notification.Perm.CONTROL_ROLE", settings), event);
+            return false;
+        }
         if (args.length < 1) {
             //Too few args
             MessageManager.sendMessageAsync(MessageManager.getMessage("Notification.Args.Few", settings), event);
@@ -80,6 +86,9 @@ public class ProjectCommand implements ICommand {
                     //=project list
                     moduleList(event, settings);
                     break;
+                case "toggle":
+                    //=project toggle
+                    moduleToggle(event, settings);
                 default:
                     MessageManager.sendMessageAsync(MessageManager.getMessage("Notification.Args.Invalid", settings), event);
                     break;
@@ -140,5 +149,12 @@ public class ProjectCommand implements ICommand {
         };
 
         MessageManager.sendMessageAsync(embed, event);
+    }
+
+    private void moduleToggle(MessageCreateEvent event, GuildSettings settings) {
+        settings.setUseProjects(!settings.isUseProjects());
+        DatabaseManager.getManager().updateSettings(settings);
+
+        MessageManager.sendMessageAsync("Projects have been toggled to: " + settings.isUseProjects(), event);
     }
 }

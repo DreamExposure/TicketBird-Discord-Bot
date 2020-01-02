@@ -1,6 +1,5 @@
 package org.dreamexposure.ticketbird.database;
 
-import discord4j.core.object.util.Snowflake;
 import org.dreamexposure.novautils.database.DatabaseInfo;
 import org.dreamexposure.novautils.database.DatabaseSettings;
 import org.dreamexposure.ticketbird.logger.Logger;
@@ -19,6 +18,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import discord4j.core.object.util.Snowflake;
 
 @SuppressWarnings({"SqlResolve", "UnusedReturnValue", "SqlNoDataSourceInspection", "Duplicates"})
 public class DatabaseManager {
@@ -165,23 +166,24 @@ public class DatabaseManager {
             if (!hasStuff || res.getString("GUILD_ID") == null) {
                 //Data not present, add to DB.
                 String insertCommand = "INSERT INTO " + dataTableName +
-                        "(GUILD_ID, LANG, PREFIX, PATRON_GUILD, DEV_GUILD, AWAITING_CATEGORY, RESPONDED_CATEGORY, HOLD_CATEGORY, CLOSE_CATEGORY, SUPPORT_CHANNEL, STATIC_MESSAGE, NEXT_ID, STAFF, CLOSED_TOTAL)" +
-                        " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+                        "(GUILD_ID, LANG, PREFIX, PATRON_GUILD, DEV_GUILD, USE_PROJECTS, AWAITING_CATEGORY, RESPONDED_CATEGORY, HOLD_CATEGORY, CLOSE_CATEGORY, SUPPORT_CHANNEL, STATIC_MESSAGE, NEXT_ID, STAFF, CLOSED_TOTAL)" +
+                        " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
                 PreparedStatement ps = masterConnection.prepareStatement(insertCommand);
                 ps.setString(1, settings.getGuildID().asString());
                 ps.setString(2, settings.getLang());
                 ps.setString(3, settings.getPrefix());
                 ps.setBoolean(4, settings.isPatronGuild());
                 ps.setBoolean(5, settings.isDevGuild());
-                ps.setLong(6, settings.getAwaitingCategory().asLong());
-                ps.setLong(7, settings.getRespondedCategory().asLong());
-                ps.setLong(8, settings.getHoldCategory().asLong());
-                ps.setLong(9, settings.getCloseCategory().asLong());
-                ps.setLong(10, settings.getSupportChannel().asLong());
-                ps.setLong(11, settings.getStaticMessage().asLong());
-                ps.setInt(12, settings.getNextId());
-                ps.setString(13, settings.getStaffString());
-                ps.setInt(14, settings.getTotalClosed());
+                ps.setBoolean(6, settings.isUseProjects());
+                ps.setLong(7, settings.getAwaitingCategory().asLong());
+                ps.setLong(8, settings.getRespondedCategory().asLong());
+                ps.setLong(9, settings.getHoldCategory().asLong());
+                ps.setLong(10, settings.getCloseCategory().asLong());
+                ps.setLong(11, settings.getSupportChannel().asLong());
+                ps.setLong(12, settings.getStaticMessage().asLong());
+                ps.setInt(13, settings.getNextId());
+                ps.setString(14, settings.getStaffString());
+                ps.setInt(15, settings.getTotalClosed());
 
 
                 ps.executeUpdate();
@@ -191,7 +193,7 @@ public class DatabaseManager {
             } else {
                 //Data present, update.
                 String update = "UPDATE " + dataTableName
-                        + " SET LANG = ?, PREFIX = ?, PATRON_GUILD = ?, DEV_GUILD = ?, " +
+                        + " SET LANG = ?, PREFIX = ?, PATRON_GUILD = ?, DEV_GUILD = ?, USE_PROJECTS = ?, " +
                         " AWAITING_CATEGORY = ?, RESPONDED_CATEGORY = ?, HOLD_CATEGORY = ?, " +
                         " CLOSE_CATEGORY = ?, SUPPORT_CHANNEL = ?, STATIC_MESSAGE = ?, " +
                         " NEXT_ID = ?, STAFF = ?, CLOSED_TOTAL = ? WHERE GUILD_ID = ?";
@@ -201,16 +203,17 @@ public class DatabaseManager {
                 ps.setString(2, settings.getPrefix());
                 ps.setBoolean(3, settings.isPatronGuild());
                 ps.setBoolean(4, settings.isDevGuild());
-                ps.setLong(5, settings.getAwaitingCategory().asLong());
-                ps.setLong(6, settings.getRespondedCategory().asLong());
-                ps.setLong(7, settings.getHoldCategory().asLong());
-                ps.setLong(8, settings.getCloseCategory().asLong());
-                ps.setLong(9, settings.getSupportChannel().asLong());
-                ps.setLong(10, settings.getStaticMessage().asLong());
-                ps.setInt(11, settings.getNextId());
-                ps.setString(12, settings.getStaffString());
-                ps.setInt(13, settings.getTotalClosed());
-                ps.setString(14, settings.getGuildID().asString());
+                ps.setBoolean(5, settings.isUseProjects());
+                ps.setLong(6, settings.getAwaitingCategory().asLong());
+                ps.setLong(7, settings.getRespondedCategory().asLong());
+                ps.setLong(8, settings.getHoldCategory().asLong());
+                ps.setLong(9, settings.getCloseCategory().asLong());
+                ps.setLong(10, settings.getSupportChannel().asLong());
+                ps.setLong(11, settings.getStaticMessage().asLong());
+                ps.setInt(12, settings.getNextId());
+                ps.setString(13, settings.getStaffString());
+                ps.setInt(14, settings.getTotalClosed());
+                ps.setString(15, settings.getGuildID().asString());
 
                 ps.executeUpdate();
 
@@ -389,6 +392,7 @@ public class DatabaseManager {
                 settings.setPrefix(res.getString("PREFIX"));
                 settings.setPatronGuild(res.getBoolean("PATRON_GUILD"));
                 settings.setDevGuild(res.getBoolean("DEV_GUILD"));
+                settings.setUseProjects(res.getBoolean("USE_PROJECTS"));
 
                 settings.setAwaitingCategory(Snowflake.of(res.getLong("AWAITING_CATEGORY")));
                 settings.setRespondedCategory(Snowflake.of(res.getLong("RESPONDED_CATEGORY")));
@@ -462,6 +466,39 @@ public class DatabaseManager {
                 ticket.setProject(res.getString("PROJECT"));
                 ticket.setCreator(Snowflake.of(res.getLong("CREATOR")));
                 ticket.setChannel(Snowflake.of(res.getLong("CHANNEL")));
+                ticket.setCategory(Snowflake.of(res.getLong("CATEGORY")));
+                ticket.setLastActivity(res.getLong("LAST_ACTIVITY"));
+
+                statement.close();
+
+                return ticket;
+            } else {
+                //Data not present.
+                statement.close();
+            }
+        } catch (SQLException e) {
+            Logger.getLogger().exception(null, "Failed to get Ticket Data.", e, true, this.getClass());
+        }
+        return null;
+    }
+
+    public Ticket getTicket(Snowflake guildId, Snowflake channelId) {
+        try (final Connection connection = slaveInfo.getSource().getConnection()) {
+            String dataTableName = String.format("%stickets", slaveInfo.getSettings().getPrefix());
+
+            String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = ? AND CHANNEL = ?";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, guildId.asString());
+            statement.setLong(2, channelId.asLong());
+
+            ResultSet res = statement.executeQuery();
+
+            boolean hasStuff = res.next();
+
+            if (hasStuff && res.getString("GUILD_ID") != null && res.getInt("NUMBER") > 0) {
+                Ticket ticket = new Ticket(guildId, res.getInt("NUMBER"));
+                ticket.setProject(res.getString("PROJECT"));
+                ticket.setCreator(Snowflake.of(res.getLong("CREATOR")));
                 ticket.setCategory(Snowflake.of(res.getLong("CATEGORY")));
                 ticket.setLastActivity(res.getLong("LAST_ACTIVITY"));
 

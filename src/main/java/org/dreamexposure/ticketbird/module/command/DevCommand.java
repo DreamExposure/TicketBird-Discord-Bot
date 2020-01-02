@@ -1,7 +1,5 @@
 package org.dreamexposure.ticketbird.module.command;
 
-import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.object.util.Snowflake;
 import org.dreamexposure.novautils.crypto.KeyGenerator;
 import org.dreamexposure.ticketbird.Main;
 import org.dreamexposure.ticketbird.database.DatabaseManager;
@@ -12,6 +10,9 @@ import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
 import org.dreamexposure.ticketbird.utils.GlobalVars;
 
 import java.util.ArrayList;
+
+import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.util.Snowflake;
 
 @SuppressWarnings("OptionalGetWithoutIsPresent")
 public class DevCommand implements ICommand {
@@ -63,7 +64,7 @@ public class DevCommand implements ICommand {
      * @return <code>true</code> if successful, else <code>false</code>.
      */
     @Override
-    public Boolean issueCommand(String[] args, MessageCreateEvent event, GuildSettings settings) {
+    public boolean issueCommand(String[] args, MessageCreateEvent event, GuildSettings settings) {
         if (event.getMember().get().getId().equals(GlobalVars.novaId)) {
             if (args.length < 1) {
                 MessageManager.sendMessageAsync("Please specify the function you would like to execute. To view valid functions use `!help dev`", event);

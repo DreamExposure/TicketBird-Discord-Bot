@@ -17,10 +17,6 @@ public class Authentication {
         if (request.getHeader("Authorization") != null) {
             String key = request.getHeader("Authorization");
 
-            //TODO: Handle this shit better but whatever
-            if (key.equals("EMBEDDED")) {
-                Logger.getLogger().api("User using embed", request.getRemoteAddr(), request.getServerName(), request.getPathInfo());
-            } else {
                 UserAPIAccount acc = DatabaseManager.getManager().getAPIAccount(key);
                 if (acc != null) {
                     if (acc.isBlocked()) {
@@ -38,11 +34,9 @@ public class Authentication {
                     Logger.getLogger().api("Attempted to use invalid API Key: " + key, request.getRemoteAddr());
                     return new AuthenticationState(false).setStatus(401).setReason("Unauthorized");
                 }
-            }
         } else {
             Logger.getLogger().api("Attempted to use API without authorization header", request.getRemoteAddr());
             return new AuthenticationState(false).setStatus(400).setReason("Bad Request");
         }
-        return new AuthenticationState(false).setStatus(500).setReason("Internal Server Error");
     }
 }

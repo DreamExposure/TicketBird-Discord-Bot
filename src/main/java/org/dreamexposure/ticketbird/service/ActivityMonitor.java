@@ -1,8 +1,5 @@
 package org.dreamexposure.ticketbird.service;
 
-import discord4j.core.object.entity.Category;
-import discord4j.core.object.entity.TextChannel;
-import discord4j.core.spec.TextChannelEditSpec;
 import org.dreamexposure.ticketbird.Main;
 import org.dreamexposure.ticketbird.database.DatabaseManager;
 import org.dreamexposure.ticketbird.logger.Logger;
@@ -11,12 +8,16 @@ import org.dreamexposure.ticketbird.message.MessageManager;
 import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
 import org.dreamexposure.ticketbird.objects.guild.Ticket;
 import org.dreamexposure.ticketbird.utils.GlobalVars;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.TimerTask;
 import java.util.function.Consumer;
+
+import discord4j.core.object.entity.Category;
+import discord4j.core.object.entity.TextChannel;
+import discord4j.core.spec.TextChannelEditSpec;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public class ActivityMonitor extends TimerTask {
 
@@ -41,9 +42,9 @@ public class ActivityMonitor extends TimerTask {
                             try {
                                 int id;
                                 if (tc.getName().split("-").length == 2)
-                                    id = Integer.valueOf(tc.getName().split("-")[1]);
+                                    id = Integer.parseInt(tc.getName().split("-")[1]);
                                 else
-                                    id = Integer.valueOf(tc.getName().split("-")[2]);
+                                    id = Integer.parseInt(tc.getName().split("-")[2]);
 
                                 //Get from database and check time
                                 Ticket tic = DatabaseManager.getManager().getTicket(settings.getGuildID(), id);
@@ -80,9 +81,9 @@ public class ActivityMonitor extends TimerTask {
                             try {
                                 int id;
                                 if (tc.getName().split("-").length == 2)
-                                    id = Integer.valueOf(tc.getName().split("-")[1]);
+                                    id = Integer.parseInt(tc.getName().split("-")[1]);
                                 else
-                                    id = Integer.valueOf(tc.getName().split("-")[2]);
+                                    id = Integer.parseInt(tc.getName().split("-")[2]);
 
                                 //Get from database and check time and handle that shit
                                 Ticket tic = DatabaseManager.getManager().getTicket(settings.getGuildID(), id);

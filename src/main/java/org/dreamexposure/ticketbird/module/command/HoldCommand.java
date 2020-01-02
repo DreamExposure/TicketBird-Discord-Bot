@@ -1,8 +1,5 @@
 package org.dreamexposure.ticketbird.module.command;
 
-import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.object.entity.TextChannel;
-import discord4j.core.spec.TextChannelEditSpec;
 import org.dreamexposure.ticketbird.database.DatabaseManager;
 import org.dreamexposure.ticketbird.message.MessageManager;
 import org.dreamexposure.ticketbird.objects.command.CommandInfo;
@@ -12,6 +9,10 @@ import org.dreamexposure.ticketbird.utils.GeneralUtils;
 
 import java.util.ArrayList;
 import java.util.function.Consumer;
+
+import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.entity.TextChannel;
+import discord4j.core.spec.TextChannelEditSpec;
 
 @SuppressWarnings({"ConstantConditions", "OptionalGetWithoutIsPresent"})
 public class HoldCommand implements ICommand {
@@ -60,44 +61,36 @@ public class HoldCommand implements ICommand {
      * @return <code>true</code> if successful, else <code>false</code>.
      */
     @Override
-    public Boolean issueCommand(String[] args, MessageCreateEvent event, GuildSettings settings) {
+    public boolean issueCommand(String[] args, MessageCreateEvent event, GuildSettings settings) {
         TextChannel channel = event.getMessage().getChannel().ofType(TextChannel.class).block();
-        String channelName = channel.getName();
-        //Channel name format [prefix]-ticket-[number]
-        try {
-            int ticketNumber = Integer.valueOf(channelName.split("-")[2]);
-            Ticket ticket = DatabaseManager.getManager().getTicket(settings.getGuildID(), ticketNumber);
+        Ticket ticket = DatabaseManager.getManager().getTicket(settings.getGuildID(), event.getMessage().getChannelId());
 
-            if (ticket != null) {
-                //Check if already closed or on hold.
-                if (!channel.getCategoryId().get().equals(settings.getCloseCategory()) && !channel.getCategoryId().get().equals(settings.getHoldCategory())) {
-                    //Not closed or on hold. Let's place it on hold!
-                    Consumer<TextChannelEditSpec> editChannel = spec -> spec.setParentId(settings.getHoldCategory());
-                    channel.edit(editChannel).subscribe();
+        if (ticket != null) {
+            //Check if already closed or on hold.
+            if (!channel.getCategoryId().get().equals(settings.getCloseCategory()) && !channel.getCategoryId().get().equals(settings.getHoldCategory())) {
+                //Not closed or on hold. Let's place it on hold!
+                Consumer<TextChannelEditSpec> editChannel = spec -> spec.setParentId(settings.getHoldCategory());
+                channel.edit(editChannel).subscribe();
 
-                    //Update database info
-                    ticket.setCategory(settings.getHoldCategory());
-                    DatabaseManager.getManager().updateTicket(ticket);
+                //Update database info
+                ticket.setCategory(settings.getHoldCategory());
+                DatabaseManager.getManager().updateTicket(ticket);
 
-                    //Remove command message
-                    MessageManager.deleteMessage(event.getMessage());
+                //Remove command message
+                MessageManager.deleteMessage(event.getMessage());
 
-                    //Send message! :D
-                    if (ticket.getCreator() == null) {
-                        MessageManager.sendMessageAsync(MessageManager.getMessage("Ticket.Hold.Success", "%creator%", "NO CREATOR", settings), event);
-                    } else {
-                        MessageManager.sendMessageAsync(MessageManager.getMessage("Ticket.Hold.Success", "%creator%", event.getGuild().block().getMemberById(ticket.getCreator()).block().getMention(), settings), event);
-                    }
-
-                    //Lets update the static message!
-                    GeneralUtils.updateStaticMessage(event.getGuild().block(), settings);
+                //Send message! :D
+                if (ticket.getCreator() == null) {
+                    MessageManager.sendMessageAsync(MessageManager.getMessage("Ticket.Hold.Success", "%creator%", "NO CREATOR", settings), event);
+                } else {
+                    MessageManager.sendMessageAsync(MessageManager.getMessage("Ticket.Hold.Success", "%creator%", event.getGuild().block().getMemberById(ticket.getCreator()).block().getMention(), settings), event);
                 }
-            } else {
-                //Not a ticket/invalid ticket.
-                MessageManager.sendMessageAsync(MessageManager.getMessage("Ticket.Hold.InvalidChannel", settings), event);
+
+                //Lets update the static message!
+                GeneralUtils.updateStaticMessage(event.getGuild().block(), settings);
             }
-        } catch (NumberFormatException | IndexOutOfBoundsException ignore) {
-            //Not a ticket channel.
+        } else {
+            //Not a ticket/invalid ticket.
             MessageManager.sendMessageAsync(MessageManager.getMessage("Ticket.Hold.InvalidChannel", settings), event);
         }
         return false;

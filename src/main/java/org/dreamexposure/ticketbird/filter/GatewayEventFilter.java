@@ -1,19 +1,21 @@
 package org.dreamexposure.ticketbird.filter;
 
+import org.slf4j.Marker;
+
+import java.util.Arrays;
+import java.util.List;
+
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.turbo.TurboFilter;
 import ch.qos.logback.core.spi.FilterReply;
 import discord4j.gateway.json.GatewayPayload;
 import discord4j.gateway.json.Opcode;
-import org.slf4j.Marker;
-
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Taken from Discord4J, used with permission. Licensed under LGPL3.
  */
+@SuppressWarnings("unused")
 public class GatewayEventFilter extends TurboFilter {
 
     private String include;

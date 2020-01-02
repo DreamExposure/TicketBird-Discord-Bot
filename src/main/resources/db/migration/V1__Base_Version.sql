@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS `${prefix}api`
 
 /*!40101 SET @saved_cs_client = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `t${prefix}guild_settings`
+CREATE TABLE IF NOT EXISTS `${prefix}guild_settings`
 (
     `GUILD_ID`           varchar(255) NOT NULL,
     `LANG`               varchar(255) NOT NULL,

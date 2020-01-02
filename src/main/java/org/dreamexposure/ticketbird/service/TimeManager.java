@@ -50,7 +50,7 @@ public class TimeManager {
     /**
      * Gracefully shuts down the TimeManager and exits all timer threads preventing errors.
      */
-    void shutdown() {
+    public void shutdown() {
         for (Timer t : timers) {
             t.cancel();
         }

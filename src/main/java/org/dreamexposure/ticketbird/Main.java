@@ -1,5 +1,27 @@
 package org.dreamexposure.ticketbird;
 
+import org.dreamexposure.ticketbird.database.DatabaseManager;
+import org.dreamexposure.ticketbird.listeners.ReadyEventListener;
+import org.dreamexposure.ticketbird.logger.Logger;
+import org.dreamexposure.ticketbird.message.MessageManager;
+import org.dreamexposure.ticketbird.module.command.CloseCommand;
+import org.dreamexposure.ticketbird.module.command.CommandExecutor;
+import org.dreamexposure.ticketbird.module.command.DevCommand;
+import org.dreamexposure.ticketbird.module.command.HelpCommand;
+import org.dreamexposure.ticketbird.module.command.HoldCommand;
+import org.dreamexposure.ticketbird.module.command.ProjectCommand;
+import org.dreamexposure.ticketbird.module.command.TicketBirdCommand;
+import org.dreamexposure.ticketbird.objects.bot.BotSettings;
+import org.dreamexposure.ticketbird.service.TimeManager;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.session.SessionAutoConfiguration;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Properties;
+
 import discord4j.core.DiscordClient;
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
@@ -13,22 +35,8 @@ import discord4j.store.jdk.JdkStoreService;
 import discord4j.store.redis.RedisStoreService;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
-import org.dreamexposure.ticketbird.database.DatabaseManager;
-import org.dreamexposure.ticketbird.listeners.ReadyEventListener;
-import org.dreamexposure.ticketbird.logger.Logger;
-import org.dreamexposure.ticketbird.message.MessageManager;
-import org.dreamexposure.ticketbird.module.command.*;
-import org.dreamexposure.ticketbird.objects.bot.BotSettings;
-import org.dreamexposure.ticketbird.web.spring.SpringController;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.Properties;
-
-@SpringBootApplication
+@SpringBootApplication(exclude = SessionAutoConfiguration.class)
 public class Main {
     private static DiscordClient client;
 
@@ -54,8 +62,9 @@ public class Main {
         //Start Spring (catch any issues from it so only the site goes down without affecting bot....
         if (BotSettings.RUN_API.get().equalsIgnoreCase("true")) {
             try {
-                SpringController.makeModel();
-                SpringApplication.run(Main.class, args);
+                SpringApplication app = new SpringApplication(Main.class);
+                app.setAdditionalProfiles(BotSettings.PROFILE.get());
+                app.run(args);
             } catch (Exception e) {
                 Logger.getLogger().exception(null, "'Spring ERROR' by 'PANIC! AT THE WEBSITE'", e, true, Main.class);
             }
@@ -73,6 +82,14 @@ public class Main {
         //Load language files.
         MessageManager.reloadLangs();
 
+        //Shutdown hooks that probably don't work
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            TimeManager.getManager().shutdown();
+            DatabaseManager.getManager().disconnectFromMySQL();
+            client.logout().block();
+        }));
+
+        //Log the client in
         client.login().block();
     }
 
@@ -87,7 +104,7 @@ public class Main {
         //Redis info + store service for caching
         if (BotSettings.USE_REDIS_STORES.get().equalsIgnoreCase("true")) {
             RedisURI uri = RedisURI.Builder
-                    .redis(BotSettings.REDIS_HOSTNAME.get(), Integer.valueOf(BotSettings.REDIS_PORT.get()))
+                    .redis(BotSettings.REDIS_HOSTNAME.get(), Integer.parseInt(BotSettings.REDIS_PORT.get()))
                     .withPassword(BotSettings.REDIS_PASSWORD.get())
                     .build();
 

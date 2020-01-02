@@ -25,7 +25,8 @@ public enum BotSettings {
 
     DEBUG_WEBHOOK, ERROR_WEBHOOK, STATUS_WEBHOOK,
 
-    PORT;
+    PORT,
+    PROFILE;
 
     private String val;
 

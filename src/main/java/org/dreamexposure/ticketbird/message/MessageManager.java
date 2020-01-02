@@ -1,10 +1,5 @@
 package org.dreamexposure.ticketbird.message;
 
-import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.object.entity.Message;
-import discord4j.core.object.entity.TextChannel;
-import discord4j.core.object.entity.User;
-import discord4j.core.spec.EmbedCreateSpec;
 import org.dreamexposure.ticketbird.file.ReadFile;
 import org.dreamexposure.ticketbird.logger.Logger;
 import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
@@ -16,7 +11,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-@SuppressWarnings("unchecked")
+import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.entity.Message;
+import discord4j.core.object.entity.TextChannel;
+import discord4j.core.object.entity.User;
+import discord4j.core.spec.EmbedCreateSpec;
+
+@SuppressWarnings({"unchecked", "UnusedReturnValue", "unused"})
 public class MessageManager {
     private static JSONObject langs;
 

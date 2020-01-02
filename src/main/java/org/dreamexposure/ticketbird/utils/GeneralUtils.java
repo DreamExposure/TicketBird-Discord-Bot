@@ -63,6 +63,13 @@ public class GeneralUtils {
         return str.replace("<<", leftFace.toString()).replace(">>", rightFace.toString()).replace("<", "").replace(">", "").replace(leftFace.toString(), "<").replace(rightFace.toString(), ">");
     }
 
+    public static long getOpenTicketCount(Guild guild, GuildSettings settings) {
+        Category awaiting = guild.getChannelById(settings.getAwaitingCategory()).ofType(Category.class).block();
+        Category responded = guild.getChannelById(settings.getRespondedCategory()).ofType(Category.class).block();
+
+        return awaiting.getChannels().count().block() + responded.getChannels().count().block();
+    }
+
     public static String getNormalStaticSupportMessage(Guild guild, GuildSettings settings) {
         String msg = MessageManager.getMessage("Support.StaticMessage.Normal", settings);
 
@@ -102,13 +109,24 @@ public class GeneralUtils {
         try {
             TextChannel supportChannel = guild.getChannelById(settings.getSupportChannel()).ofType(TextChannel.class).block();
 
+            if (supportChannel == null) {
+                //Something must have gone wrong, we lost the support channel... just ignore the update request
+                return;
+            }
             Message staticMsg = supportChannel.getMessageById(settings.getStaticMessage()).onErrorResume(e -> Mono.empty()).block();
+
+            String messageContent;
+            if (getOpenTicketCount(guild, settings) > 25)
+                messageContent = getHighVolumeStaticSupportMessage(guild, settings);
+            else
+                messageContent = getNormalStaticSupportMessage(guild, settings);
+
             if (staticMsg != null) {
                 //Edit static message...
-                MessageManager.editMessage(GeneralUtils.getNormalStaticSupportMessage(guild, settings), staticMsg);
+                MessageManager.editMessage(messageContent, staticMsg);
             } else {
                 //Somehow the static message was deleted, let's just recreate it.
-                settings.setStaticMessage(MessageManager.sendMessageSync(GeneralUtils.getNormalStaticSupportMessage(guild, settings), supportChannel).getId());
+                settings.setStaticMessage(MessageManager.sendMessageSync(messageContent, supportChannel).getId());
 
                 DatabaseManager.getManager().updateSettings(settings);
             }

@@ -1,7 +1,5 @@
 package org.dreamexposure.ticketbird.module.command;
 
-import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.spec.EmbedCreateSpec;
 import org.dreamexposure.ticketbird.message.MessageManager;
 import org.dreamexposure.ticketbird.objects.command.CommandInfo;
 import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
@@ -9,6 +7,9 @@ import org.dreamexposure.ticketbird.utils.GlobalVars;
 
 import java.util.ArrayList;
 import java.util.function.Consumer;
+
+import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.spec.EmbedCreateSpec;
 
 public class HelpCommand implements ICommand {
     /**
@@ -55,7 +56,7 @@ public class HelpCommand implements ICommand {
      * @return <code>true</code> if successful, else <code>false</code>.
      */
     @Override
-    public Boolean issueCommand(String[] args, MessageCreateEvent event, GuildSettings settings) {
+    public boolean issueCommand(String[] args, MessageCreateEvent event, GuildSettings settings) {
         if (args.length < 1) {
             Consumer<EmbedCreateSpec> embed = spec -> {
                 spec.setAuthor("TicketBird", GlobalVars.siteUrl, GlobalVars.iconUrl);

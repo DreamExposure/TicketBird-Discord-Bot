@@ -1,14 +1,5 @@
 package org.dreamexposure.ticketbird.module.command;
 
-import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.object.PermissionOverwrite;
-import discord4j.core.object.entity.Guild;
-import discord4j.core.object.entity.Member;
-import discord4j.core.object.entity.Message;
-import discord4j.core.object.entity.TextChannel;
-import discord4j.core.object.util.Permission;
-import discord4j.core.object.util.PermissionSet;
-import discord4j.core.spec.EmbedCreateSpec;
 import org.dreamexposure.ticketbird.Main;
 import org.dreamexposure.ticketbird.database.DatabaseManager;
 import org.dreamexposure.ticketbird.logger.Logger;
@@ -20,10 +11,20 @@ import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
 import org.dreamexposure.ticketbird.utils.GeneralUtils;
 import org.dreamexposure.ticketbird.utils.GlobalVars;
 import org.dreamexposure.ticketbird.utils.UserUtils;
-import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.function.Consumer;
+
+import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.PermissionOverwrite;
+import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.Member;
+import discord4j.core.object.entity.Message;
+import discord4j.core.object.entity.TextChannel;
+import discord4j.core.object.util.Permission;
+import discord4j.core.object.util.PermissionSet;
+import discord4j.core.spec.EmbedCreateSpec;
+import reactor.core.publisher.Mono;
 
 public class TicketBirdCommand implements ICommand {
 
@@ -80,7 +81,7 @@ public class TicketBirdCommand implements ICommand {
      * @return <code>true</code> if successful, else <code>false</code>.
      */
     @Override
-    public Boolean issueCommand(String[] args, MessageCreateEvent event, GuildSettings settings) {
+    public boolean issueCommand(String[] args, MessageCreateEvent event, GuildSettings settings) {
         if (args.length < 1) {
             moduleTicketBirdInfo(event, settings);
         } else {
@@ -126,7 +127,7 @@ public class TicketBirdCommand implements ICommand {
             spec.addField(MessageManager.getMessage("Embed.TicketBird.Info.TotalGuilds", settings), Main.getClient().getGuilds().count().block() + "", true);
             spec.addField("Total Tickets", DatabaseManager.getManager().getTotalTicketCount() + "", true);
             spec.setFooter(MessageManager.getMessage("Embed.TicketBird.Info.Patron", settings) + ": https://www.patreon.com/Novafox", null);
-            spec.setUrl("https://ticketbird.dreamexposure.org");
+            spec.setUrl(GlobalVars.siteUrl);
             spec.setColor(GlobalVars.embedColor);
         };
         MessageManager.sendMessageAsync(embed, event);
@@ -140,8 +141,12 @@ public class TicketBirdCommand implements ICommand {
             spec.addField(MessageManager.getMessage("Embed.TicketBird.Settings.Dev", settings), String.valueOf(settings.isDevGuild()), true);
             spec.addField(MessageManager.getMessage("Embed.TicketBird.Settings.Language", settings), settings.getLang(), true);
             spec.addField(MessageManager.getMessage("Embed.TicketBird.Settings.Prefix", settings), settings.getPrefix(), true);
+            if (settings.isUseProjects())
+                spec.addField("Use Projects", "Enabled", true); //TODO: Add translations
+            else
+                spec.addField("Use Projects", "Disabled", true);
             spec.setFooter(MessageManager.getMessage("Embed.TicketBird.Info.Patron", settings) + ": https://www.patreon.com/Novafox", null);
-            spec.setUrl("https://ticketbird.dreamexposure.org");
+            spec.setUrl(GlobalVars.siteUrl);
             spec.setColor(GlobalVars.embedColor);
         };
         MessageManager.sendMessageAsync(embed, event);

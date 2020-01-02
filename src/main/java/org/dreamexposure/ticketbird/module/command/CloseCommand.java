@@ -1,9 +1,5 @@
 package org.dreamexposure.ticketbird.module.command;
 
-import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.object.entity.Guild;
-import discord4j.core.object.entity.TextChannel;
-import discord4j.core.spec.TextChannelEditSpec;
 import org.dreamexposure.ticketbird.Main;
 import org.dreamexposure.ticketbird.database.DatabaseManager;
 import org.dreamexposure.ticketbird.message.MessageManager;
@@ -11,10 +7,13 @@ import org.dreamexposure.ticketbird.objects.command.CommandInfo;
 import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
 import org.dreamexposure.ticketbird.objects.guild.Ticket;
 import org.dreamexposure.ticketbird.utils.GeneralUtils;
-import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
-import java.util.function.Consumer;
+
+import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.TextChannel;
+import reactor.core.publisher.Mono;
 
 public class CloseCommand implements ICommand {
 
@@ -63,26 +62,17 @@ public class CloseCommand implements ICommand {
      */
     @SuppressWarnings("ConstantConditions")
     @Override
-    public Boolean issueCommand(String[] args, MessageCreateEvent event, GuildSettings settings) {
-        String channelName = event.getMessage().getChannel().ofType(TextChannel.class).block().getName();
-        //Channel name format [prefix]-ticket-[number]
+    public boolean issueCommand(String[] args, MessageCreateEvent event, GuildSettings settings) {
         try {
-            int ticketNumber;
-            if (channelName.split("-").length == 2) {
-                //Ticket has not had a project set
-                ticketNumber = Integer.valueOf(channelName.split("-")[1]);
-            } else {
-                ticketNumber = Integer.valueOf(channelName.split("-")[2]);
-            }
-            Ticket ticket = DatabaseManager.getManager().getTicket(settings.getGuildID(), ticketNumber);
-
+            Ticket ticket = DatabaseManager.getManager().getTicket(settings.getGuildID(), event.getMessage().getChannelId());
             if (ticket != null) {
                 Guild guild = event.getGuild().block();
                 //Check if already closed..
                 if (!event.getMessage().getChannel().ofType(TextChannel.class).block().getCategory().block().getId().equals(settings.getCloseCategory())) {
                     //Not closed, lets close it.
-                    Consumer<TextChannelEditSpec> editChannel = spec -> spec.setParentId(settings.getCloseCategory());
-                    event.getMessage().getChannel().ofType(TextChannel.class).flatMap(c -> c.edit(editChannel)).subscribe();
+                    event.getMessage().getChannel().ofType(TextChannel.class).flatMap(c -> c.edit(
+                            s -> s.setParentId(settings.getCloseCategory())
+                    )).subscribe();
 
                     //Update database info
                     ticket.setCategory(settings.getCloseCategory());
