@@ -30,10 +30,6 @@
 
     <repositories>
         <repository>
-            <id>jcenter</id>
-            <url>http://jcenter.bintray.com</url>
-        </repository>
-        <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
@@ -42,8 +38,8 @@
             <url>https://repo.spring.io/libs-release</url>
         </repository>
         <repository>
-            <id>nova-public</id>
-            <url>http://repo.novafox161.com/repositories/nova-public</url>
+            <id>dreamexposure-public</id>
+            <url>https://emily.dreamexposure.org/artifactory/dreamexposure-public/</url>
         </repository>
     </repositories>
 
