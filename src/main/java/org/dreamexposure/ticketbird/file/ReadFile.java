@@ -6,6 +6,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileReader;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -16,9 +17,7 @@ public class ReadFile {
         JSONObject langs = new JSONObject();
 
         try {
-            File langDir = new File(BotSettings.LANG_PATH.get());
-
-            for (File f : langDir.listFiles()) {
+            for (File f : getResourceFolderFiles("langs")) {
                 // Open the file
                 FileReader fr = new FileReader(f);
 
@@ -35,5 +34,12 @@ public class ReadFile {
             Logger.getLogger().exception(null, "Failed to load lang files!", e, true, ReadFile.class);
         }
         return langs;
+    }
+
+    private static File[] getResourceFolderFiles(String folder) {
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        URL url = loader.getResource(folder);
+        String path = url.getPath();
+        return new File(path).listFiles();
     }
 }

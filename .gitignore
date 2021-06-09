@@ -5,3 +5,5 @@
 **/META-INF/
 **/target/
 **/dependency-reduced-pom.xml
+/build/
+.gradle/

@@ -17,7 +17,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.session.SessionAutoConfiguration;
 
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
@@ -43,7 +42,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
         //Get bot settings
         Properties p = new Properties();
-        p.load(new FileReader(new File("settings.properties")));
+        p.load(new FileReader("settings.properties"));
         BotSettings.init(p);
 
         Logger.getLogger().init();

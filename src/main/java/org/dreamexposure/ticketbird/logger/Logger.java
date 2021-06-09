@@ -3,10 +3,7 @@ package org.dreamexposure.ticketbird.logger;
 import org.dreamexposure.ticketbird.objects.bot.BotSettings;
 import org.dreamexposure.ticketbird.utils.GlobalVars;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Calendar;
@@ -48,6 +45,8 @@ public class Logger {
 
         //Create files...
         String timestamp = new SimpleDateFormat("dd-MM-yyyy-hh.mm.ss").format(System.currentTimeMillis());
+
+        new File(BotSettings.LOG_FOLDER.get()).mkdirs();
 
         exceptionsFile = BotSettings.LOG_FOLDER.get() + "/" + timestamp + "-exceptions.log";
         apiFile = BotSettings.LOG_FOLDER.get() + "/" + timestamp + "-api.log";

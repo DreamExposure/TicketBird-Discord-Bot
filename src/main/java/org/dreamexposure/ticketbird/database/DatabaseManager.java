@@ -1,5 +1,6 @@
 package org.dreamexposure.ticketbird.database;
 
+import com.zaxxer.hikari.HikariDataSource;
 import org.dreamexposure.novautils.database.DatabaseInfo;
 import org.dreamexposure.novautils.database.DatabaseSettings;
 import org.dreamexposure.ticketbird.logger.Logger;
@@ -24,8 +25,7 @@ import discord4j.core.object.util.Snowflake;
 @SuppressWarnings({"SqlResolve", "UnusedReturnValue", "SqlNoDataSourceInspection", "Duplicates"})
 public class DatabaseManager {
     private static DatabaseManager instance;
-    private DatabaseInfo masterInfo;
-    private DatabaseInfo slaveInfo;
+    private DatabaseInfo info;
 
     private DatabaseManager() {
     } //Prevent initialization.
@@ -47,11 +47,11 @@ public class DatabaseManager {
      */
     public void connectToMySQL() {
         try {
-            DatabaseSettings masterSettings = new DatabaseSettings(BotSettings.SQL_MASTER_HOST.get(), BotSettings.SQL_MASTER_PORT.get(), BotSettings.SQL_DB.get(), BotSettings.SQL_MASTER_USER.get(), BotSettings.SQL_MASTER_PASS.get(), BotSettings.SQL_PREFIX.get());
-            DatabaseSettings slaveSettings = new DatabaseSettings(BotSettings.SQL_SLAVE_HOST.get(), BotSettings.SQL_SLAVE_PORT.get(), BotSettings.SQL_DB.get(), BotSettings.SQL_SLAVE_USER.get(), BotSettings.SQL_SLAVE_PASS.get(), BotSettings.SQL_PREFIX.get());
+            DatabaseSettings settings = new DatabaseSettings(BotSettings.SQL_HOST.get(), BotSettings.SQL_PORT.get(),
+                BotSettings.SQL_DB.get(), BotSettings.SQL_USER.get(), BotSettings.SQL_PASS.get(),
+                BotSettings.SQL_PREFIX.get());
 
-            masterInfo = org.dreamexposure.novautils.database.DatabaseManager.connectToMySQL(masterSettings);
-            slaveInfo = org.dreamexposure.novautils.database.DatabaseManager.connectToMySQL(slaveSettings);
+            info = connect(settings);
             System.out.println("Connected to MySQL database!");
         } catch (Exception e) {
             System.out.println("Failed to connect to MySQL database! Is it properly configured?");
@@ -66,8 +66,7 @@ public class DatabaseManager {
     @SuppressWarnings("unused")
     public void disconnectFromMySQL() {
         try {
-            org.dreamexposure.novautils.database.DatabaseManager.disconnectFromMySQL(masterInfo);
-            org.dreamexposure.novautils.database.DatabaseManager.disconnectFromMySQL(slaveInfo);
+            org.dreamexposure.novautils.database.DatabaseManager.disconnectFromMySQL(info);
             System.out.println("Successfully disconnected from MySQL Database!");
         } catch (Exception e) {
             Logger.getLogger().exception(null, "Disconnecting from MySQL failed.", e, true, this.getClass());
@@ -81,7 +80,7 @@ public class DatabaseManager {
 
         try {
             Flyway flyway = Flyway.configure()
-                    .dataSource(masterInfo.getSource())
+                    .dataSource(info.getSource())
                     .cleanDisabled(true)
                     .baselineOnMigrate(true)
                     .table(BotSettings.SQL_PREFIX.get() + "schema_history")
@@ -96,12 +95,11 @@ public class DatabaseManager {
     }
 
     public boolean updateAPIAccount(UserAPIAccount acc) {
-        try (final Connection masterConnection = masterInfo.getSource().getConnection()) {
-            String tableName = String.format("%sapi", masterInfo.getSettings().getPrefix());
+        try (final Connection connection = info.getSource().getConnection()) {
+            String tableName = String.format("%sapi", info.getSettings().getPrefix());
 
             String query = "SELECT * FROM " + tableName + " WHERE API_KEY = ?";
-            Connection slaveConnection = slaveInfo.getSource().getConnection();
-            PreparedStatement statement = slaveConnection.prepareStatement(query);
+            PreparedStatement statement = connection.prepareStatement(query);
             statement.setString(1, acc.getAPIKey());
 
             ResultSet res = statement.executeQuery();
@@ -113,7 +111,7 @@ public class DatabaseManager {
                 String insertCommand = "INSERT INTO " + tableName +
                         "(USER_ID, API_KEY, BLOCKED, TIME_ISSUED, USES)" +
                         " VALUES (?, ?, ?, ?, ?);";
-                PreparedStatement ps = masterConnection.prepareStatement(insertCommand);
+                PreparedStatement ps = connection.prepareStatement(insertCommand);
                 ps.setString(1, acc.getUserId());
                 ps.setString(2, acc.getAPIKey());
                 ps.setBoolean(3, acc.isBlocked());
@@ -123,13 +121,12 @@ public class DatabaseManager {
                 ps.executeUpdate();
                 ps.close();
                 statement.close();
-                slaveConnection.close();
             } else {
                 //Data present, update.
                 String update = "UPDATE " + tableName
                         + " SET USER_ID = ?, BLOCKED = ?,"
                         + " USES = ? WHERE API_KEY = ?";
-                PreparedStatement ps = masterConnection.prepareStatement(update);
+                PreparedStatement ps = connection.prepareStatement(update);
 
                 ps.setString(1, acc.getUserId());
                 ps.setBoolean(2, acc.isBlocked());
@@ -140,7 +137,6 @@ public class DatabaseManager {
 
                 ps.close();
                 statement.close();
-                slaveConnection.close();
             }
             return true;
         } catch (SQLException e) {
@@ -151,12 +147,11 @@ public class DatabaseManager {
     }
 
     public boolean updateSettings(GuildSettings settings) {
-        try (final Connection masterConnection = masterInfo.getSource().getConnection()) {
-            String dataTableName = String.format("%sguild_settings", masterInfo.getSettings().getPrefix());
+        try (final Connection connection = info.getSource().getConnection()) {
+            String dataTableName = String.format("%sguild_settings", info.getSettings().getPrefix());
 
             String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = ?";
-            Connection slaveConnection = slaveInfo.getSource().getConnection();
-            PreparedStatement statement = slaveConnection.prepareStatement(query);
+            PreparedStatement statement = connection.prepareStatement(query);
             statement.setString(1, settings.getGuildID().asString());
 
             ResultSet res = statement.executeQuery();
@@ -168,7 +163,7 @@ public class DatabaseManager {
                 String insertCommand = "INSERT INTO " + dataTableName +
                         "(GUILD_ID, LANG, PREFIX, PATRON_GUILD, DEV_GUILD, USE_PROJECTS, AWAITING_CATEGORY, RESPONDED_CATEGORY, HOLD_CATEGORY, CLOSE_CATEGORY, SUPPORT_CHANNEL, STATIC_MESSAGE, NEXT_ID, STAFF, CLOSED_TOTAL)" +
                         " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
-                PreparedStatement ps = masterConnection.prepareStatement(insertCommand);
+                PreparedStatement ps = connection.prepareStatement(insertCommand);
                 ps.setString(1, settings.getGuildID().asString());
                 ps.setString(2, settings.getLang());
                 ps.setString(3, settings.getPrefix());
@@ -189,7 +184,6 @@ public class DatabaseManager {
                 ps.executeUpdate();
                 ps.close();
                 statement.close();
-                slaveConnection.close();
             } else {
                 //Data present, update.
                 String update = "UPDATE " + dataTableName
@@ -197,7 +191,7 @@ public class DatabaseManager {
                         " AWAITING_CATEGORY = ?, RESPONDED_CATEGORY = ?, HOLD_CATEGORY = ?, " +
                         " CLOSE_CATEGORY = ?, SUPPORT_CHANNEL = ?, STATIC_MESSAGE = ?, " +
                         " NEXT_ID = ?, STAFF = ?, CLOSED_TOTAL = ? WHERE GUILD_ID = ?";
-                PreparedStatement ps = masterConnection.prepareStatement(update);
+                PreparedStatement ps = connection.prepareStatement(update);
 
                 ps.setString(1, settings.getLang());
                 ps.setString(2, settings.getPrefix());
@@ -219,7 +213,6 @@ public class DatabaseManager {
 
                 ps.close();
                 statement.close();
-                slaveConnection.close();
             }
             return true;
         } catch (SQLException e) {
@@ -231,12 +224,11 @@ public class DatabaseManager {
     }
 
     public boolean updateProject(Project project) {
-        try (final Connection masterConnection = masterInfo.getSource().getConnection()) {
-            String dataTableName = String.format("%sprojects", masterInfo.getSettings().getPrefix());
+        try (final Connection connection = info.getSource().getConnection()) {
+            String dataTableName = String.format("%sprojects", info.getSettings().getPrefix());
 
             String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = ? AND PROJECT_NAME = ?";
-            Connection slaveConnection = slaveInfo.getSource().getConnection();
-            PreparedStatement statement = slaveConnection.prepareStatement(query);
+            PreparedStatement statement = connection.prepareStatement(query);
             statement.setString(1, project.getGuildId().asString());
             statement.setString(2, project.getName());
 
@@ -248,7 +240,7 @@ public class DatabaseManager {
                 //Data not present, add to DB.
                 String insertCommand = "INSERT INTO " + dataTableName +
                         "(GUILD_ID, PROJECT_NAME, PROJECT_PREFIX) VALUES (?, ?, ?);";
-                PreparedStatement ps = masterConnection.prepareStatement(insertCommand);
+                PreparedStatement ps = connection.prepareStatement(insertCommand);
                 ps.setString(1, project.getGuildId().asString());
                 ps.setString(2, project.getName());
                 ps.setString(3, project.getPrefix());
@@ -256,11 +248,10 @@ public class DatabaseManager {
                 ps.executeUpdate();
                 ps.close();
                 statement.close();
-                slaveConnection.close();
             } else {
                 //Data present, update.
                 String update = "UPDATE " + dataTableName + " SET PROJECT_PREFIX = ? WHERE GUILD_ID = ? AND PROJECT_NAME = ?";
-                PreparedStatement ps = masterConnection.prepareStatement(update);
+                PreparedStatement ps = connection.prepareStatement(update);
 
                 ps.setString(1, project.getPrefix());
                 ps.setString(2, project.getGuildId().asString());
@@ -270,7 +261,6 @@ public class DatabaseManager {
 
                 ps.close();
                 statement.close();
-                slaveConnection.close();
             }
             return true;
         } catch (SQLException e) {
@@ -282,12 +272,11 @@ public class DatabaseManager {
     }
 
     public boolean updateTicket(Ticket ticket) {
-        try (final Connection masterConnection = masterInfo.getSource().getConnection()) {
-            String dataTableName = String.format("%stickets", masterInfo.getSettings().getPrefix());
+        try (final Connection connection = info.getSource().getConnection()) {
+            String dataTableName = String.format("%stickets", info.getSettings().getPrefix());
 
             String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = ? AND NUMBER = ?";
-            Connection slaveConnection = slaveInfo.getSource().getConnection();
-            PreparedStatement statement = slaveConnection.prepareStatement(query);
+            PreparedStatement statement = connection.prepareStatement(query);
             statement.setString(1, ticket.getGuildId().asString());
             statement.setInt(2, ticket.getNumber());
 
@@ -299,7 +288,7 @@ public class DatabaseManager {
                 //Data not present, add to DB.
                 String insertCommand = "INSERT INTO " + dataTableName +
                         "(GUILD_ID, NUMBER, PROJECT, CREATOR, CHANNEL, CATEGORY, LAST_ACTIVITY) VALUES (?, ?, ?, ?, ?, ?, ?);";
-                PreparedStatement ps = masterConnection.prepareStatement(insertCommand);
+                PreparedStatement ps = connection.prepareStatement(insertCommand);
                 ps.setString(1, ticket.getGuildId().asString());
                 ps.setInt(2, ticket.getNumber());
                 ps.setString(3, ticket.getProject());
@@ -311,11 +300,10 @@ public class DatabaseManager {
                 ps.executeUpdate();
                 ps.close();
                 statement.close();
-                slaveConnection.close();
             } else {
                 //Data present, update.
                 String update = "UPDATE " + dataTableName + " SET PROJECT = ?, CREATOR = ?, CHANNEL = ?, CATEGORY = ?, LAST_ACTIVITY = ? WHERE GUILD_ID = ? AND NUMBER = ?";
-                PreparedStatement ps = masterConnection.prepareStatement(update);
+                PreparedStatement ps = connection.prepareStatement(update);
 
                 ps.setString(1, ticket.getProject());
                 ps.setLong(2, ticket.getCreator().asLong());
@@ -329,7 +317,6 @@ public class DatabaseManager {
 
                 ps.close();
                 statement.close();
-                slaveConnection.close();
             }
             return true;
         } catch (SQLException e) {
@@ -341,8 +328,8 @@ public class DatabaseManager {
     }
 
     public UserAPIAccount getAPIAccount(String APIKey) {
-        try (final Connection connection = slaveInfo.getSource().getConnection()) {
-            String dataTableName = String.format("%sapi", slaveInfo.getSettings().getPrefix());
+        try (final Connection connection = info.getSource().getConnection()) {
+            String dataTableName = String.format("%sapi", info.getSettings().getPrefix());
 
             String query = "SELECT * FROM " + dataTableName + " WHERE API_KEY = ?";
             PreparedStatement statement = connection.prepareStatement(query);
@@ -376,8 +363,8 @@ public class DatabaseManager {
 
     public GuildSettings getSettings(Snowflake guildId) {
         GuildSettings settings = new GuildSettings(guildId);
-        try (final Connection connection = slaveInfo.getSource().getConnection()) {
-            String dataTableName = String.format("%sguild_settings", slaveInfo.getSettings().getPrefix());
+        try (final Connection connection = info.getSource().getConnection()) {
+            String dataTableName = String.format("%sguild_settings", info.getSettings().getPrefix());
 
             String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = ?";
             PreparedStatement statement = connection.prepareStatement(query);
@@ -420,8 +407,8 @@ public class DatabaseManager {
     }
 
     public Project getProject(Snowflake guildId, String projectName) {
-        try (final Connection connection = slaveInfo.getSource().getConnection()) {
-            String dataTableName = String.format("%sprojects", slaveInfo.getSettings().getPrefix());
+        try (final Connection connection = info.getSource().getConnection()) {
+            String dataTableName = String.format("%sprojects", info.getSettings().getPrefix());
 
             String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = ? AND PROJECT_NAME = ?;";
             PreparedStatement statement = connection.prepareStatement(query);
@@ -449,8 +436,8 @@ public class DatabaseManager {
     }
 
     public Ticket getTicket(Snowflake guildId, int number) {
-        try (final Connection connection = slaveInfo.getSource().getConnection()) {
-            String dataTableName = String.format("%stickets", slaveInfo.getSettings().getPrefix());
+        try (final Connection connection = info.getSource().getConnection()) {
+            String dataTableName = String.format("%stickets", info.getSettings().getPrefix());
 
             String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = ? AND NUMBER = ?";
             PreparedStatement statement = connection.prepareStatement(query);
@@ -483,8 +470,8 @@ public class DatabaseManager {
     }
 
     public Ticket getTicket(Snowflake guildId, Snowflake channelId) {
-        try (final Connection connection = slaveInfo.getSource().getConnection()) {
-            String dataTableName = String.format("%stickets", slaveInfo.getSettings().getPrefix());
+        try (final Connection connection = info.getSource().getConnection()) {
+            String dataTableName = String.format("%stickets", info.getSettings().getPrefix());
 
             String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = ? AND CHANNEL = ?";
             PreparedStatement statement = connection.prepareStatement(query);
@@ -518,8 +505,8 @@ public class DatabaseManager {
     public List<Project> getAllProjects(Snowflake guildId) {
         List<Project> projects = new ArrayList<>();
 
-        try (final Connection connection = slaveInfo.getSource().getConnection()) {
-            String dataTableName = String.format("%sprojects", slaveInfo.getSettings().getPrefix());
+        try (final Connection connection = info.getSource().getConnection()) {
+            String dataTableName = String.format("%sprojects", info.getSettings().getPrefix());
 
             String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = ?";
             PreparedStatement statement = connection.prepareStatement(query);
@@ -547,8 +534,8 @@ public class DatabaseManager {
     public List<Ticket> getAllTickets(Snowflake guildId) {
         List<Ticket> tickets = new ArrayList<>();
 
-        try (final Connection connection = slaveInfo.getSource().getConnection()) {
-            String dataTableName = String.format("%stickets", slaveInfo.getSettings().getPrefix());
+        try (final Connection connection = info.getSource().getConnection()) {
+            String dataTableName = String.format("%stickets", info.getSettings().getPrefix());
 
             String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = ?";
             PreparedStatement statement = connection.prepareStatement(query);
@@ -578,8 +565,8 @@ public class DatabaseManager {
 
     public int getTotalTicketCount() {
         int amount = -1;
-        try (final Connection connection = slaveInfo.getSource().getConnection()) {
-            String ticketTableName = String.format("%stickets", slaveInfo.getSettings().getPrefix());
+        try (final Connection connection = info.getSource().getConnection()) {
+            String ticketTableName = String.format("%stickets", info.getSettings().getPrefix());
 
             String query = "SELECT COUNT(*) FROM " + ticketTableName + ";";
             PreparedStatement statement = connection.prepareStatement(query);
@@ -600,8 +587,8 @@ public class DatabaseManager {
     }
 
     public boolean removeProject(Snowflake guildId, String projectName) {
-        try (final Connection connection = masterInfo.getSource().getConnection()) {
-            String dataTableName = String.format("%sprojects", masterInfo.getSettings().getPrefix());
+        try (final Connection connection = info.getSource().getConnection()) {
+            String dataTableName = String.format("%sprojects", info.getSettings().getPrefix());
 
             String query = "DELETE FROM " + dataTableName + " WHERE GUILD_ID = ? AND PROJECT_NAME = ?";
 
@@ -620,8 +607,8 @@ public class DatabaseManager {
     }
 
     public boolean removeTicket(Snowflake guildId, int number) {
-        try (final Connection connection = masterInfo.getSource().getConnection()) {
-            String dataTableName = String.format("%stickets", masterInfo.getSettings().getPrefix());
+        try (final Connection connection = info.getSource().getConnection()) {
+            String dataTableName = String.format("%stickets", info.getSettings().getPrefix());
 
             String query = "DELETE FROM " + dataTableName + " WHERE GUILD_ID = ? AND NUMBER = ?";
 
@@ -637,5 +624,19 @@ public class DatabaseManager {
             Logger.getLogger().exception(null, "Failed to delete ticket.", e, true, this.getClass());
         }
         return false;
+    }
+
+    private DatabaseInfo connect(DatabaseSettings settings) {
+        HikariDataSource ds = new HikariDataSource();
+        String connectionURL = "jdbc:mysql://" + settings.getHostname() + ":" + settings.getPort();
+        if (settings.getDatabase() != null) {
+            connectionURL = connectionURL + "/" + settings.getDatabase() + "?useSSL=true";
+        }
+
+        ds.setJdbcUrl(connectionURL);
+        ds.setUsername(settings.getUser());
+        ds.setPassword(settings.getPassword());
+        System.out.println("Database connection successful!");
+        return new DatabaseInfo(ds, settings, null);
     }
 }
