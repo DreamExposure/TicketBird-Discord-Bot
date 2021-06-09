@@ -630,7 +630,7 @@ public class DatabaseManager {
         HikariDataSource ds = new HikariDataSource();
         String connectionURL = "jdbc:mysql://" + settings.getHostname() + ":" + settings.getPort();
         if (settings.getDatabase() != null) {
-            connectionURL = connectionURL + "/" + settings.getDatabase() + "?useSSL=true";
+            connectionURL = connectionURL + "/" + settings.getDatabase();
         }
 
         ds.setJdbcUrl(connectionURL);
