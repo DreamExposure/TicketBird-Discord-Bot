@@ -55,7 +55,7 @@ description = "TicketBird"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 jib {
-    to.image = "rg.nl-ams.scw.cloud/dreamexposure/ticketbird$version"
+    to.image = "rg.nl-ams.scw.cloud/dreamexposure/ticketbird:$version"
 }
 
 publishing {
