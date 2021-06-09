@@ -2,8 +2,7 @@ package org.dreamexposure.ticketbird.module.status;
 
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
-import org.dreamexposure.ticketbird.Main;
-import org.dreamexposure.ticketbird.objects.bot.BotSettings;
+import org.dreamexposure.ticketbird.TicketBird;
 import org.dreamexposure.ticketbird.utils.GlobalVars;
 
 import java.util.ArrayList;
@@ -32,10 +31,10 @@ public class StatusChanger extends TimerTask {
     @Override
     public void run() {
         String status = statuses.get(index);
-        status = status.replace("%guCount%", Main.getClient().getGuilds().count().block() + "");
-        status = status.replace("%shards%", Main.getShardCount() + "");
+        status = status.replace("%guCount%", TicketBird.getClient().getGuilds().count().block() + "");
+        status = status.replace("%shards%", TicketBird.getShardCount() + "");
 
-        Main.getClient().updatePresence(Presence.online(Activity.playing(status))).subscribe();
+        TicketBird.getClient().updatePresence(Presence.online(Activity.playing(status))).subscribe();
 
         //Set new index.
         if (index + 1 >= statuses.size())

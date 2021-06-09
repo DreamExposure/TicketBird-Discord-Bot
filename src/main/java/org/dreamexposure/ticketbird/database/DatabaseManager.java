@@ -1,15 +1,16 @@
 package org.dreamexposure.ticketbird.database;
 
 import com.zaxxer.hikari.HikariDataSource;
+import discord4j.common.util.Snowflake;
 import org.dreamexposure.novautils.database.DatabaseInfo;
 import org.dreamexposure.novautils.database.DatabaseSettings;
 import org.dreamexposure.ticketbird.logger.Logger;
-import org.dreamexposure.ticketbird.objects.api.UserAPIAccount;
 import org.dreamexposure.ticketbird.objects.bot.BotSettings;
 import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
 import org.dreamexposure.ticketbird.objects.guild.Project;
 import org.dreamexposure.ticketbird.objects.guild.Ticket;
 import org.flywaydb.core.Flyway;
+import org.flywaydb.core.api.output.MigrateResult;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -19,8 +20,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import discord4j.core.object.util.Snowflake;
 
 @SuppressWarnings({"SqlResolve", "UnusedReturnValue", "SqlNoDataSourceInspection", "Duplicates"})
 public class DatabaseManager {
@@ -86,64 +85,12 @@ public class DatabaseManager {
                     .table(BotSettings.SQL_PREFIX.get() + "schema_history")
                     .placeholders(placeholders)
                     .load();
-            int sm = flyway.migrate();
-            Logger.getLogger().debug("Migrations Successful, " + sm + " migrations applied!", true);
+            MigrateResult sm = flyway.migrate();
+            Logger.getLogger().debug("Migrations Successful, " + sm.migrationsExecuted + " migrations applied!", true);
         } catch (Exception e) {
             Logger.getLogger().exception(null, "Migrations Failure", e, true, getClass());
             System.exit(2);
         }
-    }
-
-    public boolean updateAPIAccount(UserAPIAccount acc) {
-        try (final Connection connection = info.getSource().getConnection()) {
-            String tableName = String.format("%sapi", info.getSettings().getPrefix());
-
-            String query = "SELECT * FROM " + tableName + " WHERE API_KEY = ?";
-            PreparedStatement statement = connection.prepareStatement(query);
-            statement.setString(1, acc.getAPIKey());
-
-            ResultSet res = statement.executeQuery();
-
-            boolean hasStuff = res.next();
-
-            if (!hasStuff || res.getString("API_KEY") == null) {
-                //Data not present, add to DB.
-                String insertCommand = "INSERT INTO " + tableName +
-                        "(USER_ID, API_KEY, BLOCKED, TIME_ISSUED, USES)" +
-                        " VALUES (?, ?, ?, ?, ?);";
-                PreparedStatement ps = connection.prepareStatement(insertCommand);
-                ps.setString(1, acc.getUserId());
-                ps.setString(2, acc.getAPIKey());
-                ps.setBoolean(3, acc.isBlocked());
-                ps.setLong(4, acc.getTimeIssued());
-                ps.setInt(5, acc.getUses());
-
-                ps.executeUpdate();
-                ps.close();
-                statement.close();
-            } else {
-                //Data present, update.
-                String update = "UPDATE " + tableName
-                        + " SET USER_ID = ?, BLOCKED = ?,"
-                        + " USES = ? WHERE API_KEY = ?";
-                PreparedStatement ps = connection.prepareStatement(update);
-
-                ps.setString(1, acc.getUserId());
-                ps.setBoolean(2, acc.isBlocked());
-                ps.setInt(3, acc.getUses());
-                ps.setString(4, acc.getAPIKey());
-
-                ps.executeUpdate();
-
-                ps.close();
-                statement.close();
-            }
-            return true;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            Logger.getLogger().exception(null, "Failed to update API account", e, true, this.getClass());
-        }
-        return false;
     }
 
     public boolean updateSettings(GuildSettings settings) {
@@ -325,40 +272,6 @@ public class DatabaseManager {
             e.printStackTrace();
         }
         return false;
-    }
-
-    public UserAPIAccount getAPIAccount(String APIKey) {
-        try (final Connection connection = info.getSource().getConnection()) {
-            String dataTableName = String.format("%sapi", info.getSettings().getPrefix());
-
-            String query = "SELECT * FROM " + dataTableName + " WHERE API_KEY = ?";
-            PreparedStatement statement = connection.prepareStatement(query);
-            statement.setString(1, APIKey);
-
-            ResultSet res = statement.executeQuery();
-
-            boolean hasStuff = res.next();
-
-            if (hasStuff && res.getString("API_KEY") != null) {
-                UserAPIAccount account = new UserAPIAccount();
-                account.setAPIKey(APIKey);
-                account.setUserId(res.getString("USER_ID"));
-                account.setBlocked(res.getBoolean("BLOCKED"));
-                account.setTimeIssued(res.getLong("TIME_ISSUED"));
-                account.setUses(res.getInt("USES"));
-
-                statement.close();
-
-                return account;
-            } else {
-                //Data not present.
-                statement.close();
-                return null;
-            }
-        } catch (SQLException e) {
-            Logger.getLogger().exception(null, "Failed to get API Account.", e, true, this.getClass());
-        }
-        return null;
     }
 
     public GuildSettings getSettings(Snowflake guildId) {

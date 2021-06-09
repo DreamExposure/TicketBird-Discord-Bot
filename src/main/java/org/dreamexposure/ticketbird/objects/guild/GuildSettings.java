@@ -1,9 +1,9 @@
 package org.dreamexposure.ticketbird.objects.guild;
 
+import discord4j.common.util.Snowflake;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import discord4j.core.object.util.Snowflake;
 
 public class GuildSettings {
     private final Snowflake guildID;

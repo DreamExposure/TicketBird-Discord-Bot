@@ -1,6 +1,6 @@
 package org.dreamexposure.ticketbird.objects.guild;
 
-import discord4j.core.object.util.Snowflake;
+import discord4j.common.util.Snowflake;
 
 public class Project {
     private final Snowflake guildId;

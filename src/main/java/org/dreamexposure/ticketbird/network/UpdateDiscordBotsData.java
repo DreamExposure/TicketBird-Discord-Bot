@@ -1,13 +1,12 @@
 package org.dreamexposure.ticketbird.network;
 
 import org.discordbots.api.client.DiscordBotListAPI;
-import org.dreamexposure.ticketbird.Main;
+import org.dreamexposure.ticketbird.TicketBird;
 import org.dreamexposure.ticketbird.objects.bot.BotSettings;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
-@SuppressWarnings("ConstantConditions")
 public class UpdateDiscordBotsData {
     private static DiscordBotListAPI api;
     private static Timer timer;
@@ -35,7 +34,7 @@ public class UpdateDiscordBotsData {
     private static void updateStats() {
         try {
             if (api != null)
-                api.setStats(BotSettings.ID.get(), Main.getClient().getGuilds().count().block().intValue());
+                api.setStats(BotSettings.ID.get(), TicketBird.getClient().getGuilds().count().block().intValue());
         } catch (Exception ignore) {}
     }
 }

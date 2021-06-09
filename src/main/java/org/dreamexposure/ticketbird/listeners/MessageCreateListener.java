@@ -1,6 +1,13 @@
 package org.dreamexposure.ticketbird.listeners;
 
-import org.dreamexposure.ticketbird.Main;
+import discord4j.common.util.Snowflake;
+import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.PermissionOverwrite;
+import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.channel.TextChannel;
+import discord4j.core.spec.EmbedCreateSpec;
+import discord4j.rest.util.Permission;
+import discord4j.rest.util.PermissionSet;
 import org.dreamexposure.ticketbird.database.DatabaseManager;
 import org.dreamexposure.ticketbird.logger.Logger;
 import org.dreamexposure.ticketbird.message.ChannelManager;
@@ -10,18 +17,9 @@ import org.dreamexposure.ticketbird.objects.guild.Project;
 import org.dreamexposure.ticketbird.objects.guild.Ticket;
 import org.dreamexposure.ticketbird.utils.GeneralUtils;
 import org.dreamexposure.ticketbird.utils.GlobalVars;
+import reactor.core.publisher.Mono;
 
 import java.util.function.Consumer;
-
-import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.object.PermissionOverwrite;
-import discord4j.core.object.entity.Guild;
-import discord4j.core.object.entity.TextChannel;
-import discord4j.core.object.util.Permission;
-import discord4j.core.object.util.PermissionSet;
-import discord4j.core.object.util.Snowflake;
-import discord4j.core.spec.EmbedCreateSpec;
-import reactor.core.publisher.Mono;
 
 @SuppressWarnings({"Duplicates", "ConstantConditions"})
 public class MessageCreateListener {
@@ -29,12 +27,14 @@ public class MessageCreateListener {
     @SuppressWarnings("OptionalGetWithoutIsPresent")
     public static void onMessageCreate(MessageCreateEvent event, GuildSettings settings) {
         //Make sure a bot (including us) didn't send the message.
-        if (event.getMember().isPresent() && !event.getMember().get().isBot() && !event.getMember().get().getId().equals(Main.getClient().getSelfId().get()) && event.getMessage().getContent().isPresent()) {
+        if (event.getMember().isPresent() && !event.getMember().get().isBot()
+            && !event.getMember().get().getId().equals(event.getClient().getSelfId())
+            && !event.getMessage().getContent().isEmpty()) {
             //Check if in support request channel
             if (event.getMessage().getChannel().block().getId().equals(settings.getSupportChannel())) {
                 //Create a new ticket!
                 try {
-                    String content = event.getMessage().getContent().get();
+                    String content = event.getMessage().getContent();
                     Guild guild = event.getGuild().block();
 
                     int ticketNumber = settings.getNextId();
@@ -116,7 +116,7 @@ public class MessageCreateListener {
                     //Brand new ticket needing project set format ticket-[number]
                     if (channel.getName().split("-").length == 2 && settings.isUseProjects()) {
                         //Check if message was valid project or not...
-                        Project project = DatabaseManager.getManager().getProject(settings.getGuildID(), event.getMessage().getContent().get());
+                        Project project = DatabaseManager.getManager().getProject(settings.getGuildID(), event.getMessage().getContent());
 
                         if (project != null) {
                             //Valid project! Lets assign the prefix!
@@ -190,7 +190,10 @@ public class MessageCreateListener {
                                     if (event.getGuild().block().getMemberById(ticket.getCreator()).block() != null) {
                                         MessageManager.sendMessageAsync(MessageManager.getMessage("Ticket.Reopen.Creator", "%creator%", event.getGuild().block().getMemberById(ticket.getCreator()).block().getMention(), settings), event);
                                     } else {
-                                        MessageManager.sendMessageAsync(MessageManager.getMessage("Ticket.Reopen.Creator", "%creator%", Main.getClient().getUserById(ticket.getCreator()).block().getMention(), settings), event);
+                                        MessageManager.sendMessageAsync(MessageManager.getMessage("Ticket.Reopen" +
+                                            ".Creator", "%creator%",
+                                            event.getClient().getUserById(ticket.getCreator()).block().getMention(), settings)
+                                            , event);
                                     }
                                 }
 
@@ -207,7 +210,10 @@ public class MessageCreateListener {
                                     if (event.getGuild().block().getMemberById(ticket.getCreator()).block() != null) {
                                         MessageManager.sendMessageAsync(MessageManager.getMessage("Ticket.Reopen.Creator", "%creator%", event.getGuild().block().getMemberById(ticket.getCreator()).block().getMention(), settings), event);
                                     } else {
-                                        MessageManager.sendMessageAsync(MessageManager.getMessage("Ticket.Reopen.Creator", "%creator%", Main.getClient().getUserById(ticket.getCreator()).block().getMention(), settings), event);
+                                        MessageManager.sendMessageAsync(MessageManager.getMessage("Ticket.Reopen" +
+                                            ".Creator", "%creator%",
+                                            event.getClient().getUserById(ticket.getCreator()).block().getMention(),
+                                            settings), event);
                                     }
                                 }
 

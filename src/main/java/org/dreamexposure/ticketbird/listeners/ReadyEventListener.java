@@ -1,33 +1,28 @@
 package org.dreamexposure.ticketbird.listeners;
 
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
-import discord4j.core.object.util.Image;
-import org.dreamexposure.ticketbird.Main;
+import discord4j.rest.util.Image;
 import org.dreamexposure.ticketbird.logger.Logger;
 import org.dreamexposure.ticketbird.message.MessageManager;
 import org.dreamexposure.ticketbird.service.TimeManager;
 import org.dreamexposure.ticketbird.utils.GlobalVars;
+import reactor.core.publisher.Mono;
 
-@SuppressWarnings({"OptionalGetWithoutIsPresent", "ConstantConditions"})
 public class ReadyEventListener {
-
-    public static void handle(ReadyEvent event) {
-        Logger.getLogger().debug("Ready!", false);
-        try {
-            //Start keep-alive
-            //KeepAliveHandler.startKeepAlive(60);
+    public static Mono<Void> handle(ReadyEvent event) {
+        return Mono.defer(() -> {
+            Logger.getLogger().debug("Ready!", false);
 
             TimeManager.getManager().init();
-
-            GlobalVars.iconUrl = Main.getClient().getApplicationInfo().block().getIcon(Image.Format.PNG).get();
 
             MessageManager.reloadLangs();
 
             Logger.getLogger().debug("[ReadyEvent] Connection success! Session ID: " + event.getSessionId(), false);
 
-            Logger.getLogger().status("Ready Event Success!", null);
-        } catch (Exception e) {
-            Logger.getLogger().exception(null, "BAD!!!", e, true, ReadyEventListener.class);
-        }
+            return event.getClient().getApplicationInfo()
+                .map(info -> info.getIconUrl(Image.Format.PNG).orElse(""))
+                .doOnNext(s -> GlobalVars.iconUrl = s)
+                .then();
+        });
     }
 }

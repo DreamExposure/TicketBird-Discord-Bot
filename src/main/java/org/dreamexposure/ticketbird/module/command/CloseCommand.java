@@ -1,19 +1,17 @@
 package org.dreamexposure.ticketbird.module.command;
 
-import org.dreamexposure.ticketbird.Main;
+import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.channel.TextChannel;
 import org.dreamexposure.ticketbird.database.DatabaseManager;
 import org.dreamexposure.ticketbird.message.MessageManager;
 import org.dreamexposure.ticketbird.objects.command.CommandInfo;
 import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
 import org.dreamexposure.ticketbird.objects.guild.Ticket;
 import org.dreamexposure.ticketbird.utils.GeneralUtils;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
-
-import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.object.entity.Guild;
-import discord4j.core.object.entity.TextChannel;
-import reactor.core.publisher.Mono;
 
 public class CloseCommand implements ICommand {
 
@@ -91,7 +89,7 @@ public class CloseCommand implements ICommand {
                                     guild.getMemberById(ticket.getCreator()).block().getMention(), settings), event);
                         } else {
                             MessageManager.sendMessageAsync(MessageManager.getMessage("Ticket.Close.Success", "%creator%",
-                                    Main.getClient().getUserById(ticket.getCreator()).onErrorResume(e -> Mono.empty()).block().getMention(), settings), event);
+                                    event.getClient().getUserById(ticket.getCreator()).onErrorResume(e -> Mono.empty()).block().getMention(), settings), event);
                         }
                     }
 

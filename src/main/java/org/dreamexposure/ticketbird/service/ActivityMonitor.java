@@ -1,6 +1,9 @@
 package org.dreamexposure.ticketbird.service;
 
-import org.dreamexposure.ticketbird.Main;
+import discord4j.core.object.entity.channel.Category;
+import discord4j.core.object.entity.channel.TextChannel;
+import discord4j.core.spec.TextChannelEditSpec;
+import org.dreamexposure.ticketbird.TicketBird;
 import org.dreamexposure.ticketbird.database.DatabaseManager;
 import org.dreamexposure.ticketbird.logger.Logger;
 import org.dreamexposure.ticketbird.message.ChannelManager;
@@ -8,23 +11,19 @@ import org.dreamexposure.ticketbird.message.MessageManager;
 import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
 import org.dreamexposure.ticketbird.objects.guild.Ticket;
 import org.dreamexposure.ticketbird.utils.GlobalVars;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.TimerTask;
 import java.util.function.Consumer;
-
-import discord4j.core.object.entity.Category;
-import discord4j.core.object.entity.TextChannel;
-import discord4j.core.spec.TextChannelEditSpec;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 public class ActivityMonitor extends TimerTask {
 
     @Override
     public void run() {
         Logger.getLogger().debug("Running ticket inactivity close task.", false);
-        Main.getClient().getGuilds().doOnNext(g -> {
+        TicketBird.getClient().getGuilds().doOnNext(g -> {
             try {
                 GuildSettings settings = DatabaseManager.getManager().getSettings(g.getId());
                 if (settings.getCloseCategory() != null) {

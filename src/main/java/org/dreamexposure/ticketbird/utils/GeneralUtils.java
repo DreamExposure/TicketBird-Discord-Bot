@@ -1,17 +1,16 @@
 package org.dreamexposure.ticketbird.utils;
 
+import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.Message;
+import discord4j.core.object.entity.channel.Category;
+import discord4j.core.object.entity.channel.TextChannel;
 import org.dreamexposure.ticketbird.database.DatabaseManager;
 import org.dreamexposure.ticketbird.logger.Logger;
 import org.dreamexposure.ticketbird.message.MessageManager;
 import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
+import reactor.core.publisher.Mono;
 
 import java.util.Random;
-
-import discord4j.core.object.entity.Category;
-import discord4j.core.object.entity.Guild;
-import discord4j.core.object.entity.Message;
-import discord4j.core.object.entity.TextChannel;
-import reactor.core.publisher.Mono;
 
 @SuppressWarnings({"ConstantConditions", "Duplicates"})
 public class GeneralUtils {

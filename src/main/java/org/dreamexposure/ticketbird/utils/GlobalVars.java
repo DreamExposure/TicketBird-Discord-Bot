@@ -1,8 +1,7 @@
 package org.dreamexposure.ticketbird.utils;
 
-import discord4j.core.object.util.Snowflake;
-
-import java.awt.*;
+import discord4j.common.util.Snowflake;
+import discord4j.rest.util.Color;
 
 public class GlobalVars {
     public static String iconUrl;
@@ -16,7 +15,7 @@ public class GlobalVars {
 
     public final static String d4jVersion = "3.0.6";
 
-    public final static Color embedColor = new Color(252, 113, 20);
+    public final static Color embedColor = Color.of(252, 113, 20);
 
     public final static long oneWeekMs = 604800000;
 

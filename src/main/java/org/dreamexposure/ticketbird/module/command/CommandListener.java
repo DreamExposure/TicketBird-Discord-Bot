@@ -1,7 +1,6 @@
 package org.dreamexposure.ticketbird.module.command;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import org.dreamexposure.ticketbird.Main;
 import org.dreamexposure.ticketbird.database.DatabaseManager;
 import org.dreamexposure.ticketbird.listeners.MessageCreateListener;
 import org.dreamexposure.ticketbird.logger.Logger;
@@ -10,7 +9,7 @@ import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-@SuppressWarnings({"ToArrayCallWithZeroLengthArrayArgument", "OptionalGetWithoutIsPresent"})
+@SuppressWarnings({"ToArrayCallWithZeroLengthArrayArgument"})
 class CommandListener {
 
     /**
@@ -20,8 +19,8 @@ class CommandListener {
      */
     static void onMessageEvent(MessageCreateEvent event) {
         try {
-            if (event.getGuildId().isPresent() && event.getMessage().getContent().isPresent() && !event.getMessage().getContent().get().isEmpty() && event.getMember().isPresent() && !event.getMember().get().isBot()) {
-                String content = event.getMessage().getContent().get();
+            if (event.getGuildId().isPresent() && !event.getMessage().getContent().isEmpty() && event.getMember().isPresent() && !event.getMember().get().isBot()) {
+                String content = event.getMessage().getContent();
                 //Message is a valid guild message (not DM and not from a bot). Check if in correct channel.
                 GuildSettings settings = DatabaseManager.getManager().getSettings(event.getGuildId().get());
                 if (content.startsWith(settings.getPrefix())) {
@@ -37,7 +36,7 @@ class CommandListener {
                         //Only command... no args.
                         CommandExecutor.getExecutor().issueCommand(argsOr[0].replace(settings.getPrefix(), ""), new String[0], event, settings);
                     }
-                } else if (!event.getMessage().mentionsEveryone() && !content.contains("@here") && (content.startsWith("<@" + Main.getClient().getSelfId().get().asString() + ">") || content.startsWith("<@!" + Main.getClient().getSelfId().get().asString() + ">"))) {
+                } else if (!event.getMessage().mentionsEveryone() && !content.contains("@here") && (content.startsWith("<@" + event.getClient().getSelfId().asString() + ">") || content.startsWith("<@!" + event.getClient().getSelfId().asString() + ">"))) {
                     String[] argsOr = content.split("\\s+");
                     if (argsOr.length > 2) {
                         ArrayList<String> argsOr2 = new ArrayList<>(Arrays.asList(argsOr).subList(2, argsOr.length));
@@ -58,7 +57,7 @@ class CommandListener {
                 }
             }
         } catch (Exception e) {
-            Logger.getLogger().exception(event.getMember().get(), "Command error; event message: " + event.getMessage().getContent().get(), e, true, CommandListener.class);
+            Logger.getLogger().exception(event.getMember().get(), "Command error; event message: " + event.getMessage().getContent(), e, true, CommandListener.class);
         }
     }
 }

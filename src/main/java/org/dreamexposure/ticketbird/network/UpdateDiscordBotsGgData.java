@@ -1,7 +1,7 @@
 package org.dreamexposure.ticketbird.network;
 
 import okhttp3.*;
-import org.dreamexposure.ticketbird.Main;
+import org.dreamexposure.ticketbird.TicketBird;
 import org.dreamexposure.ticketbird.logger.Logger;
 import org.dreamexposure.ticketbird.objects.bot.BotSettings;
 import org.json.JSONObject;
@@ -34,11 +34,11 @@ public class UpdateDiscordBotsGgData {
     @SuppressWarnings("ConstantConditions")
     private static void updateSiteBotMeta() {
         try {
-            int serverCount = Main.getClient().getGuilds().count().block().intValue();
+            int serverCount = TicketBird.getClient().getGuilds().count().block().intValue();
 
             JSONObject json = new JSONObject()
                     .put("guildCount", serverCount)
-                    .put("shardCount", Main.getShardCount());
+                    .put("shardCount", TicketBird.getShardCount());
 
             OkHttpClient client = new OkHttpClient();
 

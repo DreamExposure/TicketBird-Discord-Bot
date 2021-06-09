@@ -1,7 +1,6 @@
 package org.dreamexposure.ticketbird.file;
 
 import org.dreamexposure.ticketbird.logger.Logger;
-import org.dreamexposure.ticketbird.objects.bot.BotSettings;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -12,7 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class ReadFile {
-    @SuppressWarnings("ConstantConditions")
     public static JSONObject readAllLangFiles() {
         JSONObject langs = new JSONObject();
 

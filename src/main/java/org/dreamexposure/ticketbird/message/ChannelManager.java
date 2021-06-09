@@ -1,10 +1,10 @@
 package org.dreamexposure.ticketbird.message;
 
-import discord4j.core.object.entity.Category;
-import discord4j.core.object.entity.Channel;
+import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Guild;
-import discord4j.core.object.entity.TextChannel;
-import discord4j.core.object.util.Snowflake;
+import discord4j.core.object.entity.channel.Category;
+import discord4j.core.object.entity.channel.Channel;
+import discord4j.core.object.entity.channel.TextChannel;
 import discord4j.core.spec.CategoryCreateSpec;
 import discord4j.core.spec.TextChannelCreateSpec;
 import discord4j.core.spec.TextChannelEditSpec;

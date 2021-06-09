@@ -1,8 +1,8 @@
 package org.dreamexposure.ticketbird.utils;
 
+import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
-import discord4j.core.object.util.Snowflake;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;

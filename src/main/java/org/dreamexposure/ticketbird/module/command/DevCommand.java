@@ -1,18 +1,15 @@
 package org.dreamexposure.ticketbird.module.command;
 
-import org.dreamexposure.novautils.crypto.KeyGenerator;
-import org.dreamexposure.ticketbird.Main;
+
+import discord4j.common.util.Snowflake;
+import discord4j.core.event.domain.message.MessageCreateEvent;
 import org.dreamexposure.ticketbird.database.DatabaseManager;
 import org.dreamexposure.ticketbird.message.MessageManager;
-import org.dreamexposure.ticketbird.objects.api.UserAPIAccount;
 import org.dreamexposure.ticketbird.objects.command.CommandInfo;
 import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
 import org.dreamexposure.ticketbird.utils.GlobalVars;
 
 import java.util.ArrayList;
-
-import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.object.util.Snowflake;
 
 @SuppressWarnings("OptionalGetWithoutIsPresent")
 public class DevCommand implements ICommand {
@@ -79,12 +76,6 @@ public class DevCommand implements ICommand {
                     case "reloadlangs":
                         moduleReloadLangs(event);
                         break;
-                    case "api-register":
-                        registerApiKey(args, event);
-                        break;
-                    case "api-block":
-                        blockAPIKey(args, event);
-                        break;
                     default:
                         MessageManager.sendMessageAsync("Invalid sub command! Use `!help dev` to view valid sub commands!", event);
                         break;
@@ -99,7 +90,7 @@ public class DevCommand implements ICommand {
     private void modulePatron(String[] args, MessageCreateEvent event) {
         if (args.length == 2) {
             Snowflake guildId = Snowflake.of(args[1]);
-            if (Main.getClient().getGuildById(guildId).block() != null) {
+            if (event.getClient().getGuildById(guildId).block() != null) {
                 GuildSettings settings = DatabaseManager.getManager().getSettings(guildId);
                 settings.setPatronGuild(!settings.isPatronGuild());
 
@@ -119,7 +110,7 @@ public class DevCommand implements ICommand {
     private void moduleDevGuild(String[] args, MessageCreateEvent event) {
         if (args.length == 2) {
             Snowflake guildId = Snowflake.of(args[1]);
-            if (Main.getClient().getGuildById(guildId).block() != null) {
+            if (event.getClient().getGuildById(guildId).block() != null) {
                 GuildSettings settings = DatabaseManager.getManager().getSettings(guildId);
                 settings.setDevGuild(!settings.isDevGuild());
 
@@ -142,49 +133,5 @@ public class DevCommand implements ICommand {
         MessageManager.reloadLangs();
 
         MessageManager.sendMessageAsync("All lang files reloaded!", event);
-    }
-
-
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
-    private void registerApiKey(String[] args, MessageCreateEvent event) {
-        if (args.length == 2) {
-            MessageManager.sendMessageAsync("Registering new API key...", event);
-
-            String userId = args[1];
-
-            UserAPIAccount account = new UserAPIAccount();
-            account.setUserId(userId);
-            account.setAPIKey(KeyGenerator.csRandomAlphaNumericString(64));
-            account.setTimeIssued(System.currentTimeMillis());
-            account.setBlocked(false);
-            account.setUses(0);
-
-            if (DatabaseManager.getManager().updateAPIAccount(account)) {
-                MessageManager.sendMessageAsync("Check your DMs for the new API Key!", event);
-                MessageManager.sendDirectMessageAsync(account.getAPIKey(), event.getMember().get());
-            } else {
-                MessageManager.sendMessageAsync("Error occurred! Could not register new API key!", event);
-            }
-        } else {
-            MessageManager.sendMessageAsync("Please specify the USER ID linked to the key!", event);
-        }
-    }
-
-    private void blockAPIKey(String[] args, MessageCreateEvent event) {
-        if (args.length == 2) {
-            MessageManager.sendMessageAsync("Blocking API key...", event);
-
-            String key = args[1];
-
-            UserAPIAccount account = DatabaseManager.getManager().getAPIAccount(key);
-            account.setBlocked(true);
-
-            if (DatabaseManager.getManager().updateAPIAccount(account))
-                MessageManager.sendMessageAsync("Successfully blocked API key!", event);
-            else
-                MessageManager.sendMessageAsync("Error occurred! Could not block API key!", event);
-        } else {
-            MessageManager.sendMessageAsync("Please specify the API KEY!", event);
-        }
     }
 }

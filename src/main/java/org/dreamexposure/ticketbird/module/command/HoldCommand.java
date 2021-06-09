@@ -1,5 +1,8 @@
 package org.dreamexposure.ticketbird.module.command;
 
+import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.entity.channel.TextChannel;
+import discord4j.core.spec.TextChannelEditSpec;
 import org.dreamexposure.ticketbird.database.DatabaseManager;
 import org.dreamexposure.ticketbird.message.MessageManager;
 import org.dreamexposure.ticketbird.objects.command.CommandInfo;
@@ -9,10 +12,6 @@ import org.dreamexposure.ticketbird.utils.GeneralUtils;
 
 import java.util.ArrayList;
 import java.util.function.Consumer;
-
-import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.object.entity.TextChannel;
-import discord4j.core.spec.TextChannelEditSpec;
 
 @SuppressWarnings({"ConstantConditions", "OptionalGetWithoutIsPresent"})
 public class HoldCommand implements ICommand {

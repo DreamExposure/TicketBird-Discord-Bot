@@ -1,30 +1,28 @@
 package org.dreamexposure.ticketbird.module.command;
 
-import org.dreamexposure.ticketbird.Main;
-import org.dreamexposure.ticketbird.database.DatabaseManager;
-import org.dreamexposure.ticketbird.logger.Logger;
-import org.dreamexposure.ticketbird.message.ChannelManager;
-import org.dreamexposure.ticketbird.message.MessageManager;
-import org.dreamexposure.ticketbird.objects.bot.BotSettings;
-import org.dreamexposure.ticketbird.objects.command.CommandInfo;
-import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
-import org.dreamexposure.ticketbird.utils.GeneralUtils;
-import org.dreamexposure.ticketbird.utils.GlobalVars;
-import org.dreamexposure.ticketbird.utils.UserUtils;
-
-import java.util.ArrayList;
-import java.util.function.Consumer;
-
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.PermissionOverwrite;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
-import discord4j.core.object.entity.TextChannel;
-import discord4j.core.object.util.Permission;
-import discord4j.core.object.util.PermissionSet;
+import discord4j.core.object.entity.channel.TextChannel;
 import discord4j.core.spec.EmbedCreateSpec;
+import discord4j.rest.util.Permission;
+import discord4j.rest.util.PermissionSet;
+import org.dreamexposure.ticketbird.TicketBird;
+import org.dreamexposure.ticketbird.database.DatabaseManager;
+import org.dreamexposure.ticketbird.logger.Logger;
+import org.dreamexposure.ticketbird.message.ChannelManager;
+import org.dreamexposure.ticketbird.message.MessageManager;
+import org.dreamexposure.ticketbird.objects.command.CommandInfo;
+import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
+import org.dreamexposure.ticketbird.utils.GeneralUtils;
+import org.dreamexposure.ticketbird.utils.GlobalVars;
+import org.dreamexposure.ticketbird.utils.UserUtils;
 import reactor.core.publisher.Mono;
+
+import java.util.ArrayList;
+import java.util.function.Consumer;
 
 public class TicketBirdCommand implements ICommand {
 
@@ -123,8 +121,9 @@ public class TicketBirdCommand implements ICommand {
             spec.addField(MessageManager.getMessage("Embed.TicketBird.Info.Developer", settings), "DreamExposure", true);
             spec.addField(MessageManager.getMessage("Embed.TicketBird.Info.Version", settings), GlobalVars.version, true);
             spec.addField(MessageManager.getMessage("Embed.TicketBird.Info.Library", settings), "Discord4J, version " + GlobalVars.d4jVersion, true);
-            spec.addField("Shard Index", Main.getShardIndex() + "/" + Main.getShardCount(), true);
-            spec.addField(MessageManager.getMessage("Embed.TicketBird.Info.TotalGuilds", settings), Main.getClient().getGuilds().count().block() + "", true);
+            spec.addField("Shard Index", TicketBird.getShardIndex() + "/" + TicketBird.getShardCount(), true);
+            spec.addField(MessageManager.getMessage("Embed.TicketBird.Info.TotalGuilds", settings),
+                event.getClient().getGuilds().count().block() + "", true);
             spec.addField("Total Tickets", DatabaseManager.getManager().getTotalTicketCount() + "", true);
             spec.setFooter(MessageManager.getMessage("Embed.TicketBird.Info.Patron", settings) + ": https://www.patreon.com/Novafox", null);
             spec.setUrl(GlobalVars.siteUrl);

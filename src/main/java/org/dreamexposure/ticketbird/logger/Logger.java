@@ -1,20 +1,18 @@
 package org.dreamexposure.ticketbird.logger;
 
-import org.dreamexposure.ticketbird.Main;
-import org.dreamexposure.ticketbird.objects.bot.BotSettings;
-import org.dreamexposure.ticketbird.utils.GlobalVars;
-
-import java.io.*;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.util.Calendar;
-
-import javax.annotation.Nullable;
-
 import club.minnced.discord.webhook.WebhookClient;
 import club.minnced.discord.webhook.send.WebhookEmbed;
 import club.minnced.discord.webhook.send.WebhookEmbedBuilder;
 import discord4j.core.object.entity.User;
+import org.dreamexposure.ticketbird.TicketBird;
+import org.dreamexposure.ticketbird.objects.bot.BotSettings;
+import org.dreamexposure.ticketbird.utils.GlobalVars;
+
+import javax.annotation.Nullable;
+import java.io.*;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.util.Calendar;
 
 @SuppressWarnings({"Duplicates", "rawtypes"})
 public class Logger {
@@ -109,7 +107,7 @@ public class Logger {
             WebhookEmbedBuilder builder = new WebhookEmbedBuilder()
                     .setTitle(new WebhookEmbed.EmbedTitle("Exception", null))
                     .addField(new WebhookEmbed
-                            .EmbedField(true, "Shard Index", Main.getShardIndex() + ""))
+                            .EmbedField(true, "Shard Index", TicketBird.getShardIndex() + ""))
                     .addField(new WebhookEmbed
                             .EmbedField(false, "Class", clazz.getName()))
                     .setDescription(error)
@@ -155,7 +153,7 @@ public class Logger {
             WebhookEmbedBuilder builder = new WebhookEmbedBuilder()
                     .setTitle(new WebhookEmbed.EmbedTitle("Debug", null))
                     .addField(new WebhookEmbed
-                            .EmbedField(true, "Shard Index", Main.getShardIndex() + ""))
+                            .EmbedField(true, "Shard Index", TicketBird.getShardIndex() + ""))
                     .setDescription(message)
                     .setColor(GlobalVars.embedColor.getRGB())
                     .setTimestamp(Instant.now());
@@ -191,7 +189,7 @@ public class Logger {
             WebhookEmbedBuilder builder = new WebhookEmbedBuilder()
                     .setTitle(new WebhookEmbed.EmbedTitle("Debug", null))
                     .addField(new WebhookEmbed
-                            .EmbedField(true, "Shard Index", Main.getShardIndex() + ""))
+                            .EmbedField(true, "Shard Index", TicketBird.getShardIndex() + ""))
                     .setDescription(message)
                     .setColor(GlobalVars.embedColor.getRGB())
                     .setTimestamp(Instant.now());
@@ -249,7 +247,7 @@ public class Logger {
             WebhookEmbedBuilder builder = new WebhookEmbedBuilder()
                     .setTitle(new WebhookEmbed.EmbedTitle("Status", null))
                     .addField(new WebhookEmbed
-                            .EmbedField(true, "Shard Index", Main.getShardIndex() + ""))
+                            .EmbedField(true, "Shard Index", TicketBird.getShardIndex() + ""))
                     .setDescription(message)
                     .setColor(GlobalVars.embedColor.getRGB())
                     .setTimestamp(Instant.now());
