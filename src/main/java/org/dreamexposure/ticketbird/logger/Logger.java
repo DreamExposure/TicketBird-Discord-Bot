@@ -1,5 +1,6 @@
 package org.dreamexposure.ticketbird.logger;
 
+import org.dreamexposure.ticketbird.Main;
 import org.dreamexposure.ticketbird.objects.bot.BotSettings;
 import org.dreamexposure.ticketbird.utils.GlobalVars;
 
@@ -108,7 +109,7 @@ public class Logger {
             WebhookEmbedBuilder builder = new WebhookEmbedBuilder()
                     .setTitle(new WebhookEmbed.EmbedTitle("Exception", null))
                     .addField(new WebhookEmbed
-                            .EmbedField(true, "Shard Index", BotSettings.SHARD_INDEX.get()))
+                            .EmbedField(true, "Shard Index", Main.getShardIndex() + ""))
                     .addField(new WebhookEmbed
                             .EmbedField(false, "Class", clazz.getName()))
                     .setDescription(error)
@@ -154,7 +155,7 @@ public class Logger {
             WebhookEmbedBuilder builder = new WebhookEmbedBuilder()
                     .setTitle(new WebhookEmbed.EmbedTitle("Debug", null))
                     .addField(new WebhookEmbed
-                            .EmbedField(true, "Shard Index", BotSettings.SHARD_INDEX.get()))
+                            .EmbedField(true, "Shard Index", Main.getShardIndex() + ""))
                     .setDescription(message)
                     .setColor(GlobalVars.embedColor.getRGB())
                     .setTimestamp(Instant.now());
@@ -190,7 +191,7 @@ public class Logger {
             WebhookEmbedBuilder builder = new WebhookEmbedBuilder()
                     .setTitle(new WebhookEmbed.EmbedTitle("Debug", null))
                     .addField(new WebhookEmbed
-                            .EmbedField(true, "Shard Index", BotSettings.SHARD_INDEX.get()))
+                            .EmbedField(true, "Shard Index", Main.getShardIndex() + ""))
                     .setDescription(message)
                     .setColor(GlobalVars.embedColor.getRGB())
                     .setTimestamp(Instant.now());
@@ -248,7 +249,7 @@ public class Logger {
             WebhookEmbedBuilder builder = new WebhookEmbedBuilder()
                     .setTitle(new WebhookEmbed.EmbedTitle("Status", null))
                     .addField(new WebhookEmbed
-                            .EmbedField(true, "Shard Index", BotSettings.SHARD_INDEX.get()))
+                            .EmbedField(true, "Shard Index", Main.getShardIndex() + ""))
                     .setDescription(message)
                     .setColor(GlobalVars.embedColor.getRGB())
                     .setTimestamp(Instant.now());

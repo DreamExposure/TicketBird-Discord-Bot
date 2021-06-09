@@ -38,7 +38,7 @@ public class UpdateDiscordBotsGgData {
 
             JSONObject json = new JSONObject()
                     .put("guildCount", serverCount)
-                    .put("shardCount", Integer.valueOf(BotSettings.SHARD_COUNT.get()));
+                    .put("shardCount", Main.getShardCount());
 
             OkHttpClient client = new OkHttpClient();
 

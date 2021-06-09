@@ -33,7 +33,7 @@ public class StatusChanger extends TimerTask {
     public void run() {
         String status = statuses.get(index);
         status = status.replace("%guCount%", Main.getClient().getGuilds().count().block() + "");
-        status = status.replace("%shards%", BotSettings.SHARD_COUNT.get() + "");
+        status = status.replace("%shards%", Main.getShardCount() + "");
 
         Main.getClient().updatePresence(Presence.online(Activity.playing(status))).subscribe();
 

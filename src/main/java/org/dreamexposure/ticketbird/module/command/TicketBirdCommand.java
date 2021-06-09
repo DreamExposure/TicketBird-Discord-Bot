@@ -123,7 +123,7 @@ public class TicketBirdCommand implements ICommand {
             spec.addField(MessageManager.getMessage("Embed.TicketBird.Info.Developer", settings), "DreamExposure", true);
             spec.addField(MessageManager.getMessage("Embed.TicketBird.Info.Version", settings), GlobalVars.version, true);
             spec.addField(MessageManager.getMessage("Embed.TicketBird.Info.Library", settings), "Discord4J, version " + GlobalVars.d4jVersion, true);
-            spec.addField("Shard Index", BotSettings.SHARD_INDEX.get() + "/" + BotSettings.SHARD_COUNT.get(), true);
+            spec.addField("Shard Index", Main.getShardIndex() + "/" + Main.getShardCount(), true);
             spec.addField(MessageManager.getMessage("Embed.TicketBird.Info.TotalGuilds", settings), Main.getClient().getGuilds().count().block() + "", true);
             spec.addField("Total Tickets", DatabaseManager.getManager().getTotalTicketCount() + "", true);
             spec.setFooter(MessageManager.getMessage("Embed.TicketBird.Info.Patron", settings) + ": https://www.patreon.com/Novafox", null);
