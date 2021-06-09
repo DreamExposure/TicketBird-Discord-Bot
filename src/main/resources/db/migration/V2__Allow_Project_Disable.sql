@@ -1,3 +1,5 @@
-ALTER TABLE `${prefix}guild_settings`
-    ADD USE_PROJECTS BOOLEAN NOT NULL
-        DEFAULT (true) AFTER 'DEV_GUILD';
+# noinspection SqlResolveForFile
+
+ALTER TABLE ${prefix}guild_settings
+    ADD COLUMN USE_PROJECTS BIT(1) NOT NULL DEFAULT 0
+        AFTER DEV_GUILD;
