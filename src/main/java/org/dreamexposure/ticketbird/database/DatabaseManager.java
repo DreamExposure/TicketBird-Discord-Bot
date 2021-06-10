@@ -399,6 +399,7 @@ public class DatabaseManager {
                 Ticket ticket = new Ticket(guildId, res.getInt("NUMBER"));
                 ticket.setProject(res.getString("PROJECT"));
                 ticket.setCreator(Snowflake.of(res.getLong("CREATOR")));
+                ticket.setChannel(Snowflake.of(res.getLong("CHANNEL")));
                 ticket.setCategory(Snowflake.of(res.getLong("CATEGORY")));
                 ticket.setLastActivity(res.getLong("LAST_ACTIVITY"));
 
