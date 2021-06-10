@@ -10,14 +10,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 @SuppressWarnings({"ToArrayCallWithZeroLengthArrayArgument"})
-class CommandListener {
+public class CommandListener {
 
     /**
      * Checks for command validity and calls the command executor if valid.
      *
      * @param event The event received to check for a command.
      */
-    static void onMessageEvent(MessageCreateEvent event) {
+    public static void onMessageEvent(MessageCreateEvent event) {
         try {
             if (event.getGuildId().isPresent() && !event.getMessage().getContent().isEmpty() && event.getMember().isPresent() && !event.getMember().get().isBot()) {
                 String content = event.getMessage().getContent();

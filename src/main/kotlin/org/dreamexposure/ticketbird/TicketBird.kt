@@ -5,6 +5,7 @@ import discord4j.core.GatewayDiscordClient
 import discord4j.core.`object`.presence.Activity
 import discord4j.core.`object`.presence.Presence
 import discord4j.core.event.domain.lifecycle.ReadyEvent
+import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.shard.ShardingStrategy
 import discord4j.discordjson.json.GuildData
 import discord4j.discordjson.json.MessageData
@@ -118,9 +119,12 @@ class TicketBird {
                         val onReady = client.on(ReadyEvent::class.java)
                                 .flatMap(ReadyEventListener::handle)
                                 .then()
+                        val onCommand = client.on(MessageCreateEvent::class.java)
+                                .map(CommandListener::onMessageEvent)
+                                .then()
 
                         //Register commands.
-                        val executor = CommandExecutor.getExecutor().enable(client)
+                        val executor = CommandExecutor.getExecutor()
                         executor.registerCommand(TicketBirdCommand())
                         executor.registerCommand(ProjectCommand())
                         executor.registerCommand(CloseCommand())
@@ -128,7 +132,7 @@ class TicketBird {
                         executor.registerCommand(HelpCommand())
                         executor.registerCommand(DevCommand())
 
-                        return@withGateway Mono.`when`(onReady, onReady)
+                        return@withGateway Mono.`when`(onReady, onCommand)
                     }.block()
         }
     }

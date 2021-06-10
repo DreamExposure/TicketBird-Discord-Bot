@@ -20,9 +20,7 @@ public class CommandExecutor {
      * @return The instance of the CommandExecutor.
      */
     public static CommandExecutor getExecutor() {
-        if (instance == null) {
-            instance = new CommandExecutor();
-        }
+        if (instance == null) instance = new CommandExecutor();
         return instance;
     }
 

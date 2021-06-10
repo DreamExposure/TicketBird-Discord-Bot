@@ -1,14 +1,13 @@
 package org.dreamexposure.ticketbird.module.command;
 
+import discord4j.core.event.domain.message.MessageCreateEvent;
 import org.dreamexposure.ticketbird.objects.command.CommandInfo;
 import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
 
 import java.util.ArrayList;
 
-import discord4j.core.event.domain.message.MessageCreateEvent;
-
 @SuppressWarnings("UnusedReturnValue")
-interface ICommand {
+public interface ICommand {
     /**
      * Gets the command this Object is responsible for.
      *
