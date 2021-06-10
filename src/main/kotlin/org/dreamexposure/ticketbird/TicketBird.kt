@@ -177,12 +177,15 @@ private fun getStores(): StoreService {
 }
 
 private fun getIntents(): IntentSet {
-    return IntentSet.of(
+    val default = IntentSet.of(
             Intent.GUILDS,
-            Intent.GUILD_MEMBERS,
             Intent.GUILD_MESSAGES,
             Intent.GUILD_MESSAGE_REACTIONS,
             Intent.DIRECT_MESSAGES,
             Intent.DIRECT_MESSAGE_REACTIONS
     )
+
+    return if (BotSettings.USE_SPECIAL_INTENTS.get().equals("true", true)) {
+        default.and(IntentSet.of(Intent.GUILD_MEMBERS))
+    } else default
 }
