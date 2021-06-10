@@ -103,15 +103,6 @@ class TicketBird {
                 Logger.getLogger().exception(null, "Spring error!", e, true, TicketBird::class.java)
             }
 
-            //Register commands.
-            val executor = CommandExecutor.getExecutor().enable()
-            executor.registerCommand(TicketBirdCommand())
-            executor.registerCommand(ProjectCommand())
-            executor.registerCommand(CloseCommand())
-            executor.registerCommand(HoldCommand())
-            executor.registerCommand(HelpCommand())
-            executor.registerCommand(DevCommand())
-
             //Load language files.
             MessageManager.reloadLangs()
 
@@ -127,6 +118,15 @@ class TicketBird {
                         val onReady = client.on(ReadyEvent::class.java)
                                 .flatMap(ReadyEventListener::handle)
                                 .then()
+
+                        //Register commands.
+                        val executor = CommandExecutor.getExecutor().enable(client)
+                        executor.registerCommand(TicketBirdCommand())
+                        executor.registerCommand(ProjectCommand())
+                        executor.registerCommand(CloseCommand())
+                        executor.registerCommand(HoldCommand())
+                        executor.registerCommand(HelpCommand())
+                        executor.registerCommand(DevCommand())
 
                         return@withGateway Mono.`when`(onReady, onReady)
                     }.block()
