@@ -1,5 +1,7 @@
 package org.dreamexposure.ticketbird.module.command;
 
+import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.spec.EmbedCreateSpec;
 import org.dreamexposure.ticketbird.database.DatabaseManager;
 import org.dreamexposure.ticketbird.message.MessageManager;
 import org.dreamexposure.ticketbird.objects.command.CommandInfo;
@@ -9,9 +11,6 @@ import org.dreamexposure.ticketbird.utils.GlobalVars;
 
 import java.util.ArrayList;
 import java.util.function.Consumer;
-
-import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.spec.EmbedCreateSpec;
 
 public class ProjectCommand implements ICommand {
 
@@ -46,11 +45,12 @@ public class ProjectCommand implements ICommand {
     public CommandInfo getCommandInfo() {
         CommandInfo info = new CommandInfo("Project");
         info.setDescription("Used to configure TicketBird Projects");
-        info.setExample("=Project <function> <value>");
+        info.setExample("=Project <function> (value)");
 
         info.getSubCommands().put("add", "Adds a new project to your TicketBird.");
         info.getSubCommands().put("remove", "Removes a project from  your TicketBird.");
         info.getSubCommands().put("list", "Lists all active projects/services for tickets.");
+        info.getSubCommands().put("toggle", "Toggles whether or not to use projects for sorting.");
 
         return info;
     }
@@ -89,6 +89,7 @@ public class ProjectCommand implements ICommand {
                 case "toggle":
                     //=project toggle
                     moduleToggle(event, settings);
+                    break;
                 default:
                     MessageManager.sendMessageAsync(MessageManager.getMessage("Notification.Args.Invalid", settings), event);
                     break;
