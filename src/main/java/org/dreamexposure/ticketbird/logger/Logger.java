@@ -47,9 +47,9 @@ public class Logger {
 
         new File(BotSettings.LOG_FOLDER.get()).mkdirs();
 
-        exceptionsFile = BotSettings.LOG_FOLDER.get() + "/" + timestamp + "-exceptions.log";
-        apiFile = BotSettings.LOG_FOLDER.get() + "/" + timestamp + "-api.log";
-        debugFile = BotSettings.LOG_FOLDER.get() + "/" + timestamp + "-debug.log";
+        exceptionsFile = BotSettings.LOG_FOLDER.get() + "/exceptions.log";
+        apiFile = BotSettings.LOG_FOLDER.get() + "/api.log";
+        debugFile = BotSettings.LOG_FOLDER.get() + "/debug.log";
 
         try {
             PrintWriter exceptions = new PrintWriter(exceptionsFile, "UTF-8");

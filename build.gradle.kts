@@ -32,25 +32,41 @@ repositories {
 val d4jVersion = "3.1.5"
 val springVersion = "2.5.0"
 val springSecVersion = "5.5.0"
+val nettyForcedVersion = "4.1.56.Final"
+val reactorCoreVersion = "3.4.2"
+val reactorNettyVersion = "1.0.3"
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.0")
 
     implementation("org.dreamexposure:NovaUtils:1.0.0-SNAPSHOT")
+
     implementation("com.discord4j:discord4j-core:$d4jVersion")
-    implementation("com.discord4j:stores-redis:$d4jVersion")
+    implementation("com.discord4j:stores-redis:$d4jVersion") {
+        exclude("io.netty", "*")
+    }
+
     implementation("mysql:mysql-connector-java:8.0.15")
     implementation("org.json:json:20210307")
     implementation("org.jetbrains:annotations:21.0.1")
+
+    //Forced version nonsense
+    implementation("io.netty:netty-all:$nettyForcedVersion")
+    implementation("com.fasterxml.jackson.core:jackson-core:2.12.2")
+    implementation("io.projectreactor:reactor-core:$reactorCoreVersion")
+    implementation("io.projectreactor.netty:reactor-netty:$reactorNettyVersion")
+
     implementation("org.thymeleaf:thymeleaf:3.0.12.RELEASE")
     implementation("org.thymeleaf:thymeleaf-spring5:3.0.12.RELEASE")
     implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.5.3")
+
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf:$springVersion")
     implementation("org.springframework.boot:spring-boot-starter-webflux:$springVersion")
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc:$springVersion")
     implementation("org.springframework.session:spring-session-data-redis:$springVersion")
     implementation("org.springframework.security:spring-security-core:$springSecVersion")
     implementation("org.springframework.security:spring-security-web:$springSecVersion")
+
     implementation("com.squareup.okhttp3:okhttp:4.9.1")
     implementation("com.github.DiscordBotList:Java-Wrapper:v1.0")
     implementation("club.minnced:discord-webhooks:0.5.7")
