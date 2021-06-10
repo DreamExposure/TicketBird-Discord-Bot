@@ -73,4 +73,8 @@ tasks {
             jvmTarget = targetCompatibility
         }
     }
+
+    bootJar {
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    }
 }
