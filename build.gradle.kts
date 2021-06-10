@@ -1,3 +1,7 @@
+
+import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.PropertySpec
+import com.squareup.kotlinpoet.TypeSpec
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -8,6 +12,14 @@ plugins {
 
     id("com.google.cloud.tools.jib") version("3.0.0")
     id ("org.springframework.boot") version ("2.5.0")
+
+    id("com.gorylenko.gradle-git-properties") version "2.2.3"
+}
+
+buildscript {
+    dependencies {
+        classpath("com.squareup:kotlinpoet:1.7.2")
+    }
 }
 
 repositories {
@@ -37,6 +49,8 @@ val reactorCoreVersion = "3.4.2"
 val reactorNettyVersion = "1.0.3"
 val r2dbcMysqlVersion = "0.8.1.RELEASE"
 val r2dbcPoolVersion = "0.8.3.RELEASE"
+
+val kotlinSrcDir: File = buildDir.resolve("src/main/kotlin")
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.0")
@@ -90,8 +104,62 @@ jib {
     to.image = "rg.nl-ams.scw.cloud/dreamexposure/ticketbird:$version"
 }
 
+gitProperties {
+    extProperty = "gitPropertiesExt"
+
+    customProperty("ticketbird.version", version)
+    customProperty("ticketbird.version.d4j", d4jVersion)
+}
+
+kotlin {
+    sourceSets {
+        all {
+            kotlin.srcDir(kotlinSrcDir)
+        }
+    }
+}
+
 tasks {
+    generateGitProperties {
+        doLast {
+            @Suppress("UNCHECKED_CAST")
+            val gitProperties = ext[gitProperties.extProperty] as Map<String, String>
+            val enumPairs = gitProperties.mapKeys { it.key.replace('.', '_').toUpperCase() }
+
+            val enumBuilder = TypeSpec.enumBuilder("GitProperty")
+                    .primaryConstructor(
+                            com.squareup.kotlinpoet.FunSpec.constructorBuilder()
+                                    .addParameter("value", String::class)
+                                    .build()
+                    )
+
+            val enums = enumPairs.entries.fold(enumBuilder) { accumulator, (key, value) ->
+                accumulator.addEnumConstant(
+                        key, TypeSpec.anonymousClassBuilder()
+                        .addSuperclassConstructorParameter("%S", value)
+                        .build()
+                )
+            }
+
+            val enumFile = FileSpec.builder("org.dreamexposure.ticketbird", "GitProperty")
+                    .addType(
+                            enums // https://github.com/square/kotlinpoet#enums
+                                    .addProperty(
+                                           PropertySpec.builder("value", String::class)
+                                                    .initializer("value")
+                                                    .build()
+                                    )
+                                    .build()
+                    )
+                    .build()
+
+            enumFile.writeTo(kotlinSrcDir)
+        }
+    }
+
     withType<KotlinCompile> {
+        dependsOn(generateGitProperties)
+
         kotlinOptions {
             freeCompilerArgs = listOf("-Xjsr305=strict")
             jvmTarget = targetCompatibility
@@ -101,4 +169,5 @@ tasks {
     bootJar {
         duplicatesStrategy = DuplicatesStrategy.INCLUDE
     }
+
 }

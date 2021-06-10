@@ -3,10 +3,11 @@ package org.dreamexposure.ticketbird.module.status;
 import discord4j.core.object.presence.Activity;
 import discord4j.core.object.presence.Presence;
 import org.dreamexposure.ticketbird.TicketBird;
-import org.dreamexposure.ticketbird.utils.GlobalVars;
 
 import java.util.ArrayList;
 import java.util.TimerTask;
+
+import static org.dreamexposure.ticketbird.GitProperty.TICKETBIRD_VERSION;
 
 public class StatusChanger extends TimerTask {
     private final ArrayList<String> statuses = new ArrayList<>();
@@ -22,7 +23,7 @@ public class StatusChanger extends TimerTask {
         statuses.add("Powered by DreamExposure");
         statuses.add("Used on %guCount% guilds!");
         statuses.add("%shards% shards!");
-        statuses.add("Version " + GlobalVars.version);
+        statuses.add("Version " + TICKETBIRD_VERSION.getValue());
         statuses.add("TicketBird is on Patreon!");
         statuses.add("Share TicketBird!!");
         index = 0;

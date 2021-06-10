@@ -11,10 +11,6 @@ public class GlobalVars {
 
     public final static Snowflake novaId = Snowflake.of(130510525770629121L);
 
-    public final static String version = "1.0.0";
-
-    public final static String d4jVersion = "3.0.6";
-
     public final static Color embedColor = Color.of(252, 113, 20);
 
     public final static long oneWeekMs = 604800000;

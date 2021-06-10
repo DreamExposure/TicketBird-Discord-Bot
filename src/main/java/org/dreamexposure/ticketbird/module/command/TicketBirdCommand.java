@@ -24,6 +24,9 @@ import reactor.core.publisher.Mono;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
+import static org.dreamexposure.ticketbird.GitProperty.TICKETBIRD_VERSION;
+import static org.dreamexposure.ticketbird.GitProperty.TICKETBIRD_VERSION_D4J;
+
 public class TicketBirdCommand implements ICommand {
 
     /**
@@ -119,8 +122,11 @@ public class TicketBirdCommand implements ICommand {
             spec.setAuthor("TicketBird", GlobalVars.siteUrl, GlobalVars.iconUrl);
             spec.setTitle(MessageManager.getMessage("Embed.TicketBird.Info.Title", settings));
             spec.addField(MessageManager.getMessage("Embed.TicketBird.Info.Developer", settings), "DreamExposure", true);
-            spec.addField(MessageManager.getMessage("Embed.TicketBird.Info.Version", settings), GlobalVars.version, true);
-            spec.addField(MessageManager.getMessage("Embed.TicketBird.Info.Library", settings), "Discord4J, version " + GlobalVars.d4jVersion, true);
+            spec.addField(MessageManager.getMessage("Embed.TicketBird.Info.Version", settings),
+                TICKETBIRD_VERSION.getValue(),
+                true);
+            spec.addField(MessageManager.getMessage("Embed.TicketBird.Info.Library", settings),
+                "Discord4J, version " + TICKETBIRD_VERSION_D4J.getValue(), true);
             spec.addField("Shard Index", TicketBird.getShardIndex() + "/" + TicketBird.getShardCount(), true);
             spec.addField(MessageManager.getMessage("Embed.TicketBird.Info.TotalGuilds", settings),
                 event.getClient().getGuilds().count().block() + "", true);
