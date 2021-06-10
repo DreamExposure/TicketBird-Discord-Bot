@@ -62,7 +62,7 @@ dependencies {
         exclude("io.netty", "*")
     }
 
-    implementation("mysql:mysql-connector-java:8.0.15")
+    implementation("mysql:mysql-connector-java:8.0.25")
     implementation("org.json:json:20210307")
     implementation("org.jetbrains:annotations:21.0.1")
 
