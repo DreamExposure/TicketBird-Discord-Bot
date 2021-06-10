@@ -35,6 +35,8 @@ val springSecVersion = "5.5.0"
 val nettyForcedVersion = "4.1.56.Final"
 val reactorCoreVersion = "3.4.2"
 val reactorNettyVersion = "1.0.3"
+val r2dbcMysqlVersion = "0.8.1.RELEASE"
+val r2dbcPoolVersion = "0.8.3.RELEASE"
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.0")
@@ -49,6 +51,12 @@ dependencies {
     implementation("mysql:mysql-connector-java:8.0.15")
     implementation("org.json:json:20210307")
     implementation("org.jetbrains:annotations:21.0.1")
+
+    implementation("dev.miku:r2dbc-mysql:$r2dbcMysqlVersion") {
+        exclude("io.netty", "*")
+        exclude("io.projectreactor", "*")
+    }
+    implementation("io.r2dbc:r2dbc-pool:$r2dbcPoolVersion")
 
     //Forced version nonsense
     implementation("io.netty:netty-all:$nettyForcedVersion")

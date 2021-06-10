@@ -56,7 +56,7 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>,
     }
 
     @Bean
-    fun mysqlMasterConnectionFactory(): ConnectionFactory {
+    fun mysqlConnectionFactory(): ConnectionFactory {
         return ConnectionFactories.get(ConnectionFactoryOptions.builder()
                 .option(ConnectionFactoryOptions.DRIVER, "pool")
                 .option(ConnectionFactoryOptions.PROTOCOL, "mysql")
