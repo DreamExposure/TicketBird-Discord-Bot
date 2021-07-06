@@ -108,6 +108,8 @@ public class MessageCreateListener {
                 //Check if in ticket channel...
                 try {
                     TextChannel channel = event.getMessage().getChannel().ofType(TextChannel.class).block();
+                    if (channel == null)
+                        return;
 
                     Ticket ticket = DatabaseManager.getManager().getTicket(settings.getGuildID(), channel.getId());
 
