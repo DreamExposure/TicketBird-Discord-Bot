@@ -7,8 +7,8 @@ import discord4j.core.object.entity.User;
 import org.dreamexposure.ticketbird.TicketBird;
 import org.dreamexposure.ticketbird.objects.bot.BotSettings;
 import org.dreamexposure.ticketbird.utils.GlobalVars;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -68,7 +68,8 @@ public class Logger {
         }
     }
 
-    public void exception(@Nullable User author, @Nullable String message, Exception e, boolean postWebhook, Class clazz) {
+    public void exception(@Nullable User author, @Nullable String message, Exception e, boolean postWebhook,
+                          Class clazz) {
         String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(Calendar.getInstance().getTime());
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);

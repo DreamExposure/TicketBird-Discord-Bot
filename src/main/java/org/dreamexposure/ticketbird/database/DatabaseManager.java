@@ -1,6 +1,5 @@
 package org.dreamexposure.ticketbird.database;
 
-import com.zaxxer.hikari.HikariDataSource;
 import discord4j.common.util.Snowflake;
 import org.dreamexposure.novautils.database.DatabaseInfo;
 import org.dreamexposure.novautils.database.DatabaseSettings;
@@ -50,7 +49,7 @@ public class DatabaseManager {
                 BotSettings.SQL_DB.get(), BotSettings.SQL_USER.get(), BotSettings.SQL_PASS.get(),
                 BotSettings.SQL_PREFIX.get());
 
-            info = connect(settings);
+            info = org.dreamexposure.novautils.database.DatabaseManager.connectToMySQL(settings);
             System.out.println("Connected to MySQL database!");
         } catch (Exception e) {
             System.out.println("Failed to connect to MySQL database! Is it properly configured?");
@@ -538,19 +537,5 @@ public class DatabaseManager {
             Logger.getLogger().exception(null, "Failed to delete ticket.", e, true, this.getClass());
         }
         return false;
-    }
-
-    private DatabaseInfo connect(DatabaseSettings settings) {
-        HikariDataSource ds = new HikariDataSource();
-        String connectionURL = "jdbc:mysql://" + settings.getHostname() + ":" + settings.getPort();
-        if (settings.getDatabase() != null) {
-            connectionURL = connectionURL + "/" + settings.getDatabase();
-        }
-
-        ds.setJdbcUrl(connectionURL);
-        ds.setUsername(settings.getUser());
-        ds.setPassword(settings.getPassword());
-        System.out.println("Database connection successful!");
-        return new DatabaseInfo(ds, settings, null);
     }
 }
