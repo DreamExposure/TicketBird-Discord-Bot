@@ -116,12 +116,21 @@ public class DatabaseManager {
                 ps.setBoolean(4, settings.isPatronGuild());
                 ps.setBoolean(5, settings.isDevGuild());
                 ps.setBoolean(6, settings.isUseProjects());
-                ps.setLong(7, settings.getAwaitingCategory().asLong());
-                ps.setLong(8, settings.getRespondedCategory().asLong());
-                ps.setLong(9, settings.getHoldCategory().asLong());
-                ps.setLong(10, settings.getCloseCategory().asLong());
-                ps.setLong(11, settings.getSupportChannel().asLong());
-                ps.setLong(12, settings.getStaticMessage().asLong());
+                if (settings.getAwaitingCategory() != null) {
+                    ps.setLong(7, settings.getAwaitingCategory().asLong());
+                    ps.setLong(8, settings.getRespondedCategory().asLong());
+                    ps.setLong(9, settings.getHoldCategory().asLong());
+                    ps.setLong(10, settings.getCloseCategory().asLong());
+                    ps.setLong(11, settings.getSupportChannel().asLong());
+                    ps.setLong(12, settings.getStaticMessage().asLong());
+                } else {
+                    ps.setLong(7, 0);
+                    ps.setLong(8, 0);
+                    ps.setLong(9, 0);
+                    ps.setLong(10, 0);
+                    ps.setLong(11, 0);
+                    ps.setLong(12, 0);
+                }
                 ps.setInt(13, settings.getNextId());
                 ps.setString(14, settings.getStaffString());
                 ps.setInt(15, settings.getTotalClosed());
@@ -144,12 +153,21 @@ public class DatabaseManager {
                 ps.setBoolean(3, settings.isPatronGuild());
                 ps.setBoolean(4, settings.isDevGuild());
                 ps.setBoolean(5, settings.isUseProjects());
-                ps.setLong(6, settings.getAwaitingCategory().asLong());
-                ps.setLong(7, settings.getRespondedCategory().asLong());
-                ps.setLong(8, settings.getHoldCategory().asLong());
-                ps.setLong(9, settings.getCloseCategory().asLong());
-                ps.setLong(10, settings.getSupportChannel().asLong());
-                ps.setLong(11, settings.getStaticMessage().asLong());
+                if (settings.getAwaitingCategory() != null) {
+                    ps.setLong(6, settings.getAwaitingCategory().asLong());
+                    ps.setLong(7, settings.getRespondedCategory().asLong());
+                    ps.setLong(8, settings.getHoldCategory().asLong());
+                    ps.setLong(9, settings.getCloseCategory().asLong());
+                    ps.setLong(10, settings.getSupportChannel().asLong());
+                    ps.setLong(11, settings.getStaticMessage().asLong());
+                } else {
+                    ps.setLong(6, 0);
+                    ps.setLong(7, 0);
+                    ps.setLong(8, 0);
+                    ps.setLong(9, 0);
+                    ps.setLong(10, 0);
+                    ps.setLong(11, 0);
+                }
                 ps.setInt(12, settings.getNextId());
                 ps.setString(13, settings.getStaffString());
                 ps.setInt(14, settings.getTotalClosed());
@@ -293,12 +311,15 @@ public class DatabaseManager {
                 settings.setDevGuild(res.getBoolean("DEV_GUILD"));
                 settings.setUseProjects(res.getBoolean("USE_PROJECTS"));
 
-                settings.setAwaitingCategory(Snowflake.of(res.getLong("AWAITING_CATEGORY")));
-                settings.setRespondedCategory(Snowflake.of(res.getLong("RESPONDED_CATEGORY")));
-                settings.setHoldCategory(Snowflake.of(res.getLong("HOLD_CATEGORY")));
-                settings.setCloseCategory(Snowflake.of(res.getLong("CLOSE_CATEGORY")));
-                settings.setSupportChannel(Snowflake.of(res.getLong("SUPPORT_CHANNEL")));
-                settings.setStaticMessage(Snowflake.of(res.getLong("STATIC_MESSAGE")));
+                //Check if these actually exist or not...
+                if (res.getLong("AWAITING_CATEGORY") != 0) {
+                    settings.setAwaitingCategory(Snowflake.of(res.getLong("AWAITING_CATEGORY")));
+                    settings.setRespondedCategory(Snowflake.of(res.getLong("RESPONDED_CATEGORY")));
+                    settings.setHoldCategory(Snowflake.of(res.getLong("HOLD_CATEGORY")));
+                    settings.setCloseCategory(Snowflake.of(res.getLong("CLOSE_CATEGORY")));
+                    settings.setSupportChannel(Snowflake.of(res.getLong("SUPPORT_CHANNEL")));
+                    settings.setStaticMessage(Snowflake.of(res.getLong("STATIC_MESSAGE")));
+                }
 
                 settings.setNextId(res.getInt("NEXT_ID"));
 
