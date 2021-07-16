@@ -13,7 +13,7 @@ plugins {
     id("com.google.cloud.tools.jib") version("3.0.0")
     id ("org.springframework.boot") version ("2.5.0")
 
-    id("com.gorylenko.gradle-git-properties") version "2.2.3"
+    id("com.gorylenko.gradle-git-properties") version "2.3.1"
 }
 
 buildscript {
@@ -102,6 +102,7 @@ java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 jib {
     to.image = "rg.nl-ams.scw.cloud/dreamexposure/ticketbird:$version"
+    from.image = "adoptopenjdk/openjdk16:alpine-jre"
 }
 
 gitProperties {
