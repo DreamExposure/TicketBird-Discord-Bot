@@ -106,6 +106,7 @@ jib {
 
     to.image = "rg.nl-ams.scw.cloud/dreamexposure/ticketbird:$imageVersion"
     from.image = "adoptopenjdk/openjdk16:alpine-jre"
+    container.creationTime = "USE_CURRENT_TIMESTAMP"
 }
 
 gitProperties {
