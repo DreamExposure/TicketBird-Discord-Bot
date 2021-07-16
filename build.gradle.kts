@@ -101,7 +101,10 @@ description = "TicketBird"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 jib {
-    to.image = "rg.nl-ams.scw.cloud/dreamexposure/ticketbird:$version"
+    var imageVersion = version.toString()
+    if (imageVersion.contains("SNAPSHOT")) imageVersion = "latest"
+
+    to.image = "rg.nl-ams.scw.cloud/dreamexposure/ticketbird:$imageVersion"
     from.image = "adoptopenjdk/openjdk16:alpine-jre"
 }
 
