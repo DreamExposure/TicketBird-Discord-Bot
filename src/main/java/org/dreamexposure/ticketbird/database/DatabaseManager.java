@@ -116,21 +116,31 @@ public class DatabaseManager {
                 ps.setBoolean(4, settings.isPatronGuild());
                 ps.setBoolean(5, settings.isDevGuild());
                 ps.setBoolean(6, settings.isUseProjects());
-                if (settings.getAwaitingCategory() != null) {
+
+                if (settings.getAwaitingCategory() != null)
                     ps.setLong(7, settings.getAwaitingCategory().asLong());
+                else ps.setLong(7, 0);
+
+                if (settings.getRespondedCategory() != null)
                     ps.setLong(8, settings.getRespondedCategory().asLong());
+                else ps.setLong(8, 0);
+
+                if (settings.getHoldCategory() != null)
                     ps.setLong(9, settings.getHoldCategory().asLong());
+                else ps.setLong(9, 0);
+
+                if (settings.getCloseCategory() != null)
                     ps.setLong(10, settings.getCloseCategory().asLong());
+                else ps.setLong(10, 0);
+
+                if (settings.getSupportChannel() != null)
                     ps.setLong(11, settings.getSupportChannel().asLong());
+                else ps.setLong(11, 0);
+
+                if (settings.getStaticMessage() != null)
                     ps.setLong(12, settings.getStaticMessage().asLong());
-                } else {
-                    ps.setLong(7, 0);
-                    ps.setLong(8, 0);
-                    ps.setLong(9, 0);
-                    ps.setLong(10, 0);
-                    ps.setLong(11, 0);
-                    ps.setLong(12, 0);
-                }
+                else ps.setLong(12, 0);
+
                 ps.setInt(13, settings.getNextId());
                 ps.setString(14, settings.getStaffString());
                 ps.setInt(15, settings.getTotalClosed());
@@ -153,21 +163,31 @@ public class DatabaseManager {
                 ps.setBoolean(3, settings.isPatronGuild());
                 ps.setBoolean(4, settings.isDevGuild());
                 ps.setBoolean(5, settings.isUseProjects());
-                if (settings.getAwaitingCategory() != null) {
+
+                if (settings.getAwaitingCategory() != null)
                     ps.setLong(6, settings.getAwaitingCategory().asLong());
+                else ps.setLong(6, 0);
+
+                if (settings.getRespondedCategory() != null)
                     ps.setLong(7, settings.getRespondedCategory().asLong());
+                else ps.setLong(7, 0);
+
+                if (settings.getHoldCategory() != null)
                     ps.setLong(8, settings.getHoldCategory().asLong());
+                else ps.setLong(8, 0);
+
+                if (settings.getCloseCategory() != null)
                     ps.setLong(9, settings.getCloseCategory().asLong());
+                else ps.setLong(9, 0);
+
+                if (settings.getSupportChannel() != null)
                     ps.setLong(10, settings.getSupportChannel().asLong());
+                else ps.setLong(10, 0);
+
+                if (settings.getStaticMessage() != null)
                     ps.setLong(11, settings.getStaticMessage().asLong());
-                } else {
-                    ps.setLong(6, 0);
-                    ps.setLong(7, 0);
-                    ps.setLong(8, 0);
-                    ps.setLong(9, 0);
-                    ps.setLong(10, 0);
-                    ps.setLong(11, 0);
-                }
+                else ps.setLong(11, 0);
+
                 ps.setInt(12, settings.getNextId());
                 ps.setString(13, settings.getStaffString());
                 ps.setInt(14, settings.getTotalClosed());
@@ -312,14 +332,18 @@ public class DatabaseManager {
                 settings.setUseProjects(res.getBoolean("USE_PROJECTS"));
 
                 //Check if these actually exist or not...
-                if (res.getLong("AWAITING_CATEGORY") != 0) {
+                if (res.getLong("AWAITING_CATEGORY") != 0)
                     settings.setAwaitingCategory(Snowflake.of(res.getLong("AWAITING_CATEGORY")));
+                if (res.getLong("RESPONDED_CATEGORY") != 0)
                     settings.setRespondedCategory(Snowflake.of(res.getLong("RESPONDED_CATEGORY")));
+                if (res.getLong("HOLD_CATEGORY") != 0)
                     settings.setHoldCategory(Snowflake.of(res.getLong("HOLD_CATEGORY")));
+                if (res.getLong("CLOSE_CATEGORY") != 0)
                     settings.setCloseCategory(Snowflake.of(res.getLong("CLOSE_CATEGORY")));
+                if (res.getLong("SUPPORT_CHANNEL") != 0)
                     settings.setSupportChannel(Snowflake.of(res.getLong("SUPPORT_CHANNEL")));
+                if (res.getLong("STATIC_MESSAGE") != 0)
                     settings.setStaticMessage(Snowflake.of(res.getLong("STATIC_MESSAGE")));
-                }
 
                 settings.setNextId(res.getInt("NEXT_ID"));
 
