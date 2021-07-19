@@ -1,116 +1,116 @@
 <!DOCTYPE html>
 <!--suppress HtmlUnknownTarget -->
-<html xmlns:th="http://www.thymeleaf.org">
-	<head>
-		<!--Meta stuffs-->
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<meta name="description" content="TicketBird is an advanced ticket manager bot within Discord">
-		<meta property="og:title" content="TicketBird Bot"/>
-		<meta property="og:url" content="https://ticketbird.dreamexposure.org"/>
-		<meta property="og:description" content="TicketBird is an advanced ticket manager bot within Discord"/>
-		<meta property="og:image" content="/assets/images/logos/ticket-bird-logo.png">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <!--Meta stuffs-->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="TicketBird is an advanced ticket manager bot within Discord">
+    <meta property="og:title" content="TicketBird Bot"/>
+    <meta property="og:url" content="https://ticketbird.dreamexposure.org"/>
+    <meta property="og:description" content="TicketBird is an advanced ticket manager bot within Discord"/>
+    <meta property="og:image" content="/assets/images/logos/ticket-bird-logo.png">
 
-		<!-- ****** faviconit.com favicons ****** -->
-		<link rel="shortcut icon" href="/assets/images/favicons/favicon.ico">
-		<link rel="icon" sizes="16x16 32x32 64x64" href="/assets/images/favicons/favicon.ico">
-		<link rel="icon" type="image/png" sizes="196x196" href="/assets/images/favicons/favicon-192.png">
-		<link rel="icon" type="image/png" sizes="160x160" href="/assets/images/favicons/favicon-160.png">
-		<link rel="icon" type="image/png" sizes="96x96" href="/assets/images/favicons/favicon-96.png">
-		<link rel="icon" type="image/png" sizes="64x64" href="/assets/images/favicons/favicon-64.png">
-		<link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicons/favicon-32.png">
-		<link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicons/favicon-16.png">
-		<link rel="apple-touch-icon" href="/assets/images/favicons/favicon-57.png">
-		<link rel="apple-touch-icon" sizes="114x114" href="/assets/images/favicons/favicon-114.png">
-		<link rel="apple-touch-icon" sizes="72x72" href="/assets/images/favicons/favicon-72.png">
-		<link rel="apple-touch-icon" sizes="144x144" href="/assets/images/favicons/favicon-144.png">
-		<link rel="apple-touch-icon" sizes="60x60" href="/assets/images/favicons/favicon-60.png">
-		<link rel="apple-touch-icon" sizes="120x120" href="/assets/images/favicons/favicon-120.png">
-		<link rel="apple-touch-icon" sizes="76x76" href="/assets/images/favicons/favicon-76.png">
-		<link rel="apple-touch-icon" sizes="152x152" href="/assets/images/favicons/favicon-152.png">
-		<link rel="apple-touch-icon" sizes="180x180" href="/assets/images/favicons/favicon-180.png">
-		<meta name="msapplication-TileColor" content="#FFFFFF">
-		<meta name="msapplication-TileImage" content="/assets/images/favicons/favicon-144.png">
-		<meta name="msapplication-config" content="/assets/images/favicons/browserconfig.xml">
-		<!-- ****** faviconit.com favicons ****** -->
+    <!-- ****** faviconit.com favicons ****** -->
+    <link rel="shortcut icon" href="/assets/images/favicons/favicon.ico">
+    <link rel="icon" sizes="16x16 32x32 64x64" href="/assets/images/favicons/favicon.ico">
+    <link rel="icon" type="image/png" sizes="196x196" href="/assets/images/favicons/favicon-192.png">
+    <link rel="icon" type="image/png" sizes="160x160" href="/assets/images/favicons/favicon-160.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/assets/images/favicons/favicon-96.png">
+    <link rel="icon" type="image/png" sizes="64x64" href="/assets/images/favicons/favicon-64.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicons/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicons/favicon-16.png">
+    <link rel="apple-touch-icon" href="/assets/images/favicons/favicon-57.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/assets/images/favicons/favicon-114.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/assets/images/favicons/favicon-72.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/assets/images/favicons/favicon-144.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/assets/images/favicons/favicon-60.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/assets/images/favicons/favicon-120.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/assets/images/favicons/favicon-76.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/assets/images/favicons/favicon-152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/favicons/favicon-180.png">
+    <meta name="msapplication-TileColor" content="#FFFFFF">
+    <meta name="msapplication-TileImage" content="/assets/images/favicons/favicon-144.png">
+    <meta name="msapplication-config" content="/assets/images/favicons/browserconfig.xml">
+    <!-- ****** faviconit.com favicons ****** -->
 
-		<title>Setup // TicketBird</title>
+    <title>Setup // TicketBird</title>
 
-		<!--Locally hosted-->
-		<link href="/styles/global.css" rel="stylesheet">
-	</head>
+    <!--Locally hosted-->
+    <link href="/styles/global.css" rel="stylesheet">
+</head>
 
-	<body>
-		<div class="top-nav">
-			<a href="/" class="title"><h1>TICKETBIRD</h1></a>
-			<a href="/about">About</a>
-			<a href="/commands">Commands</a>
-			<a class="active" href="/setup">Setup</a>
-			<a href="https://discordapp.com/api/oauth2/authorize?client_id=456140067220750336&permissions=8&redirect_uri=https%3A%2F%2Fticketbird.novamaday.com&scope=bot">Invite</a>
-			<a href="https://discord.gg/2TFqyuy" target="_blank">Support</a>
-			<a href="https://www.patreon.com/Novafox" target="_blank">Patreon</a>
-		</div>
+<body>
+<div class="top-nav">
+    <a href="/" class="title"><h1>TICKETBIRD</h1></a>
+    <a href="/about">About</a>
+    <a href="/commands">Commands</a>
+    <a class="active" href="/setup">Setup</a>
+    <a href="https://discordapp.com/api/oauth2/authorize?client_id=456140067220750336&permissions=8&redirect_uri=https%3A%2F%2Fticketbird.dreamexposure.org&scope=bot">Invite</a>
+    <a href="https://discord.gg/2TFqyuy" target="_blank">Support</a>
+    <a href="https://www.patreon.com/Novafox" target="_blank">Patreon</a>
+</div>
 
-		<div id="content">
-			<h1>TicketBird Bot - Setup</h1>
-			<p>
-				The following page is a step by step instruction for how to properly setup TicketBird.
-				<br><br>
-				It's quite simple as TicketBird handles the hard stuff for you.
-			</p>
+<div id="content">
+    <h1>TicketBird Bot - Setup</h1>
+    <p>
+        The following page is a step by step instruction for how to properly setup TicketBird.
+        <br><br>
+        It's quite simple as TicketBird handles the hard stuff for you.
+    </p>
 
-			<div id="invite">
-				<h3>1. Add TicketBird to your Discord server</h3>
-				<p>
-					<strong>Skip this step if you have just added TicketBird to your server.</strong>
-					<br><br><br>
-					Click the button below to authorize TicketBird and select the server you want it on.
-					<br><br><br><br>
-					TicketBird needs Admin permissions in order to create categories, and channels, move categories and
-					channels, mention everyone, and manage messages and other core features. TicketBird will not
-					function properly without Admin permissions.
-					<br><br><br>
-				</p>
-				<a href="https://discordapp.com/api/oauth2/authorize?client_id=456140067220750336&permissions=8&redirect_uri=https%3A%2F%2Fticketbird.novamaday.com&scope=bot"
-				   target="_blank">
-					<button>Add TicketBird to Discord Server</button>
-				</a>
-			</div>
+    <div id="invite">
+        <h3>1. Add TicketBird to your Discord server</h3>
+        <p>
+            <strong>Skip this step if you have just added TicketBird to your server.</strong>
+            <br><br><br>
+            Click the button below to authorize TicketBird and select the server you want it on.
+            <br><br><br><br>
+            TicketBird needs Admin permissions in order to create categories, and channels, move categories and
+            channels, mention everyone, and manage messages and other core features. TicketBird will not
+            function properly without Admin permissions.
+            <br><br><br>
+        </p>
+        <a href="https://discordapp.com/api/oauth2/authorize?client_id=456140067220750336&permissions=8&redirect_uri=https%3A%2F%2Fticketbird.dreamexposure.org&scope=bot"
+           target="_blank">
+            <button>Add TicketBird to Discord Server</button>
+        </a>
+    </div>
 
-			<hr>
+    <hr>
 
-			<div id="setup-command">
-				<h3>2. Run the setup command</h3>
-				<p>
-					Just run the setup command: "=ticketbird setup"
-					<br>
-					TicketBird will then create 4 categories and 1 channel. Once TicketBird sends you the confirmation
-					message that it was all successful, you may rename these categories and channel as well as move them
-					to anywhere you wish.
-					<br>
-					<br>
-					And your all set! TicketBird will now be functioning!
-					<br>
-					<br>
-					Remember to add "staff" members to respond to tickets and "projects" for tickets to reference.
-					<br>
-					<br>
-					All users need to do is send a message in the "support-request" (default name) channel and
-					TicketBird will create a new ticket and help them provide relevant information for you.
-					<br>
-					<br>
-					For all command documentation check the commands page.
-				</p>
-				<a href="/commands">
-					<button>View Commands</button>
-				</a>
-			</div>
-		</div>
-	</body>
+    <div id="setup-command">
+        <h3>2. Run the setup command</h3>
+        <p>
+            Just run the setup command: "=ticketbird setup"
+            <br>
+            TicketBird will then create 4 categories and 1 channel. Once TicketBird sends you the confirmation
+            message that it was all successful, you may rename these categories and channel as well as move them
+            to anywhere you wish.
+            <br>
+            <br>
+            And your all set! TicketBird will now be functioning!
+            <br>
+            <br>
+            Remember to add "staff" members to respond to tickets and "projects" for tickets to reference.
+            <br>
+            <br>
+            All users need to do is send a message in the "support-request" (default name) channel and
+            TicketBird will create a new ticket and help them provide relevant information for you.
+            <br>
+            <br>
+            For all command documentation check the commands page.
+        </p>
+        <a href="/commands">
+            <button>View Commands</button>
+        </a>
+    </div>
+</div>
+</body>
 
-	<footer id="footer">
-		<p><span th:text="'© DreamExposure Studios ' + ${year} + ' All rights reserved.'"></span><span> - </span><a
-				href="/policy/privacy">Privacy
-			Policy</a><span> - </span><a href="https://www.dreamexposure.org">DreamExposure Studios</a></p>
-	</footer>
+<footer id="footer">
+    <p><span th:text="'© DreamExposure Studios ' + ${year} + ' All rights reserved.'"></span><span> - </span><a
+            href="/policy/privacy">Privacy
+        Policy</a><span> - </span><a href="https://www.dreamexposure.org">DreamExposure Studios</a></p>
+</footer>
 </html>
