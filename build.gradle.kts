@@ -29,10 +29,6 @@ repositories {
     }
 
     maven {
-        url = uri("https://repo.spring.io/libs-release")
-    }
-
-    maven {
         url = uri("https://emily.dreamexposure.org/artifactory/dreamexposure-public/")
     }
 
@@ -41,7 +37,8 @@ repositories {
     }
 }
 //versions
-val d4jVersion = "3.1.5"
+val d4jVersion = "3.1.7"
+val d4jStoresVersion = "3.1.8"
 val springVersion = "2.5.0"
 val springSecVersion = "5.5.0"
 val nettyForcedVersion = "4.1.56.Final"
@@ -58,7 +55,7 @@ dependencies {
     implementation("org.dreamexposure:NovaUtils:1.0.0-SNAPSHOT")
 
     implementation("com.discord4j:discord4j-core:$d4jVersion")
-    implementation("com.discord4j:stores-redis:$d4jVersion") {
+    implementation("com.discord4j:stores-redis:$d4jStoresVersion") {
         exclude("io.netty", "*")
     }
 
@@ -98,7 +95,7 @@ dependencies {
 group = "org.dreamexposure"
 version = "1.0.2-SNAPSHOT"
 description = "TicketBird"
-java.sourceCompatibility = JavaVersion.VERSION_1_8
+java.sourceCompatibility = JavaVersion.VERSION_16
 
 jib {
     var imageVersion = version.toString()
@@ -112,7 +109,13 @@ jib {
 gitProperties {
     extProperty = "gitPropertiesExt"
 
-    customProperty("ticketbird.version", version)
+    val versionName = if (System.getenv("BUILD_NUMBER") != null) {
+        "$version.b${System.getenv("BUILD_NUMBER")}"
+    } else {
+        "$version.d${System.currentTimeMillis().div(1000)}" //Seconds since epoch
+    }
+
+    customProperty("ticketbird.version", versionName)
     customProperty("ticketbird.version.d4j", d4jVersion)
 }
 

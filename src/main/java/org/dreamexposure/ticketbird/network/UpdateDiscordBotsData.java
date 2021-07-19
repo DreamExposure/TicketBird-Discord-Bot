@@ -1,7 +1,7 @@
 package org.dreamexposure.ticketbird.network;
 
+import discord4j.core.GatewayDiscordClient;
 import org.discordbots.api.client.DiscordBotListAPI;
-import org.dreamexposure.ticketbird.TicketBird;
 import org.dreamexposure.ticketbird.objects.bot.BotSettings;
 
 import java.util.Timer;
@@ -11,8 +11,11 @@ public class UpdateDiscordBotsData {
     private static DiscordBotListAPI api;
     private static Timer timer;
 
-    public static void init() {
+    private static GatewayDiscordClient client;
+
+    public static void init(GatewayDiscordClient client) {
         if (BotSettings.UPDATE_SITES.get().equalsIgnoreCase("true")) {
+            UpdateDiscordBotsData.client = client;
 
             api = new DiscordBotListAPI.Builder().token(BotSettings.DBO_TOKEN.get()).build();
 
@@ -34,7 +37,7 @@ public class UpdateDiscordBotsData {
     private static void updateStats() {
         try {
             if (api != null)
-                api.setStats(BotSettings.ID.get(), TicketBird.getClient().getGuilds().count().block().intValue());
+                api.setStats(BotSettings.ID.get(), client.getGuilds().count().block().intValue());
         } catch (Exception ignore) {}
     }
 }

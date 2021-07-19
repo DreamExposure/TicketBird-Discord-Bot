@@ -13,7 +13,7 @@ public class ReadyEventListener {
         return Mono.defer(() -> {
             Logger.getLogger().debug("Ready!", false);
 
-            TimeManager.getManager().init();
+            TimeManager.getManager().init(event.getClient());
 
             MessageManager.reloadLangs();
 

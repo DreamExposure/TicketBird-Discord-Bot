@@ -10,6 +10,7 @@ import org.dreamexposure.ticketbird.utils.GlobalVars;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Calendar;
@@ -52,15 +53,15 @@ public class Logger {
         debugFile = BotSettings.LOG_FOLDER.get() + "/debug.log";
 
         try {
-            PrintWriter exceptions = new PrintWriter(exceptionsFile, "UTF-8");
+            PrintWriter exceptions = new PrintWriter(exceptionsFile, StandardCharsets.UTF_8);
             exceptions.println("INIT --- " + timestamp + " ---");
             exceptions.close();
 
-            PrintWriter api = new PrintWriter(apiFile, "UTF-8");
+            PrintWriter api = new PrintWriter(apiFile, StandardCharsets.UTF_8);
             api.println("INIT --- " + timestamp + " ---");
             api.close();
 
-            PrintWriter debug = new PrintWriter(debugFile, "UTF-8");
+            PrintWriter debug = new PrintWriter(debugFile, StandardCharsets.UTF_8);
             debug.println("INIT --- " + timestamp + " ---");
             debug.close();
         } catch (IOException e) {

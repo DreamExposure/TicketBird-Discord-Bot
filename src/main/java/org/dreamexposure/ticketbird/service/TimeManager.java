@@ -1,10 +1,12 @@
 package org.dreamexposure.ticketbird.service;
 
+import discord4j.core.GatewayDiscordClient;
 import org.dreamexposure.ticketbird.module.status.StatusChanger;
 import org.dreamexposure.ticketbird.network.UpdateDiscordBotsData;
 import org.dreamexposure.ticketbird.network.UpdateDiscordBotsGgData;
 import org.dreamexposure.ticketbird.utils.GlobalVars;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Timer;
 
@@ -31,20 +33,20 @@ public class TimeManager {
     /**
      * Initializes the TimeManager and schedules the appropriate Timers.
      */
-    public void init() {
+    public void init(GatewayDiscordClient client) {
         Timer timer = new Timer(true);
-        timer.schedule(new StatusChanger(), 10 * 1000, 10 * 1000);
+        timer.schedule(new StatusChanger(client), Duration.ofMinutes(1).toMillis(), Duration.ofMinutes(5).toMillis());
 
         timers.add(timer);
 
         Timer amt = new Timer(true);
-        amt.schedule(new ActivityMonitor(), GlobalVars.oneHourMs, GlobalVars.oneHourMs);
+        amt.schedule(new ActivityMonitor(client), GlobalVars.oneHourMs, GlobalVars.oneHourMs);
 
         timers.add(amt);
 
         //Start the bot site updates
-        UpdateDiscordBotsData.init();
-        UpdateDiscordBotsGgData.init();
+        UpdateDiscordBotsData.init(client);
+        UpdateDiscordBotsGgData.init(client);
     }
 
     /**

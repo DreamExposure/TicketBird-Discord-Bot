@@ -39,10 +39,7 @@ import javax.annotation.PreDestroy
 @SpringBootApplication(exclude = [SessionAutoConfiguration::class])
 class TicketBird {
     companion object {
-        @JvmStatic
-        @Deprecated("Try to use client that is provided by d4j entities until using DI")
-        lateinit var client: GatewayDiscordClient
-            private set
+        private lateinit var client: GatewayDiscordClient
 
         @JvmStatic
         fun getShardIndex(): Int {
@@ -116,9 +113,9 @@ class TicketBird {
                     .withGateway { client ->
                         TicketBird.client = client
 
-                        val onReady = client.on(ReadyEvent::class.java)
-                                .flatMap(ReadyEventListener::handle)
+                        val onReady = client.on(ReadyEvent::class.java, ReadyEventListener::handle)
                                 .then()
+
                         val onCommand = client.on(MessageCreateEvent::class.java)
                                 .map(CommandListener::onMessageEvent)
                                 .then()
@@ -186,6 +183,6 @@ private fun getIntents(): IntentSet {
     )
 
     return if (BotSettings.USE_SPECIAL_INTENTS.get().equals("true", true)) {
-        default.and(IntentSet.of(Intent.GUILD_MEMBERS))
+        default.or(IntentSet.of(Intent.GUILD_MEMBERS))
     } else default
 }

@@ -1,5 +1,6 @@
 package org.dreamexposure.ticketbird.network;
 
+import discord4j.core.GatewayDiscordClient;
 import okhttp3.*;
 import org.dreamexposure.ticketbird.TicketBird;
 import org.dreamexposure.ticketbird.logger.Logger;
@@ -14,8 +15,11 @@ public class UpdateDiscordBotsGgData {
 
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
-    public static void init() {
+    private static GatewayDiscordClient client;
+
+    public static void init(GatewayDiscordClient client) {
         if (BotSettings.UPDATE_SITES.get().equalsIgnoreCase("true")) {
+            UpdateDiscordBotsGgData.client = client;
             timer = new Timer(true);
             timer.schedule(new TimerTask() {
                 @Override
@@ -34,7 +38,7 @@ public class UpdateDiscordBotsGgData {
     @SuppressWarnings("ConstantConditions")
     private static void updateSiteBotMeta() {
         try {
-            int serverCount = TicketBird.getClient().getGuilds().count().block().intValue();
+            int serverCount = client.getGuilds().count().block().intValue();
 
             JSONObject json = new JSONObject()
                     .put("guildCount", serverCount)
