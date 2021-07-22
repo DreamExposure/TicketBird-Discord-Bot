@@ -1,9 +1,11 @@
 package org.dreamexposure.ticketbird
 
+import discord4j.common.store.Store
+import discord4j.common.store.legacy.LegacyStoreLayout
 import discord4j.core.DiscordClientBuilder
 import discord4j.core.GatewayDiscordClient
-import discord4j.core.`object`.presence.Activity
-import discord4j.core.`object`.presence.Presence
+import discord4j.core.`object`.presence.ClientActivity
+import discord4j.core.`object`.presence.ClientPresence
 import discord4j.core.event.domain.lifecycle.ReadyEvent
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.shard.ShardingStrategy
@@ -108,8 +110,8 @@ class TicketBird {
                     .build().gateway()
                     .setEnabledIntents(getIntents())
                     .setSharding(getStrategy())
-                    .setStoreService(getStores())
-                    .setInitialPresence { Presence.doNotDisturb(Activity.playing("Booting Up!")) }
+                    .setStore(Store.fromLayout(LegacyStoreLayout.of(getStores())))
+                    .setInitialPresence { ClientPresence.doNotDisturb(ClientActivity.playing("Booting Up!")) }
                     .withGateway { client ->
                         TicketBird.client = client
 

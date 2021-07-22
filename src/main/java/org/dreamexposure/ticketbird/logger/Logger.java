@@ -7,7 +7,7 @@ import discord4j.core.object.entity.User;
 import org.dreamexposure.ticketbird.TicketBird;
 import org.dreamexposure.ticketbird.objects.bot.BotSettings;
 import org.dreamexposure.ticketbird.utils.GlobalVars;
-import org.jetbrains.annotations.Nullable;
+import org.springframework.lang.Nullable;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;

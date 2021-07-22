@@ -5,10 +5,10 @@ import com.squareup.kotlinpoet.TypeSpec
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.5.0"
+    kotlin("jvm") version "1.5.21"
     java
 
-    kotlin("plugin.spring") version "1.5.0"
+    kotlin("plugin.spring") version "1.5.21"
 
     id("com.google.cloud.tools.jib") version("3.0.0")
     id ("org.springframework.boot") version ("2.5.0")
@@ -37,20 +37,21 @@ repositories {
     }
 }
 //versions
-val d4jVersion = "3.1.7"
-val d4jStoresVersion = "3.1.8"
-val springVersion = "2.5.0"
-val springSecVersion = "5.5.0"
+val d4jVersion = "3.2.0-M3"
+val d4jStoresVersion = "3.2.0"
+val springVersion = "2.5.1"
+
+val springSecVersion = "5.5.1"
 val nettyForcedVersion = "4.1.56.Final"
-val reactorCoreVersion = "3.4.2"
-val reactorNettyVersion = "1.0.3"
+val reactorCoreVersion = "3.4.7"
+val reactorNettyVersion = "1.0.8"
 val r2dbcMysqlVersion = "0.8.1.RELEASE"
 val r2dbcPoolVersion = "0.8.3.RELEASE"
 
 val kotlinSrcDir: File = buildDir.resolve("src/main/kotlin")
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.0")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.21")
 
     implementation("org.dreamexposure:NovaUtils:1.0.0-SNAPSHOT")
 
@@ -59,9 +60,8 @@ dependencies {
         exclude("io.netty", "*")
     }
 
-    implementation("mysql:mysql-connector-java:8.0.25")
+    implementation("mysql:mysql-connector-java:8.0.26")
     implementation("org.json:json:20210307")
-    implementation("org.jetbrains:annotations:21.0.1")
 
     implementation("dev.miku:r2dbc-mysql:$r2dbcMysqlVersion") {
         exclude("io.netty", "*")
@@ -71,7 +71,6 @@ dependencies {
 
     //Forced version nonsense
     implementation("io.netty:netty-all:$nettyForcedVersion")
-    implementation("com.fasterxml.jackson.core:jackson-core:2.12.2")
     implementation("io.projectreactor:reactor-core:$reactorCoreVersion")
     implementation("io.projectreactor.netty:reactor-netty:$reactorNettyVersion")
 

@@ -1,8 +1,8 @@
 package org.dreamexposure.ticketbird.module.status;
 
 import discord4j.core.GatewayDiscordClient;
-import discord4j.core.object.presence.Activity;
-import discord4j.core.object.presence.Presence;
+import discord4j.core.object.presence.ClientActivity;
+import discord4j.core.object.presence.ClientPresence;
 import org.dreamexposure.ticketbird.TicketBird;
 
 import java.util.ArrayList;
@@ -42,7 +42,7 @@ public class StatusChanger extends TimerTask {
             status = status.replace("%guCount%", client.getGuilds().count().block() + "");
         status = status.replace("%shards%", TicketBird.getShardCount() + "");
 
-        client.updatePresence(Presence.online(Activity.playing(status))).subscribe();
+        client.updatePresence(ClientPresence.online(ClientActivity.playing(status))).subscribe();
 
         //Set new index.
         if (index + 1 >= statuses.size())

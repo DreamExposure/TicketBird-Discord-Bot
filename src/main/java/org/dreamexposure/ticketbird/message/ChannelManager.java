@@ -8,7 +8,7 @@ import discord4j.core.object.entity.channel.TextChannel;
 import discord4j.core.spec.CategoryCreateSpec;
 import discord4j.core.spec.TextChannelCreateSpec;
 import discord4j.core.spec.TextChannelEditSpec;
-import org.jetbrains.annotations.Nullable;
+import org.springframework.lang.Nullable;
 
 import java.util.function.Consumer;
 
