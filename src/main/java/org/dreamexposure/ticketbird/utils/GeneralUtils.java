@@ -51,7 +51,7 @@ public class GeneralUtils {
      * @return The string, but without the user errors.
      */
     public static String overkillParser(String str) {
-        Random random = new Random(str.length() * 2 >>> 4 & 3);
+        Random random = new Random(str.length() * 2L >>> 4 & 3);
         StringBuilder leftFace = new StringBuilder();
         StringBuilder rightFace = new StringBuilder();
         String alphabet = "abcdefghijklmnopqrstuvwxyz";

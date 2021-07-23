@@ -4,7 +4,6 @@ import discord4j.core.GatewayDiscordClient;
 import org.dreamexposure.ticketbird.module.status.StatusChanger;
 import org.dreamexposure.ticketbird.network.UpdateDiscordBotsData;
 import org.dreamexposure.ticketbird.network.UpdateDiscordBotsGgData;
-import org.dreamexposure.ticketbird.utils.GlobalVars;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -40,7 +39,7 @@ public class TimeManager {
         timers.add(timer);
 
         Timer amt = new Timer(true);
-        amt.schedule(new ActivityMonitor(client), GlobalVars.oneHourMs, GlobalVars.oneHourMs);
+        amt.schedule(new ActivityMonitor(client), Duration.ofHours(1).toMillis(), Duration.ofHours(1).toMillis());
 
         timers.add(amt);
 

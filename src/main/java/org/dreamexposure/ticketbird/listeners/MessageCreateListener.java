@@ -19,7 +19,7 @@ import org.dreamexposure.ticketbird.utils.GeneralUtils;
 import org.dreamexposure.ticketbird.utils.GlobalVars;
 import reactor.core.publisher.Mono;
 
-import java.util.function.Consumer;
+import static org.dreamexposure.ticketbird.GitProperty.TICKETBIRD_URL_BASE;
 
 @SuppressWarnings({"Duplicates", "ConstantConditions"})
 public class MessageCreateListener {
@@ -45,12 +45,12 @@ public class MessageCreateListener {
 
                     //Set channel permissions...
                     PermissionSet toAdd = PermissionSet
-                            .of(Permission.MENTION_EVERYONE,
-                                    Permission.ATTACH_FILES,
-                                    Permission.EMBED_LINKS,
-                                    Permission.SEND_MESSAGES,
-                                    Permission.READ_MESSAGE_HISTORY,
-                                    Permission.VIEW_CHANNEL);
+                        .of(Permission.MENTION_EVERYONE,
+                            Permission.ATTACH_FILES,
+                            Permission.EMBED_LINKS,
+                            Permission.SEND_MESSAGES,
+                            Permission.READ_MESSAGE_HISTORY,
+                            Permission.VIEW_CHANNEL);
                     PermissionSet toRemove = PermissionSet.all();
 
                     PermissionOverwrite everyoneOverride = PermissionOverwrite.forRole(guild.getEveryoneRole().block().getId(), PermissionSet.none(), toRemove);
@@ -79,16 +79,17 @@ public class MessageCreateListener {
                     String msg = msgOr.replace("%creator%", event.getMember().get().getMention()).replace("%content%", content);
 
                     if (settings.isUseProjects()) {
-                        Consumer<EmbedCreateSpec> embed = spec -> {
-                            spec.setAuthor("TicketBird", GlobalVars.siteUrl, GlobalVars.iconUrl);
-                            spec.setTitle("Select a Project/Service!");
-                            spec.setDescription("Send a message with **ONLY** the project/service's name so we can better help you!");
-                            for (Project p : DatabaseManager.getManager().getAllProjects(settings.getGuildID())) {
-                                spec.addField(p.getName(), "\u200B", false);
-                            }
-                            spec.setColor(GlobalVars.embedColor);
-                        };
-                        MessageManager.sendMessageAsync(msg, embed, channel);
+                        var builder = EmbedCreateSpec.builder()
+                            .author("TicketBird", TICKETBIRD_URL_BASE.getValue(), GlobalVars.iconUrl)
+                            .title("Select what you need help with!")
+                            .description("Send a message with **only** the name of what you need help with from the " +
+                                "list")
+                            .color(GlobalVars.embedColor);
+
+                        for (Project p : DatabaseManager.getManager().getAllProjects(settings.getGuildID())) {
+                            builder.addField(p.getName(), "\u200B", false);
+                        }
+                        MessageManager.sendMessageAsync(msg, builder.build(), channel);
                     } else {
                         ticket.setProject("N/a");
                         MessageManager.sendMessageAsync(msg, channel);
@@ -131,8 +132,10 @@ public class MessageCreateListener {
                             }
 
                             String finalPrefix = prefix;
-                            channel.edit(s -> s.setName(finalPrefix.toLowerCase() + "-ticket-" + ticket.getNumber()))
-                                    .subscribe();
+
+                            channel.edit()
+                                .withName(finalPrefix.toLowerCase() + "-ticket-" + ticket.getNumber())
+                                .subscribe();
 
                             //Update database!
                             ticket.setProject(project.getName());
@@ -153,7 +156,9 @@ public class MessageCreateListener {
                                 //Staff member responded...
 
                                 //Move ticket
-                                channel.edit(s -> s.setParentId(settings.getRespondedCategory())).subscribe();
+                                channel.edit()
+                                    .withParentIdOrNull(settings.getRespondedCategory())
+                                    .subscribe();
 
                                 //Let everyone know it was reopened...
                                 MessageManager.sendMessageAsync(MessageManager.getMessage("Ticket.Reopen.Everyone", settings), event);
@@ -164,7 +169,9 @@ public class MessageCreateListener {
                                 //Lets update the static message!
                             } else {
                                 //Move ticket...
-                                channel.edit(s -> s.setParentId(settings.getAwaitingCategory())).subscribe();
+                                channel.edit()
+                                    .withParentIdOrNull(settings.getAwaitingCategory())
+                                    .subscribe();
 
                                 //Let everyone know it was reopened...
                                 MessageManager.sendMessageAsync(MessageManager.getMessage("Ticket.Reopen.Everyone", settings), event);
@@ -183,7 +190,9 @@ public class MessageCreateListener {
                                 //Staff member responded...
 
                                 //Move ticket...
-                                channel.edit(s -> s.setParentId(settings.getRespondedCategory())).subscribe();
+                                channel.edit()
+                                    .withParentIdOrNull(settings.getRespondedCategory())
+                                    .subscribe();
 
                                 //Let creator know it was reopened...
                                 if (ticket.getCreator() == null) {
@@ -193,7 +202,7 @@ public class MessageCreateListener {
                                         MessageManager.sendMessageAsync(MessageManager.getMessage("Ticket.Reopen.Creator", "%creator%", event.getGuild().block().getMemberById(ticket.getCreator()).block().getMention(), settings), event);
                                     } else {
                                         MessageManager.sendMessageAsync(MessageManager.getMessage("Ticket.Reopen" +
-                                            ".Creator", "%creator%",
+                                                ".Creator", "%creator%",
                                             event.getClient().getUserById(ticket.getCreator()).block().getMention(), settings)
                                             , event);
                                     }
@@ -203,7 +212,9 @@ public class MessageCreateListener {
                                 ticket.setCategory(settings.getRespondedCategory());
                             } else {
                                 //Move ticket...
-                                channel.edit(s -> s.setParentId(settings.getAwaitingCategory())).subscribe();
+                                channel.edit()
+                                    .withParentIdOrNull(settings.getAwaitingCategory())
+                                    .subscribe();
 
                                 //Let creator know it was reopened...
                                 if (ticket.getCreator() == null) {
@@ -213,7 +224,7 @@ public class MessageCreateListener {
                                         MessageManager.sendMessageAsync(MessageManager.getMessage("Ticket.Reopen.Creator", "%creator%", event.getGuild().block().getMemberById(ticket.getCreator()).block().getMention(), settings), event);
                                     } else {
                                         MessageManager.sendMessageAsync(MessageManager.getMessage("Ticket.Reopen" +
-                                            ".Creator", "%creator%",
+                                                ".Creator", "%creator%",
                                             event.getClient().getUserById(ticket.getCreator()).block().getMention(),
                                             settings), event);
                                     }
@@ -234,7 +245,9 @@ public class MessageCreateListener {
                                 //Staff member responded...
 
                                 //Move to responded...
-                                channel.edit(s -> s.setParentId(settings.getRespondedCategory())).subscribe();
+                                channel.edit()
+                                    .withParentIdOrNull(settings.getRespondedCategory())
+                                    .subscribe();
 
                                 //Update database...
                                 ticket.setCategory(settings.getRespondedCategory());
@@ -245,7 +258,9 @@ public class MessageCreateListener {
                             //Ticket responded to by staff, check user response...
                             if (!settings.getStaff().contains(event.getMember().get().getId())) {
                                 //Move to awaiting...
-                                channel.edit(s -> s.setParentId(settings.getAwaitingCategory())).subscribe();
+                                channel.edit()
+                                    .withParentIdOrNull(settings.getAwaitingCategory())
+                                    .subscribe();
 
                                 //Update database...
                                 ticket.setCategory(settings.getAwaitingCategory());

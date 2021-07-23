@@ -3,20 +3,18 @@ package org.dreamexposure.ticketbird.service;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.entity.channel.Category;
 import discord4j.core.object.entity.channel.TextChannel;
-import discord4j.core.spec.TextChannelEditSpec;
 import org.dreamexposure.ticketbird.database.DatabaseManager;
 import org.dreamexposure.ticketbird.logger.Logger;
 import org.dreamexposure.ticketbird.message.ChannelManager;
 import org.dreamexposure.ticketbird.message.MessageManager;
 import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
 import org.dreamexposure.ticketbird.objects.guild.Ticket;
-import org.dreamexposure.ticketbird.utils.GlobalVars;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.TimerTask;
-import java.util.function.Consumer;
 
 public class ActivityMonitor extends TimerTask {
     private final GatewayDiscordClient client;
@@ -52,7 +50,7 @@ public class ActivityMonitor extends TimerTask {
 
                                 //Get from database and check time
                                 Ticket tic = DatabaseManager.getManager().getTicket(settings.getGuildID(), id);
-                                if (System.currentTimeMillis() - tic.getLastActivity() > GlobalVars.oneDayMs) {
+                                if (System.currentTimeMillis() - tic.getLastActivity() > Duration.ofDays(1).toMillis()) {
                                     //Purge ticket...
                                     ChannelManager.deleteCategoryOrChannelAsync(tc.getId(), g);
 
@@ -92,10 +90,9 @@ public class ActivityMonitor extends TimerTask {
                                 //Get from database and check time and handle that shit
                                 Ticket tic = DatabaseManager.getManager().getTicket(settings.getGuildID(), id);
 
-                                if (System.currentTimeMillis() - tic.getLastActivity() > GlobalVars.oneWeekMs) {
+                                if (System.currentTimeMillis() - tic.getLastActivity() > Duration.ofDays(7).toMillis()) {
                                     //Inactive
-                                    Consumer<TextChannelEditSpec> editChannel = spec -> spec.setParentId(settings.getCloseCategory());
-                                    tc.edit(editChannel).subscribe();
+                                    tc.edit().withParentIdOrNull(settings.getCloseCategory()).subscribe();
 
                                     tic.setCategory(settings.getCloseCategory());
 

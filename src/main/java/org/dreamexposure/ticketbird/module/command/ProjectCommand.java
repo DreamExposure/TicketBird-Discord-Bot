@@ -10,7 +10,8 @@ import org.dreamexposure.ticketbird.objects.guild.Project;
 import org.dreamexposure.ticketbird.utils.GlobalVars;
 
 import java.util.ArrayList;
-import java.util.function.Consumer;
+
+import static org.dreamexposure.ticketbird.GitProperty.TICKETBIRD_URL_BASE;
 
 public class ProjectCommand implements ICommand {
 
@@ -74,25 +75,19 @@ public class ProjectCommand implements ICommand {
             MessageManager.sendMessageAsync(MessageManager.getMessage("Notification.Args.Few", settings), event);
         } else {
             switch (args[0].toLowerCase()) {
-                case "add":
+                case "add" ->
                     //=project add <name> <prefix>
                     moduleAdd(args, event, settings);
-                    break;
-                case "remove":
+                case "remove" ->
                     //=project remove <name>
                     moduleRemove(args, event, settings);
-                    break;
-                case "list":
+                case "list" ->
                     //=project list
                     moduleList(event, settings);
-                    break;
-                case "toggle":
+                case "toggle" ->
                     //=project toggle
                     moduleToggle(event, settings);
-                    break;
-                default:
-                    MessageManager.sendMessageAsync(MessageManager.getMessage("Notification.Args.Invalid", settings), event);
-                    break;
+                default -> MessageManager.sendMessageAsync(MessageManager.getMessage("Notification.Args.Invalid", settings), event);
             }
         }
         return false;
@@ -136,20 +131,17 @@ public class ProjectCommand implements ICommand {
     }
 
     private void moduleList(MessageCreateEvent event, GuildSettings settings) {
-        Consumer<EmbedCreateSpec> embed = spec -> {
-            spec.setAuthor("TicketBird", GlobalVars.siteUrl, GlobalVars.iconUrl);
-            spec.setTitle("All Current Projects/Services");
+        var embed = EmbedCreateSpec.builder()
+            .author("TicketBird", TICKETBIRD_URL_BASE.getValue(), GlobalVars.iconUrl)
+            .title("All Current Projects/Services")
+            .footer("List of all Projects with their prefix for tickets.", null)
+            .color(GlobalVars.embedColor);
 
-            for (Project p : DatabaseManager.getManager().getAllProjects(settings.getGuildID())) {
-                spec.addField(p.getName(), p.getPrefix(), true);
-            }
+        for (Project p : DatabaseManager.getManager().getAllProjects(settings.getGuildID())) {
+            embed.addField(p.getName(), p.getPrefix(), true);
+        }
 
-            spec.setFooter("List of all Projects with their prefix for tickets.", null);
-
-            spec.setColor(GlobalVars.embedColor);
-        };
-
-        MessageManager.sendMessageAsync(embed, event);
+        MessageManager.sendMessageAsync(embed.build(), event);
     }
 
     private void moduleToggle(MessageCreateEvent event, GuildSettings settings) {

@@ -14,9 +14,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
-@SuppressWarnings({"unchecked", "UnusedReturnValue", "unused"})
+@SuppressWarnings({"UnusedReturnValue", "unused"})
 public class MessageManager {
     private static JSONObject langs;
 
@@ -31,10 +30,9 @@ public class MessageManager {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public static List<String> getLangs() {
 
-        return new ArrayList<String>(langs.keySet());
+        return new ArrayList<>(langs.keySet());
     }
 
     public static boolean isSupported(String _value) {
@@ -85,92 +83,130 @@ public class MessageManager {
 
     //Message sending
     public static void sendMessageAsync(String message, TextChannel channel) {
-        channel.createMessage(spec -> spec.setContent(message)).subscribe();
+        channel.createMessage(message).subscribe();
     }
 
-    public static void sendMessageAsync(Consumer<EmbedCreateSpec> embed, TextChannel channel) {
-        channel.createMessage(spec -> spec.setEmbed(embed)).subscribe();
+    public static void sendMessageAsync(EmbedCreateSpec embed, TextChannel channel) {
+        channel.createEmbed(embed).subscribe();
     }
 
-    public static void sendMessageAsync(String message, Consumer<EmbedCreateSpec> embed, TextChannel channel) {
-        channel.createMessage(spec -> spec.setContent(message).setEmbed(embed)).subscribe();
+    public static void sendMessageAsync(String message, EmbedCreateSpec embed, TextChannel channel) {
+        channel.createMessage(message)
+            .withEmbed(embed)
+            .subscribe();
     }
 
     public static void sendMessageAsync(String message, MessageCreateEvent event) {
-        event.getMessage().getChannel().flatMap(c -> c.createMessage(spec -> spec.setContent(message))).subscribe();
+        event.getMessage().getChannel()
+            .flatMap(c -> c.createMessage(message))
+            .subscribe();
     }
 
-    public static void sendMessageAsync(Consumer<EmbedCreateSpec> embed, MessageCreateEvent event) {
-        event.getMessage().getChannel().flatMap(c -> c.createMessage(spec -> spec.setEmbed(embed))).subscribe();
+    public static void sendMessageAsync(EmbedCreateSpec embed, MessageCreateEvent event) {
+        event.getMessage().getChannel()
+            .flatMap(c -> c.createEmbed(embed))
+            .subscribe();
     }
 
-    public static void sendMessageAsync(String message, Consumer<EmbedCreateSpec> embed, MessageCreateEvent event) {
-        event.getMessage().getChannel().flatMap(c -> c.createMessage(spec -> spec.setContent(message).setEmbed(embed))).subscribe();
+    public static void sendMessageAsync(String message, EmbedCreateSpec embed, MessageCreateEvent event) {
+        event.getMessage().getChannel()
+            .flatMap( c -> c.createMessage(message).withEmbed(embed))
+            .subscribe();
     }
 
     public static Message sendMessageSync(String message, MessageCreateEvent event) {
-        return event.getMessage().getChannel().flatMap(c -> c.createMessage(spec -> spec.setContent(message))).block();
+        return event.getMessage().getChannel()
+            .flatMap(c -> c.createMessage(message))
+            .block();
     }
 
-    public static Message sendMessageSync(Consumer<EmbedCreateSpec> embed, MessageCreateEvent event) {
-        return event.getMessage().getChannel().flatMap(c -> c.createMessage(spec -> spec.setEmbed(embed))).block();
+    public static Message sendMessageSync(EmbedCreateSpec embed, MessageCreateEvent event) {
+        return event.getMessage().getChannel()
+            .flatMap(c -> c.createEmbed(embed))
+            .block();
     }
 
-    public static Message sendMessageSync(String message, Consumer<EmbedCreateSpec> embed, MessageCreateEvent event) {
-        return event.getMessage().getChannel().flatMap(c -> c.createMessage(spec -> spec.setContent(message).setEmbed(embed))).block();
+    public static Message sendMessageSync(String message, EmbedCreateSpec embed, MessageCreateEvent event) {
+        return event.getMessage().getChannel()
+            .flatMap(c -> c.createMessage(message).withEmbed(embed))
+            .block();
     }
 
     public static Message sendMessageSync(String message, TextChannel channel) {
-        return channel.createMessage(spec -> spec.setContent(message)).block();
+        return channel.createMessage(message).block();
     }
 
-    public static Message sendMessageSync(Consumer<EmbedCreateSpec> embed, TextChannel channel) {
-        return channel.createMessage(spec -> spec.setEmbed(embed)).block();
+    public static Message sendMessageSync(EmbedCreateSpec embed, TextChannel channel) {
+        return channel.createEmbed(embed).block();
     }
 
-    public static Message sendMessageSync(String message, Consumer<EmbedCreateSpec> embed, TextChannel channel) {
-        return channel.createMessage(spec -> spec.setContent(message).setEmbed(embed)).block();
+    public static Message sendMessageSync(String message, EmbedCreateSpec embed, TextChannel channel) {
+        return channel.createMessage(message)
+            .withEmbed(embed)
+            .block();
     }
 
     public static void sendDirectMessageAsync(String message, User user) {
-        user.getPrivateChannel().flatMap(c -> c.createMessage(spec -> spec.setContent(message))).subscribe();
+        user.getPrivateChannel()
+            .flatMap(c -> c.createMessage(message))
+            .subscribe();
     }
 
-    public static void sendDirectMessageAsync(Consumer<EmbedCreateSpec> embed, User user) {
-        user.getPrivateChannel().flatMap(c -> c.createMessage(spec -> spec.setEmbed(embed))).subscribe();
+    public static void sendDirectMessageAsync(EmbedCreateSpec embed, User user) {
+        user.getPrivateChannel()
+            .flatMap(c -> c.createEmbed(embed))
+            .subscribe();
     }
 
-    public static void sendDirectMessageAsync(String message, Consumer<EmbedCreateSpec> embed, User user) {
-        user.getPrivateChannel().flatMap(c -> c.createMessage(spec -> spec.setContent(message).setEmbed(embed))).subscribe();
+    public static void sendDirectMessageAsync(String message, EmbedCreateSpec embed, User user) {
+        user.getPrivateChannel()
+            .flatMap(c -> c.createMessage(message).withEmbed(embed))
+            .subscribe();
     }
 
     public static Message sendDirectMessageSync(String message, User user) {
-        return user.getPrivateChannel().flatMap(c -> c.createMessage(spec -> spec.setContent(message))).block();
+        return user.getPrivateChannel()
+            .flatMap(c -> c.createMessage(message))
+            .block();
     }
 
-    public static Message sendDirectMessageSync(Consumer<EmbedCreateSpec> embed, User user) {
-        return user.getPrivateChannel().flatMap(c -> c.createMessage(spec -> spec.setEmbed(embed))).block();
+    public static Message sendDirectMessageSync(EmbedCreateSpec embed, User user) {
+        return user.getPrivateChannel()
+            .flatMap(c -> c.createEmbed(embed))
+            .block();
     }
 
-    public static Message sendDirectMessageSync(String message, Consumer<EmbedCreateSpec> embed, User user) {
-        return user.getPrivateChannel().flatMap(c -> c.createMessage(spec -> spec.setContent(message).setEmbed(embed))).block();
+    public static Message sendDirectMessageSync(String message, EmbedCreateSpec embed, User user) {
+        return user.getPrivateChannel()
+            .flatMap(c -> c.createMessage(message).withEmbed(embed))
+            .block();
     }
 
     //Message editing
     public static void editMessage(String message, Message original) {
-        original.edit(spec -> spec.setContent(message)).subscribe();
+        original.edit()
+            .withContentOrNull(message)
+            .subscribe();
     }
 
-    public static void editMessage(String message, Consumer<EmbedCreateSpec> embed, Message original) {
-        original.edit(spec -> spec.setContent(message).setEmbed(embed)).subscribe();
+    public static void editMessage(String message, EmbedCreateSpec embed, Message original) {
+        original.edit()
+            .withContentOrNull(message)
+            .withEmbedOrNull(embed)
+            .subscribe();
     }
 
     public static void editMessage(String message, MessageCreateEvent event) {
-        event.getMessage().edit(spec -> spec.setContent(message)).subscribe();
+        event.getMessage().edit()
+            .withContentOrNull(message)
+            .subscribe();
     }
 
-    public static void editMessage(String message, Consumer<EmbedCreateSpec> embed, MessageCreateEvent event) {
-        event.getMessage().edit(spec -> spec.setContent(message).setEmbed(embed)).subscribe();
+    public static void editMessage(String message, EmbedCreateSpec embed, MessageCreateEvent event) {
+        event.getMessage().edit()
+            .withContentOrNull(message)
+            .withEmbedOrNull(embed)
+            .subscribe();
     }
 
     //Message deleting

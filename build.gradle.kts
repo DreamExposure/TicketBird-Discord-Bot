@@ -37,8 +37,8 @@ repositories {
     }
 }
 //versions
-val d4jVersion = "3.2.0-M3"
-val d4jStoresVersion = "3.2.0"
+val d4jVersion = "3.2.0-RC1"
+val d4jStoresVersion = "3.2.1"
 val springVersion = "2.5.1"
 
 val springSecVersion = "5.5.1"
@@ -116,6 +116,7 @@ gitProperties {
 
     customProperty("ticketbird.version", versionName)
     customProperty("ticketbird.version.d4j", d4jVersion)
+    customProperty("ticketbird.url.base", "https://ticketbird.dreamexposure.org")
 }
 
 kotlin {

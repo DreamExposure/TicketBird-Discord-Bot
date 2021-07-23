@@ -2,7 +2,6 @@ package org.dreamexposure.ticketbird.module.command;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.channel.TextChannel;
-import discord4j.core.spec.TextChannelEditSpec;
 import org.dreamexposure.ticketbird.database.DatabaseManager;
 import org.dreamexposure.ticketbird.message.MessageManager;
 import org.dreamexposure.ticketbird.objects.command.CommandInfo;
@@ -11,7 +10,6 @@ import org.dreamexposure.ticketbird.objects.guild.Ticket;
 import org.dreamexposure.ticketbird.utils.GeneralUtils;
 
 import java.util.ArrayList;
-import java.util.function.Consumer;
 
 @SuppressWarnings({"ConstantConditions", "OptionalGetWithoutIsPresent"})
 public class HoldCommand implements ICommand {
@@ -68,8 +66,9 @@ public class HoldCommand implements ICommand {
             //Check if already closed or on hold.
             if (!channel.getCategoryId().get().equals(settings.getCloseCategory()) && !channel.getCategoryId().get().equals(settings.getHoldCategory())) {
                 //Not closed or on hold. Let's place it on hold!
-                Consumer<TextChannelEditSpec> editChannel = spec -> spec.setParentId(settings.getHoldCategory());
-                channel.edit(editChannel).subscribe();
+                channel.edit()
+                    .withParentIdOrNull(settings.getHoldCategory())
+                    .subscribe();
 
                 //Update database info
                 ticket.setCategory(settings.getHoldCategory());

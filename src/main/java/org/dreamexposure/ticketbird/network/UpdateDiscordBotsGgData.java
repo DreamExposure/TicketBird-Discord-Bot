@@ -46,7 +46,7 @@ public class UpdateDiscordBotsGgData {
 
             OkHttpClient client = new OkHttpClient();
 
-            RequestBody body = RequestBody.create(JSON, json.toString());
+            RequestBody body = RequestBody.create(json.toString(), JSON);
             Request request = new Request.Builder()
                     .url("https://discord.bots.gg/api/v1/bots/456140067220750336/stats")
                     .post(body)

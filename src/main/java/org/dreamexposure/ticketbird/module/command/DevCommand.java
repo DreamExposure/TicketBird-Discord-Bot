@@ -67,18 +67,10 @@ public class DevCommand implements ICommand {
                 MessageManager.sendMessageAsync("Please specify the function you would like to execute. To view valid functions use `!help dev`", event);
             } else {
                 switch (args[0].toLowerCase()) {
-                    case "patron":
-                        modulePatron(args, event);
-                        break;
-                    case "dev":
-                        moduleDevGuild(args, event);
-                        break;
-                    case "reloadlangs":
-                        moduleReloadLangs(event);
-                        break;
-                    default:
-                        MessageManager.sendMessageAsync("Invalid sub command! Use `!help dev` to view valid sub commands!", event);
-                        break;
+                    case "patron" -> modulePatron(args, event);
+                    case "dev" -> moduleDevGuild(args, event);
+                    case "reloadlangs" -> moduleReloadLangs(event);
+                    default -> MessageManager.sendMessageAsync("Invalid sub command! Use `!help dev` to view valid sub commands!", event);
                 }
             }
         } else {

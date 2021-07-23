@@ -22,10 +22,8 @@ import org.dreamexposure.ticketbird.utils.UserUtils;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
-import java.util.function.Consumer;
 
-import static org.dreamexposure.ticketbird.GitProperty.TICKETBIRD_VERSION;
-import static org.dreamexposure.ticketbird.GitProperty.TICKETBIRD_VERSION_D4J;
+import static org.dreamexposure.ticketbird.GitProperty.*;
 
 public class TicketBirdCommand implements ICommand {
 
@@ -87,74 +85,61 @@ public class TicketBirdCommand implements ICommand {
             moduleTicketBirdInfo(event, settings);
         } else {
             switch (args[0].toLowerCase()) {
-                case "ticketbird":
-                    moduleTicketBirdInfo(event, settings);
-                    break;
-                case "setup":
-                    moduleSetup(event, settings);
-                    break;
-                case "staff":
-                    moduleStaff(args, event, settings);
-                    break;
-                case "settings":
-                    moduleSettings(event, settings);
-                    break;
-                case "language":
-                case "lang":
-                    moduleLanguage(args, event, settings);
-                    break;
-                case "prefix":
-                    modulePrefix(args, event, settings);
-                    break;
-                case "invite":
-                    moduleInvite(event, settings);
-                    break;
-                default:
-                    MessageManager.sendMessageAsync(MessageManager.getMessage("Notification.Args.Invalid", settings), event);
-                    break;
+                case "ticketbird" -> moduleTicketBirdInfo(event, settings);
+                case "setup" -> moduleSetup(event, settings);
+                case "staff" -> moduleStaff(args, event, settings);
+                case "settings" -> moduleSettings(event, settings);
+                case "language", "lang" -> moduleLanguage(args, event, settings);
+                case "prefix" -> modulePrefix(args, event, settings);
+                case "invite" -> moduleInvite(event, settings);
+                default -> MessageManager.sendMessageAsync(MessageManager.getMessage("Notification.Args.Invalid", settings), event);
             }
         }
         return false;
     }
 
     private void moduleTicketBirdInfo(MessageCreateEvent event, GuildSettings settings) {
-        Consumer<EmbedCreateSpec> embed = spec -> {
-            spec.setAuthor("TicketBird", GlobalVars.siteUrl, GlobalVars.iconUrl);
-            spec.setTitle(MessageManager.getMessage("Embed.TicketBird.Info.Title", settings));
-            spec.addField(MessageManager.getMessage("Embed.TicketBird.Info.Developer", settings), "DreamExposure", true);
-            spec.addField(MessageManager.getMessage("Embed.TicketBird.Info.Version", settings),
-                TICKETBIRD_VERSION.getValue(),
-                true);
-            spec.addField(MessageManager.getMessage("Embed.TicketBird.Info.Library", settings),
-                "Discord4J, version " + TICKETBIRD_VERSION_D4J.getValue(), true);
-            spec.addField("Shard Index", TicketBird.getShardIndex() + "/" + TicketBird.getShardCount(), true);
-            spec.addField(MessageManager.getMessage("Embed.TicketBird.Info.TotalGuilds", settings),
-                event.getClient().getGuilds().count().block() + "", true);
-            spec.addField("Total Tickets", DatabaseManager.getManager().getTotalTicketCount() + "", true);
-            spec.setFooter(MessageManager.getMessage("Embed.TicketBird.Info.Patron", settings) + ": https://www.patreon.com/Novafox", null);
-            spec.setUrl(GlobalVars.siteUrl);
-            spec.setColor(GlobalVars.embedColor);
-        };
-        MessageManager.sendMessageAsync(embed, event);
+        var embed = EmbedCreateSpec.builder()
+            .author("TicketBird", TICKETBIRD_URL_BASE.getValue(), GlobalVars.iconUrl)
+            .title(MessageManager.getMessage("Embed.TicketBird.Info.Title", settings))
+            .addField(MessageManager.getMessage("Embed.TicketBird.Info.Developer", settings), "DreamExposure", true)
+            .addField(MessageManager.getMessage("Embed.TicketBird.Info.Version", settings),
+                TICKETBIRD_VERSION.getValue(), true)
+            .addField(MessageManager.getMessage("Embed.TicketBird.Info.Library", settings),
+                "Discord4J, version " + TICKETBIRD_VERSION_D4J.getValue(), true)
+            .addField("Shard Index", TicketBird.getShardIndex() + "/" + TicketBird.getShardCount(), true)
+            .addField(MessageManager.getMessage("Embed.TicketBird.Info.TotalGuilds", settings),
+                event.getClient().getGuilds().count().block() + "", true)
+            .addField("Total Tickets", DatabaseManager.getManager().getTotalTicketCount() + "", true)
+            .footer(MessageManager.getMessage("Embed.TicketBird.Info.Patron", settings) + ": https://www.patreon" +
+                ".com/Novafox", null)
+            .url(TICKETBIRD_URL_BASE.getValue())
+            .color(GlobalVars.embedColor);
+
+        MessageManager.sendMessageAsync(embed.build(), event);
     }
 
     private void moduleSettings(MessageCreateEvent event, GuildSettings settings) {
-        Consumer<EmbedCreateSpec> embed = spec -> {
-            spec.setAuthor("TicketBird", GlobalVars.siteUrl, GlobalVars.iconUrl);
-            spec.setTitle(MessageManager.getMessage("Embed.TicketBird.Settings.Title", settings));
-            spec.addField(MessageManager.getMessage("Embed.TicketBird.Settings.Patron", settings), String.valueOf(settings.isPatronGuild()), true);
-            spec.addField(MessageManager.getMessage("Embed.TicketBird.Settings.Dev", settings), String.valueOf(settings.isDevGuild()), true);
-            spec.addField(MessageManager.getMessage("Embed.TicketBird.Settings.Language", settings), settings.getLang(), true);
-            spec.addField(MessageManager.getMessage("Embed.TicketBird.Settings.Prefix", settings), settings.getPrefix(), true);
-            if (settings.isUseProjects())
-                spec.addField("Use Projects", "Enabled", true); //TODO: Add translations
-            else
-                spec.addField("Use Projects", "Disabled", true);
-            spec.setFooter(MessageManager.getMessage("Embed.TicketBird.Info.Patron", settings) + ": https://www.patreon.com/Novafox", null);
-            spec.setUrl(GlobalVars.siteUrl);
-            spec.setColor(GlobalVars.embedColor);
-        };
-        MessageManager.sendMessageAsync(embed, event);
+        var embed = EmbedCreateSpec.builder()
+            .author("TicketBird", TICKETBIRD_URL_BASE.getValue(), GlobalVars.iconUrl)
+            .title(MessageManager.getMessage("Embed.TicketBird.Settings.Title", settings))
+            .addField(MessageManager.getMessage("Embed.TicketBird.Settings.Patron", settings), String.valueOf(settings.isPatronGuild()), true)
+            .addField(MessageManager.getMessage("Embed.TicketBird.Settings.Dev", settings), String.valueOf(settings.isDevGuild()), true)
+            .addField(MessageManager.getMessage("Embed.TicketBird.Settings.Language", settings), settings.getLang(), true)
+            .addField(MessageManager.getMessage("Embed.TicketBird.Settings.Prefix", settings), settings.getPrefix(), true)
+            .footer(MessageManager.getMessage("Embed.TicketBird.Info.Patron", settings) + ": https://www.patreon.com/Novafox",
+                null)
+            .url(TICKETBIRD_URL_BASE.getValue())
+            .color(GlobalVars.embedColor);
+
+
+        if (settings.isUseProjects())
+            embed.addField("Use Projects", "Enabled", true); //TODO: Add translations
+        else
+            embed.addField("Use Projects", "Disabled", true);
+
+
+        MessageManager.sendMessageAsync(embed.build(), event);
     }
 
     private void modulePrefix(String[] args, MessageCreateEvent event, GuildSettings settings) {

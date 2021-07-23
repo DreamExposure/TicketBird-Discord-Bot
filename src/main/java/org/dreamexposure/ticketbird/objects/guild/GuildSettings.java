@@ -28,7 +28,7 @@ public class GuildSettings {
 
     private int totalClosed;
 
-    private List<Snowflake> staff = new ArrayList<>();
+    private final List<Snowflake> staff = new ArrayList<>();
 
     public GuildSettings(Snowflake _guildId) {
         guildID = _guildId;

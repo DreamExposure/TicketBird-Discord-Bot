@@ -7,7 +7,7 @@ public class CommandInfo {
     private String description;
     private String example;
 
-    private HashMap<String, String> subCommands = new HashMap<>();
+    private final HashMap<String, String> subCommands = new HashMap<>();
 
     public CommandInfo(String _name) {
         name = _name;

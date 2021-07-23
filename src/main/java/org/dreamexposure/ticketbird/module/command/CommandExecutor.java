@@ -1,6 +1,5 @@
 package org.dreamexposure.ticketbird.module.command;
 
-import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
 import org.dreamexposure.ticketbird.utils.GeneralUtils;
@@ -21,16 +20,6 @@ public class CommandExecutor {
      */
     public static CommandExecutor getExecutor() {
         if (instance == null) instance = new CommandExecutor();
-        return instance;
-    }
-
-    /**
-     * Enables the CommandExecutor and sets up the Listener.
-     *
-     * @return The CommandExecutor's instance.
-     */
-    public CommandExecutor enable(GatewayDiscordClient client) {
-        client.getEventDispatcher().on(MessageCreateEvent.class).subscribe(CommandListener::onMessageEvent);
         return instance;
     }
 

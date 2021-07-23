@@ -68,9 +68,10 @@ public class CloseCommand implements ICommand {
                 //Check if already closed..
                 if (!event.getMessage().getChannel().ofType(TextChannel.class).block().getCategory().block().getId().equals(settings.getCloseCategory())) {
                     //Not closed, lets close it.
-                    event.getMessage().getChannel().ofType(TextChannel.class).flatMap(c -> c.edit(
-                            s -> s.setParentId(settings.getCloseCategory())
-                    )).subscribe();
+                    event.getMessage().getChannel()
+                        .ofType(TextChannel.class)
+                        .flatMap(c -> c.edit().withParentIdOrNull(settings.getCloseCategory()))
+                        .subscribe();
 
                     //Update database info
                     ticket.setCategory(settings.getCloseCategory());

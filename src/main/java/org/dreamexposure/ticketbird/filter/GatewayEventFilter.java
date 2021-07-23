@@ -26,8 +26,7 @@ public class GatewayEventFilter extends TurboFilter {
     public FilterReply decide(Marker marker, Logger logger, Level level, String format, Object[] params, Throwable t) {
         if (params != null && logger.getName().startsWith("discord4j.gateway.inbound")) {
             for (Object param : params) {
-                if (param instanceof GatewayPayload) {
-                    GatewayPayload<?> payload = (GatewayPayload<?>) param;
+                if (param instanceof GatewayPayload<?> payload) {
                     if (Opcode.DISPATCH.equals(payload.getOp())) {
                         if (excludedEvents != null) {
                             if (excludedEvents.contains(payload.getType())) {

@@ -1,15 +1,15 @@
 package org.dreamexposure.ticketbird.module.command;
 
+import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.spec.EmbedCreateSpec;
 import org.dreamexposure.ticketbird.message.MessageManager;
 import org.dreamexposure.ticketbird.objects.command.CommandInfo;
 import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
 import org.dreamexposure.ticketbird.utils.GlobalVars;
 
 import java.util.ArrayList;
-import java.util.function.Consumer;
 
-import discord4j.core.event.domain.message.MessageCreateEvent;
-import discord4j.core.spec.EmbedCreateSpec;
+import static org.dreamexposure.ticketbird.GitProperty.TICKETBIRD_URL_BASE;
 
 public class HelpCommand implements ICommand {
     /**
@@ -58,22 +58,23 @@ public class HelpCommand implements ICommand {
     @Override
     public boolean issueCommand(String[] args, MessageCreateEvent event, GuildSettings settings) {
         if (args.length < 1) {
-            Consumer<EmbedCreateSpec> embed = spec -> {
-                spec.setAuthor("TicketBird", GlobalVars.siteUrl, GlobalVars.iconUrl);
-                spec.setTitle("TicketBird Command Help");
-                for (ICommand c : CommandExecutor.getExecutor().getCommands()) {
-                    if (c.getAliases().size() > 0) {
-                        String al = c.getAliases().toString();
-                        spec.addField(c.getCommand() + " " + al, c.getCommandInfo().getDescription(), true);
-                    } else {
-                        spec.addField(c.getCommand(), c.getCommandInfo().getDescription(), true);
-                    }
+            var embed = EmbedCreateSpec.builder()
+                .author("TicketBird", TICKETBIRD_URL_BASE.getValue(), GlobalVars.iconUrl)
+                .title("TicketBird Command Help")
+                .footer("Check out the official site for more command info!", null)
+                .url("https://ticketbird.dreamexposure.org/commands")
+                .color(GlobalVars.embedColor);
+
+            for (ICommand c : CommandExecutor.getExecutor().getCommands()) {
+                if (c.getAliases().size() > 0) {
+                    String al = c.getAliases().toString();
+                    embed.addField(c.getCommand() + " " + al, c.getCommandInfo().getDescription(), true);
+                } else {
+                    embed.addField(c.getCommand(), c.getCommandInfo().getDescription(), true);
                 }
-                spec.setFooter("Check out the official site for more command info!", null);
-                spec.setUrl("https://ticketbird.dreamexposure.org/commands");
-                spec.setColor(GlobalVars.embedColor);
-            };
-            MessageManager.sendMessageAsync(embed, event);
+            }
+
+            MessageManager.sendMessageAsync(embed.build(), event);
         } else if (args.length == 1) {
             String cmdFor = args[0];
             ICommand cmd = CommandExecutor.getExecutor().getCommand(cmdFor);
@@ -98,42 +99,35 @@ public class HelpCommand implements ICommand {
     }
 
     //Embed formatters
-    private Consumer<EmbedCreateSpec> getCommandInfoEmbed(ICommand cmd) {
-        return spec -> {
-            spec.setAuthor("TicketBird", GlobalVars.siteUrl, GlobalVars.iconUrl);
-            spec.addField("Command", cmd.getCommand(), true);
-            spec.addField("Description", cmd.getCommandInfo().getDescription(), true);
-            spec.addField("Example", cmd.getCommandInfo().getExample(), true);
+    private EmbedCreateSpec getCommandInfoEmbed(ICommand cmd) {
+        var builder = EmbedCreateSpec.builder()
+            .author("TicketBird", TICKETBIRD_URL_BASE.getValue(), GlobalVars.iconUrl)
+            .addField("Command", cmd.getCommand(), true)
+            .addField("Description", cmd.getCommandInfo().getDescription(), true)
+            .addField("Example", cmd.getCommandInfo().getExample(), true)
+            .footer("<> = required | () = optional", null)
+            .url("https://ticketbird.dreamexposure.org/commands")
+            .color(GlobalVars.embedColor);
 
-            //Loop through sub commands
-            if (cmd.getCommandInfo().getSubCommands().size() > 0) {
-                String subs = cmd.getCommandInfo().getSubCommands().keySet().toString();
-                subs = subs.replace("[", "").replace("]", "");
-                spec.addField("Sub-Commands", subs, false);
-            }
+        //Loop through sub commands
+        if (cmd.getCommandInfo().getSubCommands().size() > 0) {
+            String subs = cmd.getCommandInfo().getSubCommands().keySet().toString();
+            subs = subs.replace("[", "").replace("]", "");
+            builder.addField("Sub-Commands", subs, false);
+        }
 
-            spec.setFooter("<> = required | () = optional", null);
-
-            spec.setUrl("https://ticketbird.dreamexposure.org/commands");
-
-            spec.setColor(GlobalVars.embedColor);
-
-        };
+        return builder.build();
     }
 
-    private Consumer<EmbedCreateSpec> getSubCommandEmbed(ICommand cmd, String subCommand) {
-        return spec -> {
-            spec.setAuthor("TicketBird", GlobalVars.siteUrl, GlobalVars.iconUrl);
-            spec.addField("Command", cmd.getCommand(), true);
-            spec.addField("Sub Command", subCommand, true);
-
-            spec.addField("Usage", cmd.getCommandInfo().getSubCommands().get(subCommand), false);
-
-            spec.setFooter("<> = required | () = optional", null);
-
-            spec.setUrl("https://ticketbird.dreamexposure.org/commands");
-
-            spec.setColor(GlobalVars.embedColor);
-        };
+    private EmbedCreateSpec getSubCommandEmbed(ICommand cmd, String subCommand) {
+        return EmbedCreateSpec.builder()
+            .author("TicketBird", TICKETBIRD_URL_BASE.getValue(), GlobalVars.iconUrl)
+            .addField("Command", cmd.getCommand(), true)
+            .addField("Sub Command", subCommand, true)
+            .addField("Usage", cmd.getCommandInfo().getSubCommands().get(subCommand), false)
+            .footer("<> = required | () = optional", null)
+            .url("https://ticketbird.dreamexposure.org/commands")
+            .color(GlobalVars.embedColor)
+            .build();
     }
 }
