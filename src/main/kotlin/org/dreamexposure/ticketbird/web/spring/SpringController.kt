@@ -1,6 +1,6 @@
 package org.dreamexposure.ticketbird.web.spring
 
-import org.dreamexposure.ticketbird.objects.bot.BotSettings
+import org.dreamexposure.ticketbird.conf.BotSettings
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.server.ServerWebExchange

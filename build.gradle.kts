@@ -29,24 +29,20 @@ repositories {
     }
 
     maven {
-        url = uri("https://emily.dreamexposure.org/artifactory/dreamexposure-public/")
-    }
-
-    maven {
         url = uri("https://repo.maven.apache.org/maven2/")
     }
 }
 //versions
-val d4jVersion = "3.2.0-RC1"
+val d4jVersion = "3.2.1"
 val d4jStoresVersion = "3.2.1"
 val springVersion = "2.5.1"
 
 val springSecVersion = "5.5.1"
 val nettyForcedVersion = "4.1.56.Final"
-val reactorCoreVersion = "3.4.7"
-val reactorNettyVersion = "1.0.8"
-val r2dbcMysqlVersion = "0.8.1.RELEASE"
-val r2dbcPoolVersion = "0.8.3.RELEASE"
+val reactorCoreVersion = "3.4.14"
+val reactorNettyVersion = "1.0.15"
+val r2dbcMysqlVersion = "0.8.2.RELEASE"
+val r2dbcPoolVersion = "0.8.7.RELEASE"
 
 val kotlinSrcDir: File = buildDir.resolve("src/main/kotlin")
 
@@ -74,9 +70,9 @@ dependencies {
     implementation("io.projectreactor:reactor-core:$reactorCoreVersion")
     implementation("io.projectreactor.netty:reactor-netty:$reactorNettyVersion")
 
-    implementation("org.thymeleaf:thymeleaf:3.0.12.RELEASE")
-    implementation("org.thymeleaf:thymeleaf-spring5:3.0.12.RELEASE")
-    implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.5.3")
+    implementation("org.thymeleaf:thymeleaf:3.0.14.RELEASE")
+    implementation("org.thymeleaf:thymeleaf-spring5:3.0.14.RELEASE")
+    implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:3.0.0")
 
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf:$springVersion")
     implementation("org.springframework.boot:spring-boot-starter-webflux:$springVersion")
@@ -85,14 +81,14 @@ dependencies {
     implementation("org.springframework.security:spring-security-core:$springSecVersion")
     implementation("org.springframework.security:spring-security-web:$springSecVersion")
 
-    implementation("com.squareup.okhttp3:okhttp:4.9.1")
+    implementation("com.squareup.okhttp3:okhttp:4.9.3")
     implementation("com.github.DiscordBotList:Java-Wrapper:v1.0")
-    implementation("club.minnced:discord-webhooks:0.5.7")
+    implementation("club.minnced:discord-webhooks:0.7.4")
     implementation("org.flywaydb:flyway-core:7.9.2")
 }
 
 group = "org.dreamexposure"
-version = "1.0.3-SNAPSHOT"
+version = "2.0.0-SNAPSHOT"
 description = "TicketBird"
 java.sourceCompatibility = JavaVersion.VERSION_16
 
@@ -101,7 +97,7 @@ jib {
     if (imageVersion.contains("SNAPSHOT")) imageVersion = "latest"
 
     to.image = "rg.nl-ams.scw.cloud/dreamexposure/ticketbird:$imageVersion"
-    from.image = "adoptopenjdk/openjdk16:alpine-jre"
+    from.image = "eclipse-temurin:16-jdk-alpine"
     container.creationTime = "USE_CURRENT_TIMESTAMP"
 }
 
@@ -109,7 +105,7 @@ gitProperties {
     extProperty = "gitPropertiesExt"
 
     val versionName = if (System.getenv("BUILD_NUMBER") != null) {
-        "$version.b${System.getenv("BUILD_NUMBER")}"
+        "$version.${System.getenv("BUILD_NUMBER")}"
     } else {
         "$version.d${System.currentTimeMillis().div(1000)}" //Seconds since epoch
     }

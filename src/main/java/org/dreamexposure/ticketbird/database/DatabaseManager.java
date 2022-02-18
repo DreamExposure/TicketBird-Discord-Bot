@@ -3,13 +3,16 @@ package org.dreamexposure.ticketbird.database;
 import discord4j.common.util.Snowflake;
 import org.dreamexposure.novautils.database.DatabaseInfo;
 import org.dreamexposure.novautils.database.DatabaseSettings;
-import org.dreamexposure.ticketbird.logger.Logger;
-import org.dreamexposure.ticketbird.objects.bot.BotSettings;
-import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
-import org.dreamexposure.ticketbird.objects.guild.Project;
-import org.dreamexposure.ticketbird.objects.guild.Ticket;
+import org.dreamexposure.ticketbird.conf.BotSettings;
+import org.dreamexposure.ticketbird.extensions.MutableListKt;
+import org.dreamexposure.ticketbird.object.GuildSettings;
+import org.dreamexposure.ticketbird.object.Project;
+import org.dreamexposure.ticketbird.object.Ticket;
+import org.dreamexposure.ticketbird.utils.GlobalVars;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.output.MigrateResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -22,6 +25,8 @@ import java.util.Map;
 
 @SuppressWarnings({"SqlResolve", "UnusedReturnValue", "SqlNoDataSourceInspection", "Duplicates"})
 public class DatabaseManager {
+    private static Logger LOGGER = LoggerFactory.getLogger(DatabaseManager.class);
+
     private static DatabaseManager instance;
     private DatabaseInfo info;
 
@@ -54,7 +59,7 @@ public class DatabaseManager {
         } catch (Exception e) {
             System.out.println("Failed to connect to MySQL database! Is it properly configured?");
             e.printStackTrace();
-            Logger.getLogger().exception(null, "Connecting to MySQL server failed.", e, true, this.getClass());
+            LOGGER.error(GlobalVars.INSTANCE.getDEFAULT(), "Connecting to MySQL server failed.", e);
         }
     }
 
@@ -67,7 +72,7 @@ public class DatabaseManager {
             org.dreamexposure.novautils.database.DatabaseManager.disconnectFromMySQL(info);
             System.out.println("Successfully disconnected from MySQL Database!");
         } catch (Exception e) {
-            Logger.getLogger().exception(null, "Disconnecting from MySQL failed.", e, true, this.getClass());
+            LOGGER.error(GlobalVars.INSTANCE.getDEFAULT(), "Disconnecting from MySQL failed.", e);
             System.out.println("MySQL Connection may not have closed properly! Data may be invalidated!");
         }
     }
@@ -78,16 +83,16 @@ public class DatabaseManager {
 
         try {
             Flyway flyway = Flyway.configure()
-                    .dataSource(info.getSource())
-                    .cleanDisabled(true)
-                    .baselineOnMigrate(true)
-                    .table(BotSettings.SQL_PREFIX.get() + "schema_history")
-                    .placeholders(placeholders)
-                    .load();
+                .dataSource(info.getSource())
+                .cleanDisabled(true)
+                .baselineOnMigrate(true)
+                .table(BotSettings.SQL_PREFIX.get() + "schema_history")
+                .placeholders(placeholders)
+                .load();
             MigrateResult sm = flyway.migrate();
-            Logger.getLogger().debug("Migrations Successful, " + sm.migrationsExecuted + " migrations applied!", true);
+            LOGGER.info(GlobalVars.INSTANCE.getDEFAULT(), "Migrations Successful, " + sm.migrationsExecuted + " migrations applied!");
         } catch (Exception e) {
-            Logger.getLogger().exception(null, "Migrations Failure", e, true, getClass());
+            LOGGER.error(GlobalVars.INSTANCE.getDEFAULT(), "Migrations Failure", e);
             System.exit(2);
         }
     }
@@ -98,7 +103,7 @@ public class DatabaseManager {
 
             String query = "SELECT * FROM " + dataTableName + " WHERE GUILD_ID = ?";
             PreparedStatement statement = connection.prepareStatement(query);
-            statement.setString(1, settings.getGuildID().asString());
+            statement.setString(1, settings.getGuildId().asString());
 
             ResultSet res = statement.executeQuery();
 
@@ -107,15 +112,15 @@ public class DatabaseManager {
             if (!hasStuff || res.getString("GUILD_ID") == null) {
                 //Data not present, add to DB.
                 String insertCommand = "INSERT INTO " + dataTableName +
-                        "(GUILD_ID, LANG, PREFIX, PATRON_GUILD, DEV_GUILD, USE_PROJECTS, AWAITING_CATEGORY, RESPONDED_CATEGORY, HOLD_CATEGORY, CLOSE_CATEGORY, SUPPORT_CHANNEL, STATIC_MESSAGE, NEXT_ID, STAFF, CLOSED_TOTAL)" +
-                        " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+                    "(GUILD_ID, LANG, PREFIX, PATRON_GUILD, DEV_GUILD, USE_PROJECTS, AWAITING_CATEGORY, RESPONDED_CATEGORY, HOLD_CATEGORY, CLOSE_CATEGORY, SUPPORT_CHANNEL, STATIC_MESSAGE, NEXT_ID, STAFF, CLOSED_TOTAL)" +
+                    " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
                 PreparedStatement ps = connection.prepareStatement(insertCommand);
-                ps.setString(1, settings.getGuildID().asString());
+                ps.setString(1, settings.getGuildId().asString());
                 ps.setString(2, settings.getLang());
                 ps.setString(3, settings.getPrefix());
-                ps.setBoolean(4, settings.isPatronGuild());
-                ps.setBoolean(5, settings.isDevGuild());
-                ps.setBoolean(6, settings.isUseProjects());
+                ps.setBoolean(4, settings.getPatronGuild());
+                ps.setBoolean(5, settings.getDevGuild());
+                ps.setBoolean(6, settings.getUseProjects());
 
                 if (settings.getAwaitingCategory() != null)
                     ps.setLong(7, settings.getAwaitingCategory().asLong());
@@ -142,7 +147,7 @@ public class DatabaseManager {
                 else ps.setLong(12, 0);
 
                 ps.setInt(13, settings.getNextId());
-                ps.setString(14, settings.getStaffString());
+                ps.setString(14, MutableListKt.asStringList(settings.getStaff()));
                 ps.setInt(15, settings.getTotalClosed());
 
 
@@ -152,17 +157,17 @@ public class DatabaseManager {
             } else {
                 //Data present, update.
                 String update = "UPDATE " + dataTableName
-                        + " SET LANG = ?, PREFIX = ?, PATRON_GUILD = ?, DEV_GUILD = ?, USE_PROJECTS = ?, " +
-                        " AWAITING_CATEGORY = ?, RESPONDED_CATEGORY = ?, HOLD_CATEGORY = ?, " +
-                        " CLOSE_CATEGORY = ?, SUPPORT_CHANNEL = ?, STATIC_MESSAGE = ?, " +
-                        " NEXT_ID = ?, STAFF = ?, CLOSED_TOTAL = ? WHERE GUILD_ID = ?";
+                    + " SET LANG = ?, PREFIX = ?, PATRON_GUILD = ?, DEV_GUILD = ?, USE_PROJECTS = ?, " +
+                    " AWAITING_CATEGORY = ?, RESPONDED_CATEGORY = ?, HOLD_CATEGORY = ?, " +
+                    " CLOSE_CATEGORY = ?, SUPPORT_CHANNEL = ?, STATIC_MESSAGE = ?, " +
+                    " NEXT_ID = ?, STAFF = ?, CLOSED_TOTAL = ? WHERE GUILD_ID = ?";
                 PreparedStatement ps = connection.prepareStatement(update);
 
                 ps.setString(1, settings.getLang());
                 ps.setString(2, settings.getPrefix());
-                ps.setBoolean(3, settings.isPatronGuild());
-                ps.setBoolean(4, settings.isDevGuild());
-                ps.setBoolean(5, settings.isUseProjects());
+                ps.setBoolean(3, settings.getPatronGuild());
+                ps.setBoolean(4, settings.getDevGuild());
+                ps.setBoolean(5, settings.getUseProjects());
 
                 if (settings.getAwaitingCategory() != null)
                     ps.setLong(6, settings.getAwaitingCategory().asLong());
@@ -189,9 +194,9 @@ public class DatabaseManager {
                 else ps.setLong(11, 0);
 
                 ps.setInt(12, settings.getNextId());
-                ps.setString(13, settings.getStaffString());
+                ps.setString(13, MutableListKt.asStringList(settings.getStaff()));
                 ps.setInt(14, settings.getTotalClosed());
-                ps.setString(15, settings.getGuildID().asString());
+                ps.setString(15, settings.getGuildId().asString());
 
                 ps.executeUpdate();
 
@@ -201,7 +206,7 @@ public class DatabaseManager {
             return true;
         } catch (SQLException e) {
             System.out.println("Failed to input data into database! Error Code: 00101");
-            Logger.getLogger().exception(null, "Failed to update/insert guild settings.", e, true, this.getClass());
+            LOGGER.error(GlobalVars.INSTANCE.getDEFAULT(), "Failed to update/insert guild settings.", e);
             e.printStackTrace();
         }
         return false;
@@ -223,7 +228,7 @@ public class DatabaseManager {
             if (!hasStuff || res.getString("GUILD_ID") == null) {
                 //Data not present, add to DB.
                 String insertCommand = "INSERT INTO " + dataTableName +
-                        "(GUILD_ID, PROJECT_NAME, PROJECT_PREFIX) VALUES (?, ?, ?);";
+                    "(GUILD_ID, PROJECT_NAME, PROJECT_PREFIX) VALUES (?, ?, ?);";
                 PreparedStatement ps = connection.prepareStatement(insertCommand);
                 ps.setString(1, project.getGuildId().asString());
                 ps.setString(2, project.getName());
@@ -249,7 +254,7 @@ public class DatabaseManager {
             return true;
         } catch (SQLException e) {
             System.out.println("Failed to input data into database! Error Code: 00101");
-            Logger.getLogger().exception(null, "Failed to update/insert project settings.", e, true, this.getClass());
+            LOGGER.error(GlobalVars.INSTANCE.getDEFAULT(), "Failed to update/insert project settings.", e);
             e.printStackTrace();
         }
         return false;
@@ -271,7 +276,7 @@ public class DatabaseManager {
             if (!hasStuff || res.getString("GUILD_ID") == null) {
                 //Data not present, add to DB.
                 String insertCommand = "INSERT INTO " + dataTableName +
-                        "(GUILD_ID, NUMBER, PROJECT, CREATOR, CHANNEL, CATEGORY, LAST_ACTIVITY) VALUES (?, ?, ?, ?, ?, ?, ?);";
+                    "(GUILD_ID, NUMBER, PROJECT, CREATOR, CHANNEL, CATEGORY, LAST_ACTIVITY) VALUES (?, ?, ?, ?, ?, ?, ?);";
                 PreparedStatement ps = connection.prepareStatement(insertCommand);
                 ps.setString(1, ticket.getGuildId().asString());
                 ps.setInt(2, ticket.getNumber());
@@ -305,7 +310,7 @@ public class DatabaseManager {
             return true;
         } catch (SQLException e) {
             System.out.println("Failed to input data into database! Error Code: 00101");
-            Logger.getLogger().exception(null, "Failed to update/insert ticket data.", e, true, this.getClass());
+            LOGGER.error(GlobalVars.INSTANCE.getDEFAULT(), "Failed to update/insert ticket data.", e);
             e.printStackTrace();
         }
         return false;
@@ -349,7 +354,7 @@ public class DatabaseManager {
 
                 settings.setTotalClosed(res.getInt("CLOSED_TOTAL"));
 
-                settings.setStaffFromString(res.getString("STAFF"));
+                settings.getStaff().addAll(MutableListKt.setFromString(res.getString("STAFF")));
 
                 statement.close();
             } else {
@@ -358,7 +363,7 @@ public class DatabaseManager {
                 return settings;
             }
         } catch (SQLException e) {
-            Logger.getLogger().exception(null, "Failed to get Guild Settings.", e, true, this.getClass());
+            LOGGER.error(GlobalVars.INSTANCE.getDEFAULT(), "Failed to get Guild Settings.", e);
         }
         return settings;
     }
@@ -376,8 +381,7 @@ public class DatabaseManager {
             boolean hasStuff = res.next();
 
             if (hasStuff && res.getString("GUILD_ID") != null && res.getString("PROJECT_NAME") != null) {
-                Project project = new Project(guildId, projectName);
-                project.setPrefix(res.getString("PROJECT_PREFIX"));
+                Project project = new Project(guildId, projectName, res.getString("PROJECT_PREFIX"));
 
                 statement.close();
 
@@ -387,7 +391,7 @@ public class DatabaseManager {
                 statement.close();
             }
         } catch (SQLException e) {
-            Logger.getLogger().exception(null, "Failed to get Project.", e, true, this.getClass());
+            LOGGER.error(GlobalVars.INSTANCE.getDEFAULT(), "Failed to get Project.", e);
         }
         return null;
     }
@@ -406,12 +410,15 @@ public class DatabaseManager {
             boolean hasStuff = res.next();
 
             if (hasStuff && res.getString("GUILD_ID") != null && res.getInt("NUMBER") > 0) {
-                Ticket ticket = new Ticket(guildId, number);
-                ticket.setProject(res.getString("PROJECT"));
-                ticket.setCreator(Snowflake.of(res.getLong("CREATOR")));
-                ticket.setChannel(Snowflake.of(res.getLong("CHANNEL")));
-                ticket.setCategory(Snowflake.of(res.getLong("CATEGORY")));
-                ticket.setLastActivity(res.getLong("LAST_ACTIVITY"));
+                Ticket ticket = new Ticket(
+                    guildId,
+                    number,
+                    res.getString("PROJECT"),
+                    Snowflake.of(res.getLong("CREATOR")),
+                    Snowflake.of(res.getLong("CHANNEL")),
+                    Snowflake.of(res.getLong("CATEGORY")),
+                    res.getLong("LAST_ACTIVITY")
+                );
 
                 statement.close();
 
@@ -421,7 +428,7 @@ public class DatabaseManager {
                 statement.close();
             }
         } catch (SQLException e) {
-            Logger.getLogger().exception(null, "Failed to get Ticket Data.", e, true, this.getClass());
+            LOGGER.error(GlobalVars.INSTANCE.getDEFAULT(), "Failed to get Ticket Data.", e);
         }
         return null;
     }
@@ -440,12 +447,15 @@ public class DatabaseManager {
             boolean hasStuff = res.next();
 
             if (hasStuff && res.getString("GUILD_ID") != null && res.getInt("NUMBER") > 0) {
-                Ticket ticket = new Ticket(guildId, res.getInt("NUMBER"));
-                ticket.setProject(res.getString("PROJECT"));
-                ticket.setCreator(Snowflake.of(res.getLong("CREATOR")));
-                ticket.setChannel(Snowflake.of(res.getLong("CHANNEL")));
-                ticket.setCategory(Snowflake.of(res.getLong("CATEGORY")));
-                ticket.setLastActivity(res.getLong("LAST_ACTIVITY"));
+                Ticket ticket = new Ticket(
+                    guildId,
+                    res.getInt("NUMBER"),
+                    res.getString("PROJECT"),
+                    Snowflake.of(res.getLong("CREATOR")),
+                    Snowflake.of(res.getLong("CHANNEL")),
+                    Snowflake.of(res.getLong("CATEGORY")),
+                    res.getLong("LAST_ACTIVITY")
+                );
 
                 statement.close();
 
@@ -455,7 +465,7 @@ public class DatabaseManager {
                 statement.close();
             }
         } catch (SQLException e) {
-            Logger.getLogger().exception(null, "Failed to get Ticket Data.", e, true, this.getClass());
+            LOGGER.error(GlobalVars.INSTANCE.getDEFAULT(), "Failed to get Ticket Data.", e);
         }
         return null;
     }
@@ -474,8 +484,7 @@ public class DatabaseManager {
 
 
             while (res.next()) {
-                Project project = new Project(guildId, res.getString("PROJECT_NAME"));
-                project.setPrefix(res.getString("PROJECT_PREFIX"));
+                Project project = new Project(guildId, res.getString("PROJECT_NAME"), res.getString("PROJECT_PREFIX"));
 
                 projects.add(project);
             }
@@ -483,7 +492,7 @@ public class DatabaseManager {
             res.close();
             statement.close();
         } catch (SQLException e) {
-            Logger.getLogger().exception(null, "Failed to get Projects for guild.", e, true, this.getClass());
+            LOGGER.error(GlobalVars.INSTANCE.getDEFAULT(), "Failed to get Projects for guild.", e);
         }
 
         return projects;
@@ -502,12 +511,15 @@ public class DatabaseManager {
             ResultSet res = statement.executeQuery();
 
             while (res.next()) {
-                Ticket ticket = new Ticket(guildId, res.getInt("NUMBER"));
-                ticket.setProject(res.getString("PROJECT"));
-                ticket.setCreator(Snowflake.of(res.getLong("CREATOR")));
-                ticket.setChannel(Snowflake.of(res.getLong("CHANNEL")));
-                ticket.setCategory(Snowflake.of(res.getLong("CATEGORY")));
-                ticket.setLastActivity(res.getLong("LAST_ACTIVITY"));
+                Ticket ticket = new Ticket(
+                    guildId,
+                    res.getInt("NUMBER"),
+                    res.getString("PROJECT"),
+                    Snowflake.of(res.getLong("CREATOR")),
+                    Snowflake.of(res.getLong("CHANNEL")),
+                    Snowflake.of(res.getLong("CATEGORY")),
+                    res.getLong("LAST_ACTIVITY")
+                );
 
                 tickets.add(ticket);
             }
@@ -515,7 +527,7 @@ public class DatabaseManager {
             res.close();
             statement.close();
         } catch (SQLException e) {
-            Logger.getLogger().exception(null, "Failed to get Tickets for guild.", e, true, this.getClass());
+            LOGGER.error(GlobalVars.INSTANCE.getDEFAULT(), "Failed to get Tickets for guild.", e);
         }
 
         return tickets;
@@ -539,7 +551,7 @@ public class DatabaseManager {
             res.close();
             statement.close();
         } catch (SQLException e) {
-            Logger.getLogger().exception(null, "Failed to get ticket count", e, true, this.getClass());
+            LOGGER.error(GlobalVars.INSTANCE.getDEFAULT(), "Failed to get ticket count", e);
         }
         return amount;
     }
@@ -559,7 +571,7 @@ public class DatabaseManager {
             preparedStmt.close();
             return true;
         } catch (SQLException e) {
-            Logger.getLogger().exception(null, "Failed to delete project.", e, true, this.getClass());
+            LOGGER.error(GlobalVars.INSTANCE.getDEFAULT(), "Failed to delete project.", e);
         }
         return false;
     }
@@ -579,7 +591,7 @@ public class DatabaseManager {
             preparedStmt.close();
             return true;
         } catch (SQLException e) {
-            Logger.getLogger().exception(null, "Failed to delete ticket.", e, true, this.getClass());
+            LOGGER.error(GlobalVars.INSTANCE.getDEFAULT(), "Failed to delete ticket.", e);
         }
         return false;
     }

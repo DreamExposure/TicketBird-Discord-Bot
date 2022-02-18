@@ -1,0 +1,35 @@
+{
+  "name": "staff",
+  "description": "Allows managing TicketBird Staff",
+  "options": [
+    {
+      "name": "add",
+      "description": "Adds a TicketBird staff member",
+      "type": 1,
+      "options": [
+        {
+          "name": "user",
+          "description": "The user to add as staff",
+          "type": 6,
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "remove",
+      "description": "Removes a TicketBird staff member",
+      "type": 1,
+      "options": {
+        "name": "user",
+        "description": "The user to remove as staff",
+        "type": 6,
+        "required": true
+      }
+    },
+    {
+      "name": "list",
+      "description": "Lists TicketBird staff members",
+      "type": 1
+    }
+  ]
+}

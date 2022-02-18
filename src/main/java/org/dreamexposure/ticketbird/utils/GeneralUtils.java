@@ -1,16 +1,26 @@
 package org.dreamexposure.ticketbird.utils;
 
+import discord4j.core.object.component.ActionRow;
+import discord4j.core.object.component.Button;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.channel.Category;
 import discord4j.core.object.entity.channel.TextChannel;
+import discord4j.core.object.reaction.ReactionEmoji;
+import discord4j.core.spec.EmbedCreateSpec;
+import discord4j.core.spec.MessageCreateSpec;
+import discord4j.rest.http.client.ClientException;
 import org.dreamexposure.ticketbird.database.DatabaseManager;
-import org.dreamexposure.ticketbird.logger.Logger;
 import org.dreamexposure.ticketbird.message.MessageManager;
-import org.dreamexposure.ticketbird.objects.guild.GuildSettings;
+import org.dreamexposure.ticketbird.object.GuildSettings;
 import reactor.core.publisher.Mono;
+import reactor.function.TupleUtils;
+import reactor.math.MathFlux;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.Random;
+import java.util.logging.Logger;
 
 @SuppressWarnings({"ConstantConditions", "Duplicates"})
 public class GeneralUtils {
@@ -62,46 +72,49 @@ public class GeneralUtils {
         return str.replace("<<", leftFace.toString()).replace(">>", rightFace.toString()).replace("<", "").replace(">", "").replace(leftFace.toString(), "<").replace(rightFace.toString(), ">");
     }
 
-    public static long getOpenTicketCount(Guild guild, GuildSettings settings) {
-        Category awaiting = guild.getChannelById(settings.getAwaitingCategory()).ofType(Category.class).block();
-        Category responded = guild.getChannelById(settings.getRespondedCategory()).ofType(Category.class).block();
+    public static Mono<Long> getOpenTicketCount(Guild guild, GuildSettings settings) {
+        var awaiting = guild.getChannelById(settings.getAwaitingCategory())
+            .ofType(Category.class)
+            .flatMap(it -> it.getChannels().count());
+        var responded = guild.getChannelById(settings.getRespondedCategory())
+            .ofType(Category.class)
+            .flatMap(it -> it.getChannels().count());
 
-        return awaiting.getChannels().count().block() + responded.getChannels().count().block();
+        return MathFlux.sumLong(awaiting.mergeWith(responded));
+
     }
 
-    public static String getNormalStaticSupportMessage(Guild guild, GuildSettings settings) {
-        String msg = MessageManager.getMessage("Support.StaticMessage.Normal", settings);
+    public static Mono<MessageCreateSpec> getNormalStaticSupportMessage(Guild guild, GuildSettings settings) {
+        Mono<Long> awaitingMono = guild.getChannelById(settings.getAwaitingCategory()).ofType(Category.class)
+            .flatMap(it -> it.getChannels().count());
+        Mono<Long> respondedMono = guild.getChannelById(settings.getRespondedCategory()).ofType(Category.class)
+            .flatMap(it -> it.getChannels().count());
+        Mono<Long> holdMono = guild.getChannelById(settings.getHoldCategory()).ofType(Category.class)
+            .flatMap(it -> it.getChannels().count());
 
-        Category awaiting = guild.getChannelById(settings.getAwaitingCategory()).ofType(Category.class).block();
-        Category responded = guild.getChannelById(settings.getRespondedCategory()).ofType(Category.class).block();
-        Category hold = guild.getChannelById(settings.getHoldCategory()).ofType(Category.class).block();
+        return Mono.zip(awaitingMono, respondedMono, holdMono).map(TupleUtils.function((await, respond, hold) -> {
+            int allTickets = settings.getNextId() - 1;
+            long closed = allTickets - await - respond - hold;
+            long open = await + respond;
 
-        int allTickets = settings.getNextId() - 1;
-        long closedCount = allTickets - awaiting.getChannels().count().block() - responded.getChannels().count().block() - hold.getChannels().count().block();
+            var embed = EmbedCreateSpec.builder()
+                .author("TicketBird", null,GlobalVars.INSTANCE.getIconUrl())
+                .color(GlobalVars.INSTANCE.getEmbedColor())
+                .title("Help Desk")
+                .description("Need help with something? Open a new ticket by clicking the button below.")
+                .addField("Tickets Currently Open", open + "", true)
+                .addField("Tickets on Hold", hold + "", true)
+                .addField("Total Tickets Closed", closed + "", true)
+                .footer("Last Update", null)
+                .timestamp(Instant.now())
+                .build();
+            var button = Button.primary("ticketbird-create-ticket", ReactionEmoji.codepoints("TODO"), "Open Ticket");
 
-        msg = msg.replace("%open%", String.valueOf(awaiting.getChannels().count().block() + responded.getChannels().count().block()));
-        msg = msg.replace("%hold%", hold.getChannels().count().block() + "");
-        msg = msg.replace("%closed%", closedCount + "");
-
-        return msg;
-    }
-
-    public static String getHighVolumeStaticSupportMessage(Guild guild, GuildSettings settings) {
-        String msg = MessageManager.getMessage("Support.StaticMessage.HighVolume", settings);
-
-        Category awaiting = guild.getChannelById(settings.getAwaitingCategory()).ofType(Category.class).block();
-        Category responded = guild.getChannelById(settings.getRespondedCategory()).ofType(Category.class).block();
-        Category hold = guild.getChannelById(settings.getHoldCategory()).ofType(Category.class).block();
-
-        int allTickets = settings.getNextId() - 1;
-
-        long closedCount = allTickets - awaiting.getChannels().count().block() - responded.getChannels().count().block() - hold.getChannels().count().block();
-
-        msg = msg.replace("%open%", String.valueOf(awaiting.getChannels().count().block() + responded.getChannels().count().block()));
-        msg = msg.replace("%hold%", hold.getChannels().count().block() + "");
-        msg = msg.replace("%closed%", closedCount + "");
-
-        return msg;
+            return MessageCreateSpec.builder()
+                .addEmbed(embed)
+                .addComponent(ActionRow.of(button))
+                .build();
+        }));
     }
 
     public static void updateStaticMessage(Guild guild, GuildSettings settings) {
@@ -132,5 +145,21 @@ public class GeneralUtils {
         } catch (Exception e) {
             Logger.getLogger().exception(null, "Failed to handle Static Message update!", e, true, GeneralUtils.class);
         }
+    }
+
+    public static Mono<Message> updateStaticMessage(Guild guild, GuildSettings settings) {
+        if (settings.getSupportChannel() == null || settings.getStaticMessage() == null) return Mono.empty();
+
+        guild.getChannelById(settings.getSupportChannel()).ofType(TextChannel.class).flatMap(channel -> {
+            return channel.getMessageById(settings.getStaticMessage()).flatMap(message -> {
+                //TODO
+            }).onErrorResume(ClientException.isStatusCode(404), e -> {
+                // Message deleted, recreate it
+                //TODO
+            });
+        }).onErrorResume(ClientException.isStatusCode(403, 404),e -> {
+            //Permission denied or channel deleted.
+            //TODO
+        });
     }
 }
