@@ -1,7 +1,9 @@
 package org.dreamexposure.ticketbird.file;
 
-import org.dreamexposure.ticketbird.logger.Logger;
+import org.dreamexposure.ticketbird.utils.GlobalVars;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileReader;
@@ -11,6 +13,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class ReadFile {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ReadFile.class);
+
     public static JSONObject readAllLangFiles() {
         JSONObject langs = new JSONObject();
 
@@ -29,7 +33,7 @@ public class ReadFile {
                 fr.close();
             }
         } catch (Exception e) {
-            Logger.getLogger().exception(null, "Failed to load lang files!", e, true, ReadFile.class);
+            LOGGER.error(GlobalVars.INSTANCE.getDEFAULT(), "Failed to load lang files!", e);
         }
         return langs;
     }

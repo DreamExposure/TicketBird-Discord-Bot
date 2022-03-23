@@ -8,19 +8,16 @@ import discord4j.core.object.entity.channel.Category;
 import discord4j.core.object.entity.channel.TextChannel;
 import discord4j.core.object.reaction.ReactionEmoji;
 import discord4j.core.spec.EmbedCreateSpec;
-import discord4j.core.spec.MessageCreateSpec;
 import discord4j.rest.http.client.ClientException;
 import org.dreamexposure.ticketbird.database.DatabaseManager;
-import org.dreamexposure.ticketbird.message.MessageManager;
 import org.dreamexposure.ticketbird.object.GuildSettings;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import reactor.function.TupleUtils;
 import reactor.math.MathFlux;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Random;
-import java.util.logging.Logger;
 
 @SuppressWarnings({"ConstantConditions", "Duplicates"})
 public class GeneralUtils {
@@ -84,7 +81,10 @@ public class GeneralUtils {
 
     }
 
-    public static Mono<MessageCreateSpec> getNormalStaticSupportMessage(Guild guild, GuildSettings settings) {
+    public static Mono<EmbedCreateSpec> getStaticSupportMessageEmbed(Guild guild, GuildSettings settings) {
+        if (settings.getAwaitingCategory() == null || settings.getRespondedCategory() == null
+            || settings.getHoldCategory() == null) return Mono.empty();
+
         Mono<Long> awaitingMono = guild.getChannelById(settings.getAwaitingCategory()).ofType(Category.class)
             .flatMap(it -> it.getChannels().count());
         Mono<Long> respondedMono = guild.getChannelById(settings.getRespondedCategory()).ofType(Category.class)
@@ -97,8 +97,8 @@ public class GeneralUtils {
             long closed = allTickets - await - respond - hold;
             long open = await + respond;
 
-            var embed = EmbedCreateSpec.builder()
-                .author("TicketBird", null,GlobalVars.INSTANCE.getIconUrl())
+            return EmbedCreateSpec.builder()
+                .author("TicketBird", null, GlobalVars.INSTANCE.getIconUrl())
                 .color(GlobalVars.INSTANCE.getEmbedColor())
                 .title("Help Desk")
                 .description("Need help with something? Open a new ticket by clicking the button below.")
@@ -108,58 +108,41 @@ public class GeneralUtils {
                 .footer("Last Update", null)
                 .timestamp(Instant.now())
                 .build();
-            var button = Button.primary("ticketbird-create-ticket", ReactionEmoji.codepoints("TODO"), "Open Ticket");
-
-            return MessageCreateSpec.builder()
-                .addEmbed(embed)
-                .addComponent(ActionRow.of(button))
-                .build();
         }));
     }
 
-    public static void updateStaticMessage(Guild guild, GuildSettings settings) {
-        try {
-            TextChannel supportChannel = guild.getChannelById(settings.getSupportChannel()).ofType(TextChannel.class).block();
-
-            if (supportChannel == null) {
-                //Something must have gone wrong, we lost the support channel... just ignore the update request
-                return;
-            }
-            Message staticMsg = supportChannel.getMessageById(settings.getStaticMessage()).onErrorResume(e -> Mono.empty()).block();
-
-            String messageContent;
-            if (getOpenTicketCount(guild, settings) > 25)
-                messageContent = getHighVolumeStaticSupportMessage(guild, settings);
-            else
-                messageContent = getNormalStaticSupportMessage(guild, settings);
-
-            if (staticMsg != null) {
-                //Edit static message...
-                MessageManager.editMessage(messageContent, staticMsg);
-            } else {
-                //Somehow the static message was deleted, let's just recreate it.
-                settings.setStaticMessage(MessageManager.sendMessageSync(messageContent, supportChannel).getId());
-
-                DatabaseManager.getManager().updateSettings(settings);
-            }
-        } catch (Exception e) {
-            Logger.getLogger().exception(null, "Failed to handle Static Message update!", e, true, GeneralUtils.class);
-        }
-    }
-
     public static Mono<Message> updateStaticMessage(Guild guild, GuildSettings settings) {
+        var button = Button.primary("ticketbird-create-ticket", ReactionEmoji.codepoints("TODO"), "Open Ticket");
+
         if (settings.getSupportChannel() == null || settings.getStaticMessage() == null) return Mono.empty();
 
-        guild.getChannelById(settings.getSupportChannel()).ofType(TextChannel.class).flatMap(channel -> {
-            return channel.getMessageById(settings.getStaticMessage()).flatMap(message -> {
-                //TODO
+        return guild.getChannelById(settings.getSupportChannel()).ofType(TextChannel.class).flatMap(channel ->
+            channel.getMessageById(settings.getStaticMessage()).flatMap(message -> {
+                // Message exists, just needs the edit
+                return getStaticSupportMessageEmbed(guild, settings).flatMap(spec ->
+                    message.edit()
+                        .withEmbeds(spec)
+                        .withComponents(ActionRow.of(button))
+                );
             }).onErrorResume(ClientException.isStatusCode(404), e -> {
                 // Message deleted, recreate it
-                //TODO
-            });
-        }).onErrorResume(ClientException.isStatusCode(403, 404),e -> {
+                return getStaticSupportMessageEmbed(guild, settings).flatMap(spec ->
+                    channel.createMessage(spec)
+                        .withComponents(ActionRow.of(button))
+                ).flatMap(msg -> {
+                    settings.setStaticMessage(msg.getId());
+
+                    return Mono.fromCallable(() -> DatabaseManager.getManager().updateSettings(settings))
+                        .subscribeOn(Schedulers.boundedElastic())
+                        .thenReturn(msg);
+                });
+            })).onErrorResume(ClientException.isStatusCode(403, 404), e -> {
             //Permission denied or channel deleted.
-            //TODO
+            settings.setStaticMessage(null);
+
+            return Mono.fromCallable(() -> DatabaseManager.getManager().updateSettings(settings))
+                .subscribeOn(Schedulers.boundedElastic())
+                .then(Mono.empty());
         });
     }
 }

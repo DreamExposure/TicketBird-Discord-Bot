@@ -9,8 +9,6 @@ import org.dreamexposure.ticketbird.object.GuildSettings;
 import org.dreamexposure.ticketbird.object.Project;
 import org.dreamexposure.ticketbird.object.Ticket;
 import org.dreamexposure.ticketbird.utils.GlobalVars;
-import org.flywaydb.core.Flyway;
-import org.flywaydb.core.api.output.MigrateResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,19 +17,18 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @SuppressWarnings({"SqlResolve", "UnusedReturnValue", "SqlNoDataSourceInspection", "Duplicates"})
 public class DatabaseManager {
-    private static Logger LOGGER = LoggerFactory.getLogger(DatabaseManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseManager.class);
 
     private static DatabaseManager instance;
     private DatabaseInfo info;
 
     private DatabaseManager() {
-    } //Prevent initialization.
+        connectToMySQL();
+    }
 
     /**
      * Gets the instance of the {@link DatabaseManager}.
@@ -48,7 +45,7 @@ public class DatabaseManager {
     /**
      * Connects to the MySQL server specified.
      */
-    public void connectToMySQL() {
+    private void connectToMySQL() {
         try {
             DatabaseSettings settings = new DatabaseSettings(BotSettings.SQL_HOST.get(), BotSettings.SQL_PORT.get(),
                 BotSettings.SQL_DB.get(), BotSettings.SQL_USER.get(), BotSettings.SQL_PASS.get(),
@@ -66,7 +63,6 @@ public class DatabaseManager {
     /**
      * Disconnects from the MySQL server if still connected.
      */
-    @SuppressWarnings("unused")
     public void disconnectFromMySQL() {
         try {
             org.dreamexposure.novautils.database.DatabaseManager.disconnectFromMySQL(info);
@@ -74,26 +70,6 @@ public class DatabaseManager {
         } catch (Exception e) {
             LOGGER.error(GlobalVars.INSTANCE.getDEFAULT(), "Disconnecting from MySQL failed.", e);
             System.out.println("MySQL Connection may not have closed properly! Data may be invalidated!");
-        }
-    }
-
-    public void handleMigrations() {
-        Map<String, String> placeholders = new HashMap<>();
-        placeholders.put("prefix", BotSettings.SQL_PREFIX.get());
-
-        try {
-            Flyway flyway = Flyway.configure()
-                .dataSource(info.getSource())
-                .cleanDisabled(true)
-                .baselineOnMigrate(true)
-                .table(BotSettings.SQL_PREFIX.get() + "schema_history")
-                .placeholders(placeholders)
-                .load();
-            MigrateResult sm = flyway.migrate();
-            LOGGER.info(GlobalVars.INSTANCE.getDEFAULT(), "Migrations Successful, " + sm.migrationsExecuted + " migrations applied!");
-        } catch (Exception e) {
-            LOGGER.error(GlobalVars.INSTANCE.getDEFAULT(), "Migrations Failure", e);
-            System.exit(2);
         }
     }
 

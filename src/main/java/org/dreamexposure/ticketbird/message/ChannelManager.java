@@ -3,7 +3,6 @@ package org.dreamexposure.ticketbird.message;
 import discord4j.common.util.Snowflake;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.channel.Category;
-import discord4j.core.object.entity.channel.Channel;
 import discord4j.core.object.entity.channel.TextChannel;
 import org.springframework.lang.Nullable;
 
@@ -23,11 +22,5 @@ public class ChannelManager {
             spec = spec.withParentId(awaitingCat);
 
         return spec.block();
-    }
-
-    public static void deleteCategoryOrChannelAsync(Snowflake id, Guild guild) {
-        guild.getChannelById(id)
-            .flatMap(Channel::delete)
-            .subscribe();
     }
 }

@@ -1,3 +1,5 @@
+@file:Suppress("DuplicatedCode")
+
 package org.dreamexposure.ticketbird.listeners
 
 import discord4j.core.GatewayDiscordClient
@@ -5,6 +7,7 @@ import discord4j.core.`object`.entity.channel.TextChannel
 import discord4j.core.event.domain.message.MessageCreateEvent
 import org.dreamexposure.ticketbird.database.DatabaseManager
 import org.dreamexposure.ticketbird.message.MessageManager
+import org.dreamexposure.ticketbird.utils.GeneralUtils
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
 import org.springframework.stereotype.Component
@@ -41,7 +44,7 @@ class MessageListener(private val client: GatewayDiscordClient) : ApplicationRun
 
                         when {
                             catId == settings.closeCategory -> {
-                                // closed - move to correct category and send reopened message + update static msg
+                                // closed - move to correct category, send reopened message, update static msg
 
                                 if (settings.staff.contains(authorId.asString())) {
                                     ticket.category = settings.respondedCategory!!
@@ -55,41 +58,94 @@ class MessageListener(private val client: GatewayDiscordClient) : ApplicationRun
                                         channel.edit().withParentIdOrNull(settings.respondedCategory),
                                         channel.createMessage(MessageManager.getMessage("Ticket.Reopen.Everyone", settings)),
                                         updateDb,
+                                        event.guild.flatMap { GeneralUtils.updateStaticMessage(it, settings) }
                                     )
-
-
-                                    TODO("Move to responded, reopen msg, update static msg")
                                 } else {
+                                    ticket.category = settings.awaitingCategory!!
+                                    ticket.lastActivity = System.currentTimeMillis()
 
-                                    TODO("Move to awaiting, reopen msg, update static msg")
+                                    val updateDb = Mono.fromCallable {
+                                        DatabaseManager.getManager().updateTicket(ticket)
+                                    }.subscribeOn(Schedulers.boundedElastic())
+
+                                    Mono.`when`(
+                                        channel.edit().withParentIdOrNull(settings.awaitingCategory),
+                                        channel.createMessage(MessageManager.getMessage("Ticket.Reopen.Everyone", settings)),
+                                        updateDb,
+                                        event.guild.flatMap { GeneralUtils.updateStaticMessage(it, settings) }
+                                    )
                                 }
                             }
                             catId == settings.holdCategory -> {
                                 // on hold move to correct category and send un-hold message + update static msg
                                 if (settings.staff.contains(authorId.asString())) {
+                                    ticket.category = settings.respondedCategory!!
+                                    ticket.lastActivity = System.currentTimeMillis()
 
-                                    TODO("Move to responded, un-hold msg, update static msg")
+                                    val updateDb = Mono.fromCallable {
+                                        DatabaseManager.getManager().updateTicket(ticket)
+                                    }.subscribeOn(Schedulers.boundedElastic())
+
+                                    Mono.`when`(
+                                        channel.edit().withParentIdOrNull(settings.respondedCategory),
+                                        channel.createMessage(MessageManager.getMessage("Ticket.Reopen.Creator", "%creator%", "<@${ticket.creator.asLong()}>", settings)),
+                                        updateDb,
+                                        event.guild.flatMap { GeneralUtils.updateStaticMessage(it, settings) }
+                                    )
                                 } else {
+                                    ticket.category = settings.awaitingCategory!!
+                                    ticket.lastActivity = System.currentTimeMillis()
 
-                                    TODO("Move to awaiting, un-hold msg, update static msg")
+                                    val updateDb = Mono.fromCallable {
+                                        DatabaseManager.getManager().updateTicket(ticket)
+                                    }.subscribeOn(Schedulers.boundedElastic())
+
+                                    Mono.`when`(
+                                        channel.edit().withParentIdOrNull(settings.awaitingCategory),
+                                        channel.createMessage(MessageManager.getMessage("Ticket.Reopen.Creator", "%creator%", "<@${ticket.creator.asLong()}>", settings)),
+                                        updateDb,
+                                        event.guild.flatMap { GeneralUtils.updateStaticMessage(it, settings) }
+                                    )
                                 }
                             }
                             catId == settings.awaitingCategory && settings.staff.contains(authorId.asString()) -> {
                                 // in awaiting + staff response, move to responded
+                                ticket.category = settings.respondedCategory!!
+                                ticket.lastActivity = System.currentTimeMillis()
 
-                                TODO("Move to responded cat")
+                                val updateDb = Mono.fromCallable {
+                                    DatabaseManager.getManager().updateTicket(ticket)
+                                }.subscribeOn(Schedulers.boundedElastic())
+
+                                Mono.`when`(
+                                    channel.edit().withParentIdOrNull(settings.respondedCategory),
+                                    updateDb,
+                                )
                             }
                             catId == settings.respondedCategory && !settings.staff.contains(authorId.asString()) -> {
                                 // in responded + user response, move to awaiting
+                                ticket.category = settings.awaitingCategory!!
+                                ticket.lastActivity = System.currentTimeMillis()
 
-                                TODO("Move to awaiting cat")
+                                val updateDb = Mono.fromCallable {
+                                    DatabaseManager.getManager().updateTicket(ticket)
+                                }.subscribeOn(Schedulers.boundedElastic())
+
+                                Mono.`when`(
+                                    channel.edit().withParentIdOrNull(settings.awaitingCategory),
+                                    updateDb,
+                                )
                             }
                             else -> {
-                                TODO("Update last activity")
+                                ticket.lastActivity = System.currentTimeMillis()
+
+                                Mono.fromCallable {
+                                    DatabaseManager.getManager().updateTicket(ticket)
+                                }.subscribeOn(Schedulers.boundedElastic())
                             }
                         }
                     }
-            }
+            }.then()
         }
     }
 
