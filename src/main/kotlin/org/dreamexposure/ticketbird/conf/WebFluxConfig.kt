@@ -1,12 +1,16 @@
 package org.dreamexposure.ticketbird.conf
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import com.mysql.cj.jdbc.MysqlDataSource
+import discord4j.common.JacksonResources
 import discord4j.common.store.Store
 import discord4j.common.store.legacy.LegacyStoreLayout
 import discord4j.core.DiscordClientBuilder
 import discord4j.core.GatewayDiscordClient
+import discord4j.core.event.domain.lifecycle.ReadyEvent
 import discord4j.core.`object`.presence.ClientActivity
 import discord4j.core.`object`.presence.ClientPresence
-import discord4j.core.event.domain.lifecycle.ReadyEvent
 import discord4j.core.shard.MemberRequestFilter
 import discord4j.core.shard.ShardingStrategy
 import discord4j.discordjson.json.GuildData
@@ -35,10 +39,8 @@ import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Primary
 import org.springframework.core.io.ClassPathResource
-import org.springframework.data.redis.connection.RedisPassword
-import org.springframework.data.redis.connection.RedisStandaloneConfiguration
-import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
 import org.springframework.http.HttpStatus
 import org.springframework.web.reactive.config.CorsRegistry
 import org.springframework.web.reactive.config.EnableWebFlux
@@ -53,11 +55,11 @@ import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver
 import org.thymeleaf.spring5.view.reactive.ThymeleafReactiveViewResolver
 import org.thymeleaf.templatemode.TemplateMode
 import javax.annotation.PreDestroy
+import javax.sql.DataSource
 
 @Configuration
 @EnableWebFlux
-class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>,
-        ApplicationContextAware, WebFluxConfigurer {
+class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, ApplicationContextAware, WebFluxConfigurer {
 
     private var ctx: ApplicationContext? = null
 
@@ -67,30 +69,40 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>,
 
     override fun addCorsMappings(registry: CorsRegistry) {
         registry.addMapping("/api/**")
-                .allowedOrigins("*")
+            .allowedOrigins("*")
+    }
+
+    override fun configureViewResolvers(registry: ViewResolverRegistry) {
+        registry.viewResolver(thymeleafChunkedAndDataDrivenResolver())
+    }
+
+    override fun setApplicationContext(applicationContext: ApplicationContext) {
+        ctx = applicationContext
     }
 
     @Bean
-    fun redisConnectionFactory(): LettuceConnectionFactory {
-        val rsc = RedisStandaloneConfiguration()
-        rsc.hostName = BotSettings.REDIS_HOSTNAME.get()
-        rsc.port = BotSettings.REDIS_PORT.get().toInt()
-        rsc.password = RedisPassword.of(BotSettings.REDIS_PASSWORD.get())
-
-        return LettuceConnectionFactory(rsc)
-    }
-
-    @Bean
-    fun mysqlConnectionFactory(): ConnectionFactory {
+    fun r2dbcMySqlConnectionPool(): ConnectionFactory {
         return ConnectionFactories.get(ConnectionFactoryOptions.builder()
-                .option(ConnectionFactoryOptions.DRIVER, "pool")
-                .option(ConnectionFactoryOptions.PROTOCOL, "mysql")
-                .option(ConnectionFactoryOptions.HOST, BotSettings.SQL_HOST.get())
-                .option(ConnectionFactoryOptions.PORT, BotSettings.SQL_PORT.get().toInt())
-                .option(ConnectionFactoryOptions.USER, BotSettings.SQL_USER.get())
-                .option(ConnectionFactoryOptions.PASSWORD, BotSettings.SQL_PASS.get())
-                .option(ConnectionFactoryOptions.DATABASE, BotSettings.SQL_DB.get())
-                .build())
+            .option(ConnectionFactoryOptions.DRIVER, "pool")
+            .option(ConnectionFactoryOptions.PROTOCOL, "mysql")
+            .option(ConnectionFactoryOptions.HOST, BotSettings.SQL_HOST.get())
+            .option(ConnectionFactoryOptions.PORT, BotSettings.SQL_PORT.get().toInt())
+            .option(ConnectionFactoryOptions.USER, BotSettings.SQL_USER.get())
+            .option(ConnectionFactoryOptions.PASSWORD, BotSettings.SQL_PASS.get())
+            .option(ConnectionFactoryOptions.DATABASE, BotSettings.SQL_DB.get())
+            .option(ConnectionFactoryOptions.SSL, true)
+            .build())
+    }
+
+    @Bean
+    fun jdbcMySqlConnection(): DataSource {
+        return MysqlDataSource().apply {
+            serverName = BotSettings.SQL_HOST.get()
+            port = BotSettings.SQL_PORT.get().toInt()
+            user = BotSettings.SQL_USER.get()
+            password = BotSettings.SQL_PASS.get()
+            sslMode = "REQUIRED"
+        }
     }
 
     @Bean
@@ -131,12 +143,11 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>,
         return viewResolver
     }
 
-    override fun configureViewResolvers(registry: ViewResolverRegistry) {
-        registry.viewResolver(thymeleafChunkedAndDataDrivenResolver())
-    }
-
-    override fun setApplicationContext(applicationContext: ApplicationContext) {
-        ctx = applicationContext
+    @Bean
+    @Primary
+    fun objectMapper(): ObjectMapper {
+        // Use d4j's object mapper
+        return JacksonResources.create().objectMapper.registerKotlinModule()
     }
 
     @Bean
@@ -157,6 +168,7 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>,
     fun discordRestClient(gatewayDiscordClient: GatewayDiscordClient): RestClient {
         return gatewayDiscordClient.restClient
     }
+
 
     @PreDestroy
     fun onShutdown(client: GatewayDiscordClient) {

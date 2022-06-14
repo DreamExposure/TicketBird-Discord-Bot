@@ -1,28 +1,29 @@
-
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.5.21"
+    kotlin("jvm") version "1.7.0"
     java
 
-    kotlin("plugin.spring") version "1.5.21"
+    kotlin("plugin.spring") version "1.7.0"
 
-    id("com.google.cloud.tools.jib") version("3.0.0")
-    id ("org.springframework.boot") version ("2.5.0")
+    id("com.google.cloud.tools.jib") version "3.2.1"
+    id ("org.springframework.boot") version "2.6.6"
+    id("io.spring.dependency-management") version "1.0.11.RELEASE"
 
-    id("com.gorylenko.gradle-git-properties") version "2.3.1"
+    id("com.gorylenko.gradle-git-properties") version "2.4.1"
 }
 
 buildscript {
     dependencies {
-        classpath("com.squareup:kotlinpoet:1.7.2")
+        classpath("com.squareup:kotlinpoet:1.11.0")
     }
 }
 
 repositories {
+    mavenCentral()
     mavenLocal()
     maven {
         url = uri("https://jitpack.io")
@@ -35,69 +36,83 @@ repositories {
 //versions
 val d4jVersion = "3.2.1"
 val d4jStoresVersion = "3.2.1"
-val springVersion = "2.5.1"
 
-val springSecVersion = "5.5.1"
 val nettyForcedVersion = "4.1.56.Final"
 val reactorCoreVersion = "3.4.14"
 val reactorNettyVersion = "1.0.15"
-val r2dbcMysqlVersion = "0.8.2.RELEASE"
-val r2dbcPoolVersion = "0.8.7.RELEASE"
 
 val kotlinSrcDir: File = buildDir.resolve("src/main/kotlin")
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.21")
+    // Tools
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.7.0")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+    implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
 
     implementation("org.dreamexposure:NovaUtils:1.0.0-SNAPSHOT")
 
-    implementation("com.discord4j:discord4j-core:$d4jVersion")
-    implementation("com.discord4j:stores-redis:$d4jStoresVersion") {
-        exclude("io.netty", "*")
-    }
+    // Spring
+    implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
+    implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
+    implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 
-    implementation("mysql:mysql-connector-java:8.0.26")
-    implementation("org.json:json:20210307")
-
-    implementation("dev.miku:r2dbc-mysql:$r2dbcMysqlVersion") {
-        exclude("io.netty", "*")
-        exclude("io.projectreactor", "*")
-    }
-    implementation("io.r2dbc:r2dbc-pool:$r2dbcPoolVersion")
-
-    //Forced version nonsense
-    implementation("io.netty:netty-all:$nettyForcedVersion")
-    implementation("io.projectreactor:reactor-core:$reactorCoreVersion")
-    implementation("io.projectreactor.netty:reactor-netty:$reactorNettyVersion")
-
+    // Web
     implementation("org.thymeleaf:thymeleaf:3.0.14.RELEASE")
     implementation("org.thymeleaf:thymeleaf-spring5:3.0.14.RELEASE")
     implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:3.0.0")
 
-    implementation("org.springframework.boot:spring-boot-starter-thymeleaf:$springVersion")
-    implementation("org.springframework.boot:spring-boot-starter-webflux:$springVersion")
-    implementation("org.springframework.boot:spring-boot-starter-data-r2dbc:$springVersion")
-    implementation("org.springframework.session:spring-session-data-redis:$springVersion")
-    implementation("org.springframework.security:spring-security-core:$springSecVersion")
-    implementation("org.springframework.security:spring-security-web:$springSecVersion")
-
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
+
+    // Database
+    implementation("org.flywaydb:flyway-core")
+    implementation("dev.miku:r2dbc-mysql") {
+        exclude("io.netty", "*")
+        exclude("io.projectreactor", "*")
+    }
+    implementation("mysql:mysql-connector-java")
+
+    // Serialization
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("org.json:json:20220320")
+
+    // Discord
+    implementation("com.discord4j:discord4j-core:$d4jVersion")
+    implementation("com.discord4j:stores-redis:$d4jStoresVersion") {
+        exclude("io.netty", "*")
+    }
     implementation("com.github.DiscordBotList:Java-Wrapper:v1.0")
     implementation("club.minnced:discord-webhooks:0.7.4")
-    implementation("org.flywaydb:flyway-core:7.9.2")
+
+    // Forced version nonsense
+    implementation("io.netty:netty-all:$nettyForcedVersion")
+    implementation("io.projectreactor:reactor-core:$reactorCoreVersion")
+    implementation("io.projectreactor.netty:reactor-netty:$reactorNettyVersion")
+
+    // Test
+    testImplementation("org.springframework.boot:spring-boot-starter-test") {
+        exclude(module = "junit")
+        exclude(module = "mockito-core")
+    }
+    testImplementation("org.junit.jupiter:junit-jupiter-api")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    testImplementation("io.projectreactor:reactor-test")
+    testImplementation("com.ninja-squad:springmockk:3.1.1")
 }
 
 group = "org.dreamexposure"
 version = "2.0.0-SNAPSHOT"
 description = "TicketBird"
-java.sourceCompatibility = JavaVersion.VERSION_16
+java.sourceCompatibility = JavaVersion.VERSION_17
 
 jib {
     var imageVersion = version.toString()
     if (imageVersion.contains("SNAPSHOT")) imageVersion = "latest"
 
     to.image = "rg.nl-ams.scw.cloud/dreamexposure/ticketbird:$imageVersion"
-    from.image = "eclipse-temurin:16-jdk-alpine"
+    from.image = "eclipse-temurin:17-jre-alpine"
     container.creationTime = "USE_CURRENT_TIMESTAMP"
 }
 
@@ -166,8 +181,12 @@ tasks {
 
         kotlinOptions {
             freeCompilerArgs = listOf("-Xjsr305=strict")
-            jvmTarget = targetCompatibility
+            jvmTarget = java.targetCompatibility.majorVersion
         }
+    }
+
+    withType<Test> {
+        useJUnitPlatform()
     }
 
     bootJar {
