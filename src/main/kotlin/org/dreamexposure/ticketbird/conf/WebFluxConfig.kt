@@ -2,7 +2,6 @@ package org.dreamexposure.ticketbird.conf
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import com.mysql.cj.jdbc.MysqlDataSource
 import discord4j.common.JacksonResources
 import discord4j.common.store.Store
 import discord4j.common.store.legacy.LegacyStoreLayout
@@ -24,9 +23,6 @@ import discord4j.store.jdk.JdkStoreService
 import discord4j.store.redis.RedisStoreService
 import io.lettuce.core.RedisClient
 import io.lettuce.core.RedisURI
-import io.r2dbc.spi.ConnectionFactories
-import io.r2dbc.spi.ConnectionFactory
-import io.r2dbc.spi.ConnectionFactoryOptions
 import org.dreamexposure.ticketbird.TicketBird
 import org.dreamexposure.ticketbird.database.DatabaseManager
 import org.dreamexposure.ticketbird.listeners.ReadyEventListener
@@ -55,7 +51,6 @@ import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver
 import org.thymeleaf.spring5.view.reactive.ThymeleafReactiveViewResolver
 import org.thymeleaf.templatemode.TemplateMode
 import javax.annotation.PreDestroy
-import javax.sql.DataSource
 
 @Configuration
 @EnableWebFlux
@@ -78,31 +73,6 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, 
 
     override fun setApplicationContext(applicationContext: ApplicationContext) {
         ctx = applicationContext
-    }
-
-    @Bean
-    fun r2dbcMySqlConnectionPool(): ConnectionFactory {
-        return ConnectionFactories.get(ConnectionFactoryOptions.builder()
-            .option(ConnectionFactoryOptions.DRIVER, "pool")
-            .option(ConnectionFactoryOptions.PROTOCOL, "mysql")
-            .option(ConnectionFactoryOptions.HOST, BotSettings.SQL_HOST.get())
-            .option(ConnectionFactoryOptions.PORT, BotSettings.SQL_PORT.get().toInt())
-            .option(ConnectionFactoryOptions.USER, BotSettings.SQL_USER.get())
-            .option(ConnectionFactoryOptions.PASSWORD, BotSettings.SQL_PASS.get())
-            .option(ConnectionFactoryOptions.DATABASE, BotSettings.SQL_DB.get())
-            .option(ConnectionFactoryOptions.SSL, true)
-            .build())
-    }
-
-    @Bean
-    fun jdbcMySqlConnection(): DataSource {
-        return MysqlDataSource().apply {
-            serverName = BotSettings.SQL_HOST.get()
-            port = BotSettings.SQL_PORT.get().toInt()
-            user = BotSettings.SQL_USER.get()
-            password = BotSettings.SQL_PASS.get()
-            sslMode = "REQUIRED"
-        }
     }
 
     @Bean

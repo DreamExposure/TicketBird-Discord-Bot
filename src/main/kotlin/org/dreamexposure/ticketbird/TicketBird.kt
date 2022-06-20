@@ -57,7 +57,7 @@ class TicketBird {
         fun main(args: Array<String>) {
             //Get settings
             val p = Properties()
-            p.load(FileReader("settings.properties"))
+            p.load(FileReader("application.properties"))
             BotSettings.init(p)
 
             //Start spring

@@ -13,11 +13,7 @@ fun MutableList<String>.asStringList(): String {
     return builder.toString()
 }
 
-fun MutableList<String>.setFromString(strList: String) {
-    this += strList.split(",").filter(String::isNotBlank)
-}
+fun String.listFromDb(): MutableList<String> = this.split(",").filter(String::isNotBlank).toMutableList()
 
 // For java
-fun setFromString(strList: String): MutableList<String> {
-    return strList.split(",").filter(String::isNotBlank).toMutableList()
-}
+fun setFromString(strList: String): MutableList<String> = strList.split(",").filter(String::isNotBlank).toMutableList()

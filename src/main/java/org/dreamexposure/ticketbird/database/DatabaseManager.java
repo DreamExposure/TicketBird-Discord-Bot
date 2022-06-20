@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings({"SqlResolve", "UnusedReturnValue", "SqlNoDataSourceInspection", "Duplicates"})
+@Deprecated
 public class DatabaseManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseManager.class);
 
