@@ -3,12 +3,13 @@ package org.dreamexposure.ticketbird.service
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.`object`.presence.ClientActivity
 import discord4j.core.`object`.presence.ClientPresence
+import kotlinx.coroutines.reactor.awaitSingleOrNull
+import kotlinx.coroutines.reactor.mono
 import org.dreamexposure.ticketbird.GitProperty
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -22,7 +23,7 @@ class StatusChanger(private val client: GatewayDiscordClient) : ApplicationRunne
         "TicketBird is on Patreon!",
     )
 
-    private fun update(): Mono<Void> {
+    private fun update() = mono {
         val currentIndex = index.get()
         //Update index
         if (currentIndex + 1 >= statuses.size)
@@ -35,7 +36,7 @@ class StatusChanger(private val client: GatewayDiscordClient) : ApplicationRunne
             .replace("{version}", GitProperty.TICKETBIRD_VERSION.value)
 
 
-        return client.updatePresence(ClientPresence.online(ClientActivity.playing(status)))
+        client.updatePresence(ClientPresence.online(ClientActivity.playing(status))).awaitSingleOrNull()
     }
 
     override fun run(args: ApplicationArguments?) {

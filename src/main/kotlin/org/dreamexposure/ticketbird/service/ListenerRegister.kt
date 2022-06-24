@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 
 @Component
+@Deprecated(message = "Use slash commands")
 class ListenerRegister(private val client: GatewayDiscordClient): ApplicationRunner {
     override fun run(args: ApplicationArguments?) {
         val onCommand = client.on(MessageCreateEvent::class.java)

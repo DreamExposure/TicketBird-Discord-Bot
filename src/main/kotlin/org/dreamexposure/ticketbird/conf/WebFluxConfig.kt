@@ -7,7 +7,7 @@ import discord4j.common.store.Store
 import discord4j.common.store.legacy.LegacyStoreLayout
 import discord4j.core.DiscordClientBuilder
 import discord4j.core.GatewayDiscordClient
-import discord4j.core.event.domain.lifecycle.ReadyEvent
+import discord4j.core.event.domain.Event
 import discord4j.core.`object`.presence.ClientActivity
 import discord4j.core.`object`.presence.ClientPresence
 import discord4j.core.shard.MemberRequestFilter
@@ -23,9 +23,10 @@ import discord4j.store.jdk.JdkStoreService
 import discord4j.store.redis.RedisStoreService
 import io.lettuce.core.RedisClient
 import io.lettuce.core.RedisURI
+import kotlinx.coroutines.reactor.mono
 import org.dreamexposure.ticketbird.TicketBird
 import org.dreamexposure.ticketbird.database.DatabaseManager
-import org.dreamexposure.ticketbird.listeners.ReadyEventListener
+import org.dreamexposure.ticketbird.listeners.EventListener
 import org.dreamexposure.ticketbird.logger.LOGGER
 import org.dreamexposure.ticketbird.utils.GlobalVars
 import org.springframework.boot.web.server.ConfigurableWebServerFactory
@@ -50,6 +51,7 @@ import org.thymeleaf.spring5.SpringWebFluxTemplateEngine
 import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver
 import org.thymeleaf.spring5.view.reactive.ThymeleafReactiveViewResolver
 import org.thymeleaf.templatemode.TemplateMode
+import reactor.core.publisher.Flux
 import javax.annotation.PreDestroy
 
 @Configuration
@@ -121,7 +123,7 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, 
     }
 
     @Bean
-    fun discordGatewayClient(): GatewayDiscordClient {
+    fun discordGatewayClient(listeners: List<EventListener<Event>>): GatewayDiscordClient {
         return DiscordClientBuilder.create(BotSettings.TOKEN.get())
             .build().gateway()
             .setEnabledIntents(getIntents())
@@ -129,7 +131,11 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, 
             .setStore(Store.fromLayout(LegacyStoreLayout.of(getStores())))
             .setInitialPresence { ClientPresence.doNotDisturb(ClientActivity.playing("Booting Up!")) }
             .setMemberRequestFilter(MemberRequestFilter.none())
-            .withEventDispatcher { it.on(ReadyEvent::class.java, ReadyEventListener::handle) }
+            .withEventDispatcher { dispatcher ->
+                Flux.fromIterable(listeners).flatMap {
+                    dispatcher.on(it.genericType) { event -> mono { it.handle(event) } }
+                }
+            }
             .login()
             .block()!!
     }
@@ -139,7 +145,6 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, 
         return gatewayDiscordClient.restClient
     }
 
-
     @PreDestroy
     fun onShutdown(client: GatewayDiscordClient) {
         LOGGER.info(GlobalVars.STATUS, "Shutting down shard")
@@ -148,7 +153,6 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, 
 
         client.logout().subscribe()
     }
-
 
     private fun getStrategy(): ShardingStrategy {
         return ShardingStrategy.builder()

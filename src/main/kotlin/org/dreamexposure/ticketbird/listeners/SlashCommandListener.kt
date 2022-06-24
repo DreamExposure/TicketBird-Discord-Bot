@@ -2,47 +2,31 @@ package org.dreamexposure.ticketbird.listeners
 
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
+import kotlinx.coroutines.reactor.awaitSingleOrNull
+import org.dreamexposure.ticketbird.business.GuildSettingsService
 import org.dreamexposure.ticketbird.command.SlashCommand
-import org.dreamexposure.ticketbird.database.DatabaseManager
-import org.springframework.boot.ApplicationArguments
-import org.springframework.boot.ApplicationRunner
-import org.springframework.context.ApplicationContext
-import org.springframework.context.ApplicationContextAware
 import org.springframework.stereotype.Component
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
-import reactor.core.scheduler.Schedulers
 
 @Component
-class SlashCommandListener(val client: GatewayDiscordClient): ApplicationRunner, ApplicationContextAware {
-    private var cmds: List<SlashCommand> = listOf()
-
-    fun handle(event: ChatInputInteractionEvent): Mono<Void> {
+class SlashCommandListener(
+    val client: GatewayDiscordClient,
+    val settingsService: GuildSettingsService,
+    val commands: List<SlashCommand>
+): EventListener<ChatInputInteractionEvent> {
+    override suspend fun handle(event: ChatInputInteractionEvent) {
         if (!event.interaction.guildId.isPresent) {
-            return event.reply("Commands not supported in DMs.")
+            event.reply("Commands not supported in DMs.").awaitSingleOrNull()
+            return
         }
 
-        return Flux.fromIterable(cmds)
-            .filter { it.name == event.commandName }
-            .next()
-            .flatMap { command ->
-                val mono =
-                    if (command.ephemeral) event.deferReply().withEphemeral(true)
-                    else event.deferReply()
+        val command = commands.firstOrNull { it.name == event.commandName }
 
-                return@flatMap mono.then(Mono.fromCallable {
-                    DatabaseManager.getManager().getSettings(event.interaction.guildId.get())
-                }.subscribeOn(Schedulers.boundedElastic())).flatMap { settings ->
-                    command.handle(event, settings)
-                }.switchIfEmpty(event.createFollowup("An unknown error occurred.").withEphemeral(true))
-            }.then()
-    }
+        if (command != null) {
+            event.deferReply().withEphemeral(command.ephemeral).awaitSingleOrNull()
 
-    override fun run(args: ApplicationArguments?) {
-        client.on(ChatInputInteractionEvent::class.java, this::handle).subscribe()
-    }
-
-    override fun setApplicationContext(applicationContext: ApplicationContext) {
-        cmds = applicationContext.getBeansOfType(SlashCommand::class.java).values.toList()
+            command.handle(event, settingsService.getGuildSettings(event.interaction.guildId.get()))
+        } else {
+            event.createFollowup("An unknown error occurred").withEphemeral(true).awaitSingleOrNull()
+        }
     }
 }
