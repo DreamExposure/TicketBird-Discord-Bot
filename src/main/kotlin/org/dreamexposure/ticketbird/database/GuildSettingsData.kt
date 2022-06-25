@@ -8,27 +8,27 @@ data class GuildSettingsData(
     @Id
     val guildId: Long,
 
-    var lang: String = "English",
+    var lang: String,
 
-    var prefix: String = "=",
+    var prefix: String,
 
-    var patronGuild: Boolean = false,
+    var patronGuild: Boolean,
 
-    var devGuild: Boolean = false,
+    var devGuild: Boolean,
 
-    var useProjects: Boolean = false,
+    var useProjects: Boolean,
 
-    var awaitingCategory: Long? = null,
-    var respondedCategory: Long? = null,
-    var holdCategory: Long? = null,
-    var closeCategory: Long? = null,
+    var awaitingCategory: Long?,
+    var respondedCategory: Long?,
+    var holdCategory: Long?,
+    var closeCategory: Long?,
 
-    var supportChannel: Long? = null,
-    var staticMessage: Long? = null,
+    var supportChannel: Long?,
+    var staticMessage: Long?,
 
-    var nextId: Int = 1,
+    var nextId: Int,
 
-    var closedTotal: Int = 0,
+    var closedTotal: Int,
 
-    val staff: String = "",
+    val staff: String,
 )
