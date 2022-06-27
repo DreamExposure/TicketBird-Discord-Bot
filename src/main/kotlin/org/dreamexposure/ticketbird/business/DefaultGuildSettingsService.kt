@@ -25,7 +25,7 @@ class DefaultGuildSettingsService(private val settingsRepository: GuildSettingsR
     override suspend fun createGuildSettings(settings: GuildSettings): GuildSettings {
         return settingsRepository.save(GuildSettingsData(
             guildId = settings.guildId.asLong(),
-            lang = settings.lang.toLanguageTag(),
+            lang = settings.locale.toLanguageTag(),
             prefix = settings.prefix,
             devGuild = settings.devGuild,
             patronGuild = settings.patronGuild,
@@ -47,7 +47,7 @@ class DefaultGuildSettingsService(private val settingsRepository: GuildSettingsR
     override suspend fun updateGuildSettings(settings: GuildSettings) {
         settingsRepository.updateById(
             guildId = settings.guildId.asLong(),
-            lang = settings.lang.toLanguageTag(),
+            lang = settings.locale.toLanguageTag(),
             prefix = settings.prefix,
             devGuild = settings.devGuild,
             patronGuild = settings.patronGuild,

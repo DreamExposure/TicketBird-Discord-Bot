@@ -6,6 +6,7 @@ import discord4j.core.object.entity.channel.Category;
 import discord4j.core.object.entity.channel.TextChannel;
 import org.springframework.lang.Nullable;
 
+@Deprecated
 public class ChannelManager {
     public static Category createCategory(String name, Guild guild) {
         return guild.createCategory(name)

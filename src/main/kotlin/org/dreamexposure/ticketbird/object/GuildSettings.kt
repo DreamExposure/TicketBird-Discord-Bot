@@ -10,7 +10,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 
 data class GuildSettings(
     val guildId: Snowflake,
-    var lang: Locale = Locale.ENGLISH,
+    var locale: Locale = Locale.ENGLISH,
     var prefix: String = "=",
     var patronGuild: Boolean = false,
     var devGuild: Boolean = false,
@@ -29,7 +29,7 @@ data class GuildSettings(
 ) {
     constructor(data: GuildSettingsData) : this(
         guildId = Snowflake.of(data.guildId),
-        lang = data.lang.handleLocaleDebt(),
+        locale = data.lang.handleLocaleDebt(),
         prefix = data.prefix,
         patronGuild = data.patronGuild,
         useProjects = data.useProjects,

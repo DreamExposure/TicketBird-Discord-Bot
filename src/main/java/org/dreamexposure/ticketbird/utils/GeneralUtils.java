@@ -14,12 +14,12 @@ import org.dreamexposure.ticketbird.object.GuildSettings;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import reactor.function.TupleUtils;
-import reactor.math.MathFlux;
 
 import java.time.Instant;
 import java.util.Random;
 
 @SuppressWarnings({"ConstantConditions", "Duplicates"})
+@Deprecated
 public class GeneralUtils {
     /**
      * Gets the contents of the message at a set offset.
@@ -67,18 +67,6 @@ public class GeneralUtils {
             rightFace.append(alphabet.charAt(random.nextInt(alphabet.length())));
         }
         return str.replace("<<", leftFace.toString()).replace(">>", rightFace.toString()).replace("<", "").replace(">", "").replace(leftFace.toString(), "<").replace(rightFace.toString(), ">");
-    }
-
-    public static Mono<Long> getOpenTicketCount(Guild guild, GuildSettings settings) {
-        var awaiting = guild.getChannelById(settings.getAwaitingCategory())
-            .ofType(Category.class)
-            .flatMap(it -> it.getChannels().count());
-        var responded = guild.getChannelById(settings.getRespondedCategory())
-            .ofType(Category.class)
-            .flatMap(it -> it.getChannels().count());
-
-        return MathFlux.sumLong(awaiting.mergeWith(responded));
-
     }
 
     public static Mono<EmbedCreateSpec> getStaticSupportMessageEmbed(Guild guild, GuildSettings settings) {

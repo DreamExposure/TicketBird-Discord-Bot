@@ -2,11 +2,10 @@ package org.dreamexposure.ticketbird
 
 import org.dreamexposure.ticketbird.conf.BotSettings
 import org.dreamexposure.ticketbird.logger.LOGGER
-import org.dreamexposure.ticketbird.message.MessageManager
 import org.dreamexposure.ticketbird.utils.GlobalVars
-import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.session.SessionAutoConfiguration
+import org.springframework.boot.builder.SpringApplicationBuilder
 import org.springframework.stereotype.Component
 import java.io.FileReader
 import java.util.*
@@ -62,16 +61,13 @@ class TicketBird {
 
             //Start spring
             try {
-                val app = SpringApplication(TicketBird::class.java)
-                app.setAdditionalProfiles(BotSettings.PROFILE.get())
-                app.run(*args)
+                SpringApplicationBuilder(TicketBird::class.java)
+                    .profiles(BotSettings.PROFILE.get())
+                    .run(*args)
             } catch (e: Exception) {
                 e.printStackTrace()
                 LOGGER.error(GlobalVars.DEFAULT, "Spring error!", e)
             }
-
-            //Load language files.
-            MessageManager.reloadLangs()
         }
     }
 }

@@ -6,6 +6,7 @@ import discord4j.core.object.entity.Member;
 import reactor.core.publisher.Mono;
 
 @SuppressWarnings("ConstantConditions")
+@Deprecated
 public class UserUtils {
     public static Snowflake getUser(String toLookFor, Guild guild) {
         toLookFor = GeneralUtils.trim(toLookFor);

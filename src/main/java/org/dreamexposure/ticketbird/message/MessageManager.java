@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings({"UnusedReturnValue", "unused"})
+@Deprecated
 public class MessageManager {
     private final static Logger LOGGER = LoggerFactory.getLogger(MessageManager.class);
     private static JSONObject langs;
