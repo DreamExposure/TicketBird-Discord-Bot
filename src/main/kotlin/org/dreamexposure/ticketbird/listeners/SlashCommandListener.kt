@@ -4,18 +4,21 @@ import discord4j.core.GatewayDiscordClient
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.GuildSettingsService
+import org.dreamexposure.ticketbird.business.LocaleService
 import org.dreamexposure.ticketbird.command.SlashCommand
 import org.springframework.stereotype.Component
+import java.util.*
 
 @Component
 class SlashCommandListener(
     val client: GatewayDiscordClient,
     val settingsService: GuildSettingsService,
+    val localeService: LocaleService,
     val commands: List<SlashCommand>
 ): EventListener<ChatInputInteractionEvent> {
     override suspend fun handle(event: ChatInputInteractionEvent) {
         if (!event.interaction.guildId.isPresent) {
-            event.reply("Commands not supported in DMs.").awaitSingleOrNull()
+            event.reply(localeService.getString(Locale.ENGLISH, "command.dm-not-supported")).awaitSingleOrNull()
             return
         }
 
@@ -26,7 +29,9 @@ class SlashCommandListener(
 
             command.handle(event, settingsService.getGuildSettings(event.interaction.guildId.get()))
         } else {
-            event.createFollowup("An unknown error occurred").withEphemeral(true).awaitSingleOrNull()
+            event.createFollowup(localeService.getString(Locale.ENGLISH, "generic.unknown-error"))
+                .withEphemeral(true)
+                .awaitSingleOrNull()
         }
     }
 }

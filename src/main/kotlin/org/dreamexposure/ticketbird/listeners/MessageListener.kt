@@ -7,9 +7,9 @@ import discord4j.core.`object`.entity.channel.TextChannel
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.GuildSettingsService
+import org.dreamexposure.ticketbird.business.LocaleService
 import org.dreamexposure.ticketbird.business.StaticMessageService
 import org.dreamexposure.ticketbird.business.TicketService
-import org.dreamexposure.ticketbird.message.MessageManager
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 
@@ -18,6 +18,7 @@ class MessageListener(
     private val settingsService: GuildSettingsService,
     private val ticketService: TicketService,
     private val staticMessageService: StaticMessageService,
+    private val localeService: LocaleService,
 ) : EventListener<MessageCreateEvent> {
 
     override suspend fun handle(event: MessageCreateEvent) {
@@ -49,7 +50,7 @@ class MessageListener(
                     ticketService.updateTicket(ticket)
                     Mono.`when`(
                         channel.edit().withParentIdOrNull(settings.respondedCategory),
-                        channel.createMessage(MessageManager.getMessage("Ticket.Reopen.Everyone", settings)),
+                        channel.createMessage(localeService.getString(settings.locale, "ticket.reopen.everyone")),
                     ).awaitSingleOrNull()
                     staticMessageService.update(settings.guildId)
                 } else {
@@ -59,7 +60,7 @@ class MessageListener(
                     ticketService.updateTicket(ticket)
                     Mono.`when`(
                         channel.edit().withParentIdOrNull(settings.awaitingCategory),
-                        channel.createMessage(MessageManager.getMessage("Ticket.Reopen.Everyone", settings)),
+                        channel.createMessage(localeService.getString(settings.locale, "ticket.reopen.everyone")),
                     ).awaitSingleOrNull()
                     staticMessageService.update(settings.guildId)
                 }
@@ -73,7 +74,7 @@ class MessageListener(
                     ticketService.updateTicket(ticket)
                     Mono.`when`(
                         channel.edit().withParentIdOrNull(settings.respondedCategory),
-                        channel.createMessage(MessageManager.getMessage("Ticket.Reopen.Creator", "%creator%", "<@${ticket.creator.asLong()}>", settings)),
+                        channel.createMessage(localeService.getString(settings.locale, "ticket.reopen.creator", ticket.creator.asString())),
                     ).awaitSingleOrNull()
                     staticMessageService.update(settings.guildId)
                 } else {
@@ -83,7 +84,7 @@ class MessageListener(
                     ticketService.updateTicket(ticket)
                     Mono.`when`(
                         channel.edit().withParentIdOrNull(settings.awaitingCategory),
-                        channel.createMessage(MessageManager.getMessage("Ticket.Reopen.Creator", "%creator%", "<@${ticket.creator.asLong()}>", settings)),
+                        channel.createMessage(localeService.getString(settings.locale, "ticket.reopen.creator", ticket.creator.asString())),
                     ).awaitSingleOrNull()
                     staticMessageService.update(settings.guildId)
                 }

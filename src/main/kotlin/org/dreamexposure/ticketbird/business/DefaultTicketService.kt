@@ -1,6 +1,8 @@
 package org.dreamexposure.ticketbird.business
 
 import discord4j.common.util.Snowflake
+import discord4j.core.GatewayDiscordClient
+import discord4j.core.`object`.entity.channel.TextChannel
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.database.TicketData
@@ -9,7 +11,12 @@ import org.dreamexposure.ticketbird.`object`.Ticket
 import org.springframework.stereotype.Component
 
 @Component
-class DefaultTicketService(private val ticketRepository: TicketRepository): TicketService {
+class DefaultTicketService(
+    private val ticketRepository: TicketRepository,
+    private val discordClient: GatewayDiscordClient,
+    private val settingsService: GuildSettingsService,
+    private val localeService: LocaleService,
+) : TicketService {
     override suspend fun getTicket(guildId: Snowflake, number: Int): Ticket? {
         return ticketRepository.findByGuildIdAndNumber(guildId.asLong(), number)
             .map(::Ticket)
@@ -59,5 +66,20 @@ class DefaultTicketService(private val ticketRepository: TicketRepository): Tick
 
     override suspend fun deleteAllTickets(guildId: Snowflake) {
         ticketRepository.deleteAllByGuildId(guildId.asLong()).awaitSingleOrNull()
+    }
+
+    override suspend fun closeTicket(guildId: Snowflake, channelId: Snowflake, inactive: Boolean) {
+        val settings = settingsService.getGuildSettings(guildId)
+        val ticket = getTicket(guildId, channelId) ?: return
+        val channel = discordClient.getChannelById(channelId).ofType(TextChannel::class.java).awaitSingle()
+
+        channel.edit().withParentIdOrNull(settings.closeCategory)
+            .doOnNext { ticket.category = settings.closeCategory!! }
+            .awaitSingle()
+        updateTicket(ticket)
+
+        val field = if (inactive) "ticket.close.inactive" else "ticket.close.generic"
+
+        channel.createMessage(localeService.getString(settings.locale, field, ticket.creator.asString())).awaitSingleOrNull()
     }
 }

@@ -7,9 +7,9 @@ import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.reactor.mono
 import org.dreamexposure.ticketbird.business.GuildSettingsService
+import org.dreamexposure.ticketbird.business.LocaleService
 import org.dreamexposure.ticketbird.business.TicketService
 import org.dreamexposure.ticketbird.logger.LOGGER
-import org.dreamexposure.ticketbird.message.MessageManager
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
 import org.springframework.stereotype.Component
@@ -22,6 +22,7 @@ class ActivityMonitor(
     private val client: GatewayDiscordClient,
     private val settingsService: GuildSettingsService,
     private val ticketService: TicketService,
+    private val localeService: LocaleService,
 ) : ApplicationRunner {
 
     override fun run(args: ApplicationArguments?) {
@@ -70,16 +71,7 @@ class ActivityMonitor(
 
                     if (ticket != null && System.currentTimeMillis() - ticket.lastActivity > Duration.ofDays(7).toMillis()) {
                         // Inactive, auto-close
-                        openTicketChannel.edit().withParentIdOrNull(settings.closeCategory)
-                            .doOnNext { ticket.category = settings.closeCategory!! }
-                            .awaitSingle()
-
-                        ticketService.updateTicket(ticket)
-                        openTicketChannel.createMessage(MessageManager.getMessage(
-                            "Tickets.Close.Inactive",
-                            "%creator%", "<@${ticket.creator}>",
-                            settings
-                        )).awaitSingleOrNull()
+                        ticketService.closeTicket(settings.guildId, ticket.channel, inactive = true)
                     }
                 }
             }

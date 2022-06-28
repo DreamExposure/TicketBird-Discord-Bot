@@ -17,4 +17,6 @@ interface TicketService {
     suspend fun deleteTicket(guildId: Snowflake, number: Int)
 
     suspend fun deleteAllTickets(guildId: Snowflake)
+
+    suspend fun closeTicket(guildId: Snowflake, channelId: Snowflake, inactive: Boolean = false)
 }
