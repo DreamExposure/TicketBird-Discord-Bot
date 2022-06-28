@@ -1,8 +1,9 @@
 package org.dreamexposure.ticketbird.business
 
+import discord4j.common.util.Snowflake
+import discord4j.core.GatewayDiscordClient
 import discord4j.core.`object`.component.ActionRow
 import discord4j.core.`object`.component.Button
-import discord4j.core.`object`.entity.Guild
 import discord4j.core.`object`.entity.Message
 import discord4j.core.`object`.entity.channel.Category
 import discord4j.core.`object`.entity.channel.TextChannel
@@ -10,25 +11,31 @@ import discord4j.core.`object`.reaction.ReactionEmoji
 import discord4j.core.spec.EmbedCreateSpec
 import discord4j.rest.http.client.ClientException
 import kotlinx.coroutines.reactor.awaitSingle
-import org.dreamexposure.ticketbird.`object`.GuildSettings
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.utils.GlobalVars.embedColor
 import org.dreamexposure.ticketbird.utils.GlobalVars.iconUrl
 import org.springframework.stereotype.Component
 import java.time.Instant
 
 @Component
-class DefaultStaticMessageService(private val localeService: LocaleService) : StaticMessageService {
-    override suspend fun getEmbed(guild: Guild, settings: GuildSettings): EmbedCreateSpec? {
+class DefaultStaticMessageService(
+    private val localeService: LocaleService,
+    private val settingsService: GuildSettingsService,
+    private val discordClient: GatewayDiscordClient,
+) : StaticMessageService {
+    override suspend fun getEmbed(guildId: Snowflake): EmbedCreateSpec? {
+        val settings = settingsService.getGuildSettings(guildId)
+
         if (settings.awaitingCategory == null || settings.respondedCategory == null || settings.holdCategory == null)
             return null
 
-        val awaiting = guild.getChannelById(settings.awaitingCategory!!).ofType(Category::class.java)
+        val awaiting = discordClient.getChannelById(settings.awaitingCategory!!).ofType(Category::class.java)
             .flatMap { it.channels.count() }
             .awaitSingle()
-        val responded = guild.getChannelById(settings.respondedCategory!!).ofType(Category::class.java)
+        val responded = discordClient.getChannelById(settings.respondedCategory!!).ofType(Category::class.java)
             .flatMap { it.channels.count() }
             .awaitSingle()
-        val hold = guild.getChannelById(settings.holdCategory!!).ofType(Category::class.java)
+        val hold = discordClient.getChannelById(settings.holdCategory!!).ofType(Category::class.java)
             .flatMap { it.channels.count() }
             .awaitSingle()
 
@@ -49,8 +56,10 @@ class DefaultStaticMessageService(private val localeService: LocaleService) : St
             .build()
     }
 
-    //TODO: Decide how I actually want to handle this
-    override suspend fun update(guild: Guild, settings: GuildSettings): Message? {
+    override suspend fun update(guildId: Snowflake): Message? {
+        val settings = settingsService.getGuildSettings(guildId)
+
+        // Cannot run if support channel or static message not set
         if (settings.supportChannel == null || settings.staticMessage == null) return null
 
         val button = Button.primary(
@@ -59,23 +68,41 @@ class DefaultStaticMessageService(private val localeService: LocaleService) : St
             localeService.getString(settings.locale, "button.open-ticket")
         )
 
-        val embed = getEmbed(guild, settings) ?: return null
-
-        guild.getChannelById(settings.supportChannel!!).ofType(TextChannel::class.java)
-
-        guild.getChannelById(settings.supportChannel!!).ofType(TextChannel::class.java).flatMap { channel ->
-            channel.getMessageById(settings.staticMessage!!).flatMap { message ->
-                // Message exists, just needs the edit
-                message.edit().withEmbeds(embed).withComponents(ActionRow.of(button))
-            }.onErrorResume(ClientException.isStatusCode(404)) {
-                // Message deleted, recreate it
-                val message = channel.createMessage(embed).withComponents(ActionRow.of(button)).awaitSingle()
-
-                TODO()
+        // Get channel
+        val channel = try {
+            discordClient.getChannelById(settings.supportChannel!!).ofType(TextChannel::class.java).awaitSingle()
+        } catch (ex: ClientException) {
+            if (ex.status.code() == 403 || ex.status.code() == 404) {
+                // Permission denied or channel not found
+                settings.staticMessage = null
+                settingsService.updateGuildSettings(settings)
             }
+            return null
         }
 
+        // Get message
+        val message = try {
+            channel.getMessageById(settings.staticMessage!!).awaitSingleOrNull()
+        } catch (ex: ClientException) {
+            null
+        }
 
-        TODO()
+        val embed = getEmbed(guildId) ?: return null
+        return if (message != null) {
+            // Update
+            message.edit()
+                .withEmbeds(embed)
+                .withComponents(ActionRow.of(button))
+                .awaitSingleOrNull()
+        } else {
+            // Static message deleted, create new one, update settings
+            val newMessage = channel.createMessage(embed)
+                .withComponents(ActionRow.of(button))
+                .doOnNext { settings.staticMessage = it.id }
+                .awaitSingle()
+
+            settingsService.updateGuildSettings(settings)
+            newMessage
+        }
     }
 }

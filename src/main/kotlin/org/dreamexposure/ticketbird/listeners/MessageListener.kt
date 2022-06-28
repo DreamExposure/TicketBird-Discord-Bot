@@ -7,9 +7,9 @@ import discord4j.core.`object`.entity.channel.TextChannel
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.GuildSettingsService
+import org.dreamexposure.ticketbird.business.StaticMessageService
 import org.dreamexposure.ticketbird.business.TicketService
 import org.dreamexposure.ticketbird.message.MessageManager
-import org.dreamexposure.ticketbird.utils.GeneralUtils
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 
@@ -17,6 +17,7 @@ import reactor.core.publisher.Mono
 class MessageListener(
     private val settingsService: GuildSettingsService,
     private val ticketService: TicketService,
+    private val staticMessageService: StaticMessageService,
 ) : EventListener<MessageCreateEvent> {
 
     override suspend fun handle(event: MessageCreateEvent) {
@@ -49,9 +50,8 @@ class MessageListener(
                     Mono.`when`(
                         channel.edit().withParentIdOrNull(settings.respondedCategory),
                         channel.createMessage(MessageManager.getMessage("Ticket.Reopen.Everyone", settings)),
-                        event.guild.flatMap { GeneralUtils.updateStaticMessage(it, settings) }
                     ).awaitSingleOrNull()
-
+                    staticMessageService.update(settings.guildId)
                 } else {
                     ticket.category = settings.awaitingCategory!!
                     ticket.lastActivity = System.currentTimeMillis()
@@ -60,8 +60,8 @@ class MessageListener(
                     Mono.`when`(
                         channel.edit().withParentIdOrNull(settings.awaitingCategory),
                         channel.createMessage(MessageManager.getMessage("Ticket.Reopen.Everyone", settings)),
-                        event.guild.flatMap { GeneralUtils.updateStaticMessage(it, settings) }
                     ).awaitSingleOrNull()
+                    staticMessageService.update(settings.guildId)
                 }
             }
             catId == settings.holdCategory -> {
@@ -74,8 +74,8 @@ class MessageListener(
                     Mono.`when`(
                         channel.edit().withParentIdOrNull(settings.respondedCategory),
                         channel.createMessage(MessageManager.getMessage("Ticket.Reopen.Creator", "%creator%", "<@${ticket.creator.asLong()}>", settings)),
-                        event.guild.flatMap { GeneralUtils.updateStaticMessage(it, settings) }
                     ).awaitSingleOrNull()
+                    staticMessageService.update(settings.guildId)
                 } else {
                     ticket.category = settings.awaitingCategory!!
                     ticket.lastActivity = System.currentTimeMillis()
@@ -84,8 +84,8 @@ class MessageListener(
                     Mono.`when`(
                         channel.edit().withParentIdOrNull(settings.awaitingCategory),
                         channel.createMessage(MessageManager.getMessage("Ticket.Reopen.Creator", "%creator%", "<@${ticket.creator.asLong()}>", settings)),
-                        event.guild.flatMap { GeneralUtils.updateStaticMessage(it, settings) }
                     ).awaitSingleOrNull()
+                    staticMessageService.update(settings.guildId)
                 }
             }
             catId == settings.awaitingCategory && settings.staff.contains(authorId.asString()) -> {
