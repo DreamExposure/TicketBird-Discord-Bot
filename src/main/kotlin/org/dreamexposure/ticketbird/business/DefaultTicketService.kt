@@ -69,8 +69,8 @@ class DefaultTicketService(
     }
 
     override suspend fun closeTicket(guildId: Snowflake, channelId: Snowflake, inactive: Boolean) {
+        val ticket = getTicket(guildId, channelId) ?: return // return if ticket does not exist
         val settings = settingsService.getGuildSettings(guildId)
-        val ticket = getTicket(guildId, channelId) ?: return
         val channel = discordClient.getChannelById(channelId).ofType(TextChannel::class.java).awaitSingle()
 
         channel.edit().withParentIdOrNull(settings.closeCategory)
@@ -80,6 +80,16 @@ class DefaultTicketService(
 
         val field = if (inactive) "ticket.close.inactive" else "ticket.close.generic"
 
+
         channel.createMessage(localeService.getString(settings.locale, field, ticket.creator.asString())).awaitSingleOrNull()
+    }
+
+    override suspend fun purgeTicket(guildId: Snowflake, channelId: Snowflake) {
+        val ticket = getTicket(guildId, channelId) ?: return // return if ticket does not exist
+        val settings = settingsService.getGuildSettings(guildId)
+        val channel = discordClient.getChannelById(channelId).ofType(TextChannel::class.java).awaitSingle()
+
+        channel.delete(localeService.getString(settings.locale, "ticket.delete.time")).awaitSingleOrNull()
+        deleteTicket(guildId, ticket.number)
     }
 }

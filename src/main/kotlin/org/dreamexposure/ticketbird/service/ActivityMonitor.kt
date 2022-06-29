@@ -4,10 +4,8 @@ import discord4j.core.GatewayDiscordClient
 import discord4j.core.`object`.entity.channel.Category
 import discord4j.core.`object`.entity.channel.TextChannel
 import kotlinx.coroutines.reactor.awaitSingle
-import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.reactor.mono
 import org.dreamexposure.ticketbird.business.GuildSettingsService
-import org.dreamexposure.ticketbird.business.LocaleService
 import org.dreamexposure.ticketbird.business.TicketService
 import org.dreamexposure.ticketbird.logger.LOGGER
 import org.springframework.boot.ApplicationArguments
@@ -22,7 +20,6 @@ class ActivityMonitor(
     private val client: GatewayDiscordClient,
     private val settingsService: GuildSettingsService,
     private val ticketService: TicketService,
-    private val localeService: LocaleService,
 ) : ApplicationRunner {
 
     override fun run(args: ApplicationArguments?) {
@@ -47,11 +44,8 @@ class ActivityMonitor(
                 for (closedTicketChannel in closedCategoryChannels) {
                     val ticket = ticketService.getTicket(guild.id, closedTicketChannel.id)
                     if (ticket != null && System.currentTimeMillis() - ticket.lastActivity > Duration.ofDays(1).toMillis()) {
-                        // Purge ticket
-                        closedTicketChannel.delete("Ticket closed for 24+ hours").awaitSingleOrNull()
-                        settings.totalClosed++
-                        settingsService.updateGuildSettings(settings) // Settings must already exist in this state
-                        ticketService.deleteTicket(guild.id, ticket.number)
+                        // Ticket closed for over 24 hours, purge
+                        ticketService.purgeTicket(settings.guildId, ticket.channel)
                     }
                 }
 

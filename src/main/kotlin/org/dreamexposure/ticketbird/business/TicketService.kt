@@ -19,4 +19,9 @@ interface TicketService {
     suspend fun deleteAllTickets(guildId: Snowflake)
 
     suspend fun closeTicket(guildId: Snowflake, channelId: Snowflake, inactive: Boolean = false)
+
+    suspend fun purgeTicket(guildId: Snowflake, channelId: Snowflake)
+
+    //TODO: Figure out how I want to handle the contract
+    suspend fun moveTicket(guildId: Snowflake, channelId: Snowflake, toChannel: Snowflake, withActivity: Boolean = true)
 }
