@@ -84,6 +84,20 @@ class DefaultTicketService(
         channel.createMessage(localeService.getString(settings.locale, field, ticket.creator.asString())).awaitSingleOrNull()
     }
 
+    override suspend fun holdTicket(guildId: Snowflake, channelId: Snowflake) {
+        val ticket = getTicket(guildId, channelId) ?: return // return if ticket does not exist
+        val settings = settingsService.getGuildSettings(guildId)
+        val channel = discordClient.getChannelById(channelId).ofType(TextChannel::class.java).awaitSingle()
+
+        channel.edit().withParentIdOrNull(settings.holdCategory)
+            .doOnNext { ticket.category = settings.holdCategory!! }
+            .awaitSingle()
+
+        channel.createMessage(
+            localeService.getString(settings.locale, "ticket.hold.creator", ticket.creator.asString())
+        ).awaitSingleOrNull()
+    }
+
     override suspend fun purgeTicket(guildId: Snowflake, channelId: Snowflake) {
         val ticket = getTicket(guildId, channelId) ?: return // return if ticket does not exist
         val settings = settingsService.getGuildSettings(guildId)
