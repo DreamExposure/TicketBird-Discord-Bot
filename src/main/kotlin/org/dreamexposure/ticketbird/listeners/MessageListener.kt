@@ -42,35 +42,32 @@ class MessageListener(
         when {
             catId == settings.closeCategory -> {
                 // Closed - move to correct category, send reopened message, update static msg
-                if (settings.staff.contains(authorId.asString())) {
-                    ticketService.moveTicket(settings.guildId, channel.id, settings.respondedCategory!!, withActivity = true)
-                    channel.createMessage(
-                        localeService.getString(settings.locale, "ticket.reopen.everyone")
-                    ).awaitSingleOrNull()
-                    staticMessageService.update(settings.guildId)
+                val categoryTo = if (settings.staff.contains(authorId.asString())) {
+                    settings.respondedCategory!!
                 } else {
-                    ticketService.moveTicket(settings.guildId, channel.id, settings.awaitingCategory!!, withActivity = true)
-                    channel.createMessage(
-                        localeService.getString(settings.locale, "ticket.reopen.everyone")
-                    ).awaitSingleOrNull()
-                    staticMessageService.update(settings.guildId)
+                    settings.awaitingCategory!!
                 }
+
+                ticketService.moveTicket(settings.guildId, channel.id, categoryTo, withActivity = true)
+                channel.createMessage(
+                        localeService.getString(settings.locale, "ticket.reopen.everyone")
+                ).awaitSingleOrNull()
+                staticMessageService.update(settings.guildId)
             }
             catId == settings.holdCategory -> {
                 // on hold move to correct category and send un-hold message + update static msg
-                if (settings.staff.contains(authorId.asString())) {
-                    ticketService.moveTicket(settings.guildId, channel.id, settings.respondedCategory!!, withActivity = true)
-                    channel.createMessage(
-                        localeService.getString(settings.locale, "ticket.reopen.creator", ticket.creator.asString())
-                    ).awaitSingleOrNull()
-                    staticMessageService.update(settings.guildId)
+                val categoryTo = if (settings.staff.contains(authorId.asString())) {
+                    settings.respondedCategory!! // staff responded
                 } else {
-                    ticketService.moveTicket(settings.guildId, channel.id, settings.awaitingCategory!!, withActivity = true)
-                    channel.createMessage(
-                        localeService.getString(settings.locale, "ticket.reopen.creator", ticket.creator.asString())
-                    ).awaitSingleOrNull()
-                    staticMessageService.update(settings.guildId)
+                    settings.awaitingCategory!! // non-staff responded
                 }
+
+
+                ticketService.moveTicket(settings.guildId, channel.id, categoryTo, withActivity = true)
+                channel.createMessage(
+                        localeService.getString(settings.locale, "ticket.reopen.creator", ticket.creator.asString())
+                ).awaitSingleOrNull()
+                staticMessageService.update(settings.guildId)
             }
             catId == settings.awaitingCategory && settings.staff.contains(authorId.asString()) -> {
                 // in awaiting + staff response, move to responded
