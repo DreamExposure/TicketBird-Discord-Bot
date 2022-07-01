@@ -11,7 +11,6 @@ import org.dreamexposure.ticketbird.business.LocaleService
 import org.dreamexposure.ticketbird.business.StaticMessageService
 import org.dreamexposure.ticketbird.business.TicketService
 import org.springframework.stereotype.Component
-import reactor.core.publisher.Mono
 
 @Component
 class MessageListener(
@@ -44,23 +43,15 @@ class MessageListener(
             catId == settings.closeCategory -> {
                 // Closed - move to correct category, send reopened message, update static msg
                 if (settings.staff.contains(authorId.asString())) {
-                    ticket.category = settings.respondedCategory!!
-                    ticket.lastActivity = System.currentTimeMillis()
-
-                    ticketService.updateTicket(ticket)
-                    Mono.`when`(
-                        channel.edit().withParentIdOrNull(settings.respondedCategory),
-                        channel.createMessage(localeService.getString(settings.locale, "ticket.reopen.everyone")),
+                    ticketService.moveTicket(settings.guildId, channel.id, settings.respondedCategory!!, withActivity = true)
+                    channel.createMessage(
+                        localeService.getString(settings.locale, "ticket.reopen.everyone")
                     ).awaitSingleOrNull()
                     staticMessageService.update(settings.guildId)
                 } else {
-                    ticket.category = settings.awaitingCategory!!
-                    ticket.lastActivity = System.currentTimeMillis()
-
-                    ticketService.updateTicket(ticket)
-                    Mono.`when`(
-                        channel.edit().withParentIdOrNull(settings.awaitingCategory),
-                        channel.createMessage(localeService.getString(settings.locale, "ticket.reopen.everyone")),
+                    ticketService.moveTicket(settings.guildId, channel.id, settings.awaitingCategory!!, withActivity = true)
+                    channel.createMessage(
+                        localeService.getString(settings.locale, "ticket.reopen.everyone")
                     ).awaitSingleOrNull()
                     staticMessageService.update(settings.guildId)
                 }
@@ -68,42 +59,26 @@ class MessageListener(
             catId == settings.holdCategory -> {
                 // on hold move to correct category and send un-hold message + update static msg
                 if (settings.staff.contains(authorId.asString())) {
-                    ticket.category = settings.respondedCategory!!
-                    ticket.lastActivity = System.currentTimeMillis()
-
-                    ticketService.updateTicket(ticket)
-                    Mono.`when`(
-                        channel.edit().withParentIdOrNull(settings.respondedCategory),
-                        channel.createMessage(localeService.getString(settings.locale, "ticket.reopen.creator", ticket.creator.asString())),
+                    ticketService.moveTicket(settings.guildId, channel.id, settings.respondedCategory!!, withActivity = true)
+                    channel.createMessage(
+                        localeService.getString(settings.locale, "ticket.reopen.creator", ticket.creator.asString())
                     ).awaitSingleOrNull()
                     staticMessageService.update(settings.guildId)
                 } else {
-                    ticket.category = settings.awaitingCategory!!
-                    ticket.lastActivity = System.currentTimeMillis()
-
-                    ticketService.updateTicket(ticket)
-                    Mono.`when`(
-                        channel.edit().withParentIdOrNull(settings.awaitingCategory),
-                        channel.createMessage(localeService.getString(settings.locale, "ticket.reopen.creator", ticket.creator.asString())),
+                    ticketService.moveTicket(settings.guildId, channel.id, settings.awaitingCategory!!, withActivity = true)
+                    channel.createMessage(
+                        localeService.getString(settings.locale, "ticket.reopen.creator", ticket.creator.asString())
                     ).awaitSingleOrNull()
                     staticMessageService.update(settings.guildId)
                 }
             }
             catId == settings.awaitingCategory && settings.staff.contains(authorId.asString()) -> {
                 // in awaiting + staff response, move to responded
-                ticket.category = settings.respondedCategory!!
-                ticket.lastActivity = System.currentTimeMillis()
-
-                ticketService.updateTicket(ticket)
-                channel.edit().withParentIdOrNull(settings.respondedCategory).awaitSingleOrNull()
+                ticketService.moveTicket(settings.guildId, channel.id, settings.respondedCategory!!, withActivity = true)
             }
             catId == settings.respondedCategory && !settings.staff.contains(authorId.asString()) -> {
                 // in responded + user response, move to awaiting
-                ticket.category = settings.awaitingCategory!!
-                ticket.lastActivity = System.currentTimeMillis()
-
-                ticketService.updateTicket(ticket)
-                channel.edit().withParentIdOrNull(settings.awaitingCategory).awaitSingleOrNull()
+                ticketService.moveTicket(settings.guildId, channel.id, settings.awaitingCategory!!, withActivity = true)
             }
             else -> {
                 // Active ticket, no change in status, update last activity

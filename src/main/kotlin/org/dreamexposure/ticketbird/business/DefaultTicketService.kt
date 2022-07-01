@@ -92,4 +92,15 @@ class DefaultTicketService(
         channel.delete(localeService.getString(settings.locale, "ticket.delete.time")).awaitSingleOrNull()
         deleteTicket(guildId, ticket.number)
     }
+
+    override suspend fun moveTicket(guildId: Snowflake, channelId: Snowflake, toCategory: Snowflake, withActivity: Boolean) {
+        val ticket = getTicket(guildId, channelId) ?:  return // return if ticket does not exist
+        val channel = discordClient.getChannelById(channelId).ofType(TextChannel::class.java).awaitSingle()
+
+        ticket.category = toCategory
+        if (withActivity) ticket.lastActivity = System.currentTimeMillis()
+
+        updateTicket(ticket)
+        channel.edit().withParentIdOrNull(toCategory).awaitSingleOrNull()
+    }
 }
