@@ -1,4 +1,5 @@
 {
   "name": "hold",
-  "description": "Places the current ticket on hold."
+  "description": "Places the current ticket on hold.",
+  "dm_permission": false
 }

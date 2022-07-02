@@ -1,6 +1,8 @@
 {
   "name": "staff",
   "description": "Allows managing TicketBird Staff",
+  "default_member_permissions": "32",
+  "dm_permission": false,
   "options": [
     {
       "name": "add",

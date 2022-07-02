@@ -1,4 +1,5 @@
 {
   "name": "ticketbird",
-  "description": "Shows info about the bot"
+  "description": "Shows info about the bot",
+  "dm_permission": false
 }

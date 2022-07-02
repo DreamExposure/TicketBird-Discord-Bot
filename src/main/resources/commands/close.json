@@ -1,4 +1,5 @@
 {
   "name": "close",
-  "description": "closes the current ticket"
+  "description": "closes the current ticket",
+  "dm_permission": false
 }
