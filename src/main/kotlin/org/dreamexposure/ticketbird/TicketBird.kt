@@ -8,6 +8,8 @@ import org.springframework.boot.autoconfigure.session.SessionAutoConfiguration
 import org.springframework.boot.builder.SpringApplicationBuilder
 import org.springframework.stereotype.Component
 import java.io.FileReader
+import java.lang.management.ManagementFactory
+import java.time.Duration
 import java.util.*
 
 @Component
@@ -68,6 +70,13 @@ class TicketBird {
                 e.printStackTrace()
                 LOGGER.error(GlobalVars.DEFAULT, "Spring error!", e)
             }
+        }
+
+        fun getUptime(): Duration {
+            val mxBean = ManagementFactory.getRuntimeMXBean()
+
+            val rawDuration = System.currentTimeMillis() - mxBean.startTime
+            return Duration.ofMillis(rawDuration)
         }
     }
 }

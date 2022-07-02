@@ -31,6 +31,10 @@ enum class BotSettings {
     DEBUG_WEBHOOK,
     STATUS_WEBHOOK,
 
+    BASE_URL,
+    SUPPORT_URL,
+    INVITE_URL,
+
     PROFILE;
 
     private var value: String? = null
