@@ -1,0 +1,32 @@
+{
+  "name": "setup",
+  "description": "A set of commands for setting up and configuring TicketBird",
+  "default_member_permissions": "32",
+  "dm_permissions": false,
+  "options": [
+    {
+      "type": 1,
+      "name": "init",
+      "description": "Initiates the bot and setups needed channels and categories"
+    },
+    {
+      "type": 1,
+      "name": "locale",
+      "description": "Sets the locale for the bot to use when sending responses. Default english",
+      "options": [
+        {
+          "type": 3,
+          "name": "locale",
+          "description": "The locale for the bot to use when sending responses",
+          "required": true,
+          "choices": [
+            {
+              "name": "English",
+              "value": "en"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
