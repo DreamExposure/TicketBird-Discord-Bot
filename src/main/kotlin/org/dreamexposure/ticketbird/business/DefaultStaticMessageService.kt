@@ -4,6 +4,7 @@ import discord4j.common.util.Snowflake
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.`object`.component.ActionRow
 import discord4j.core.`object`.component.Button
+import discord4j.core.`object`.component.LayoutComponent
 import discord4j.core.`object`.entity.Message
 import discord4j.core.`object`.entity.channel.Category
 import discord4j.core.`object`.entity.channel.TextChannel
@@ -12,6 +13,8 @@ import discord4j.core.spec.EmbedCreateSpec
 import discord4j.rest.http.client.ClientException
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import org.dreamexposure.ticketbird.logger.LOGGER
+import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.utils.GlobalVars.embedColor
 import org.dreamexposure.ticketbird.utils.GlobalVars.iconUrl
 import org.springframework.stereotype.Component
@@ -23,9 +26,7 @@ class DefaultStaticMessageService(
     private val settingsService: GuildSettingsService,
     private val discordClient: GatewayDiscordClient,
 ) : StaticMessageService {
-    override suspend fun getEmbed(guildId: Snowflake): EmbedCreateSpec? {
-        val settings = settingsService.getGuildSettings(guildId)
-
+    override suspend fun getEmbed(settings: GuildSettings): EmbedCreateSpec? {
         if (settings.awaitingCategory == null || settings.respondedCategory == null || settings.holdCategory == null)
             return null
 
@@ -56,22 +57,28 @@ class DefaultStaticMessageService(
             .build()
     }
 
+    override suspend fun getComponents(settings: GuildSettings): Array<LayoutComponent> {
+        val button = Button.primary(
+            "ticketbird-create-ticket",
+            ReactionEmoji.unicode("\uD83D\uDCE8"), // Incoming envelop emote
+            localeService.getString(settings.locale, "button.open-ticket")
+        )
+
+        return arrayOf(ActionRow.of(button))
+    }
+
     override suspend fun update(guildId: Snowflake): Message? {
         val settings = settingsService.getGuildSettings(guildId)
 
         // Cannot run if support channel or static message not set
         if (settings.supportChannel == null || settings.staticMessage == null) return null
 
-        val button = Button.primary(
-            "ticketbird-create-ticket",
-            ReactionEmoji.codepoints("TODO"),
-            localeService.getString(settings.locale, "button.open-ticket")
-        )
-
         // Get channel
         val channel = try {
             discordClient.getChannelById(settings.supportChannel!!).ofType(TextChannel::class.java).awaitSingle()
         } catch (ex: ClientException) {
+            LOGGER.error("Failed to get support channel", ex)
+
             if (ex.status.code() == 403 || ex.status.code() == 404) {
                 // Permission denied or channel not found
                 settings.staticMessage = null
@@ -84,20 +91,22 @@ class DefaultStaticMessageService(
         val message = try {
             channel.getMessageById(settings.staticMessage!!).awaitSingleOrNull()
         } catch (ex: ClientException) {
+            LOGGER.error("Failed to get static message", ex)
+
             null
         }
 
-        val embed = getEmbed(guildId) ?: return null
+        val embed = getEmbed(settings) ?: return null
         return if (message != null) {
             // Update
             message.edit()
                 .withEmbeds(embed)
-                .withComponents(ActionRow.of(button))
+                .withComponents(*getComponents(settings))
                 .awaitSingleOrNull()
         } else {
             // Static message deleted, create new one, update settings
             val newMessage = channel.createMessage(embed)
-                .withComponents(ActionRow.of(button))
+                .withComponents(*getComponents(settings))
                 .doOnNext { settings.staticMessage = it.id }
                 .awaitSingle()
 

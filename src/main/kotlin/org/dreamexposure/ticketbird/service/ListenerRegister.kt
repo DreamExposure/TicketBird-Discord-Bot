@@ -18,10 +18,7 @@ class ListenerRegister(private val client: GatewayDiscordClient): ApplicationRun
 
         //Register commands.
         val executor = CommandExecutor.getExecutor()
-        executor.registerCommand(TicketBirdCommand())
         executor.registerCommand(ProjectCommand())
-        executor.registerCommand(CloseCommand())
-        executor.registerCommand(HoldCommand())
         executor.registerCommand(HelpCommand())
         executor.registerCommand(DevCommand())
 
