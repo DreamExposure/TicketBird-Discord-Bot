@@ -27,6 +27,19 @@
           ]
         }
       ]
+    },
+    {
+      "type": 1,
+      "name": "use-projects",
+      "description": "Sets whether to use projects for helping sort tickets. Defaults to false",
+      "options": [
+        {
+          "type": 5,
+          "name": "use",
+          "description": "Whether to use projects for helping sort tickets",
+          "required": true
+        }
+      ]
     }
   ]
 }

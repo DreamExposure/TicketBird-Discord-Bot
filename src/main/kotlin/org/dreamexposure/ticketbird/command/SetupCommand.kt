@@ -36,6 +36,7 @@ class SetupCommand(
             "init" -> init(event, settings)
             "repair" -> repair(event, settings)
             "language" -> language(event, settings)
+            "use-projects" -> useProjects(event, settings)
             else -> throw IllegalStateException("Invalid subcommand specified")
         }
     }
@@ -125,6 +126,20 @@ class SetupCommand(
         settingsService.createOrUpdateGuildSettings(settings)
 
         return event.createFollowup(localeService.getString(settings.locale, "command.setup.language.success"))
+            .withEphemeral(ephemeral)
+            .awaitSingle()
+    }
+
+    private suspend fun useProjects(event: ChatInputInteractionEvent, settings: GuildSettings): Message {
+        val useProjects = event.options[0].getOption("use")
+            .flatMap(ApplicationCommandInteractionOption::getValue)
+            .map(ApplicationCommandInteractionOptionValue::asBoolean)
+            .get()
+
+        settings.useProjects = useProjects
+        settingsService.createOrUpdateGuildSettings(settings)
+
+        return event.createFollowup(localeService.getString(settings.locale, "command.setup.use-projects.success.$useProjects"))
             .withEphemeral(ephemeral)
             .awaitSingle()
     }
