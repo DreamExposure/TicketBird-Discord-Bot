@@ -1,9 +1,7 @@
 name: Java CI
 
 on:
-  push:
-    tags-ignore:
-      - '*.*'
+  push
   pull_request:
     types: [opened, synchronize, reopened]
 
