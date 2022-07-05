@@ -2,7 +2,10 @@ package org.dreamexposure.ticketbird.service
 
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.event.domain.message.MessageCreateEvent
-import org.dreamexposure.ticketbird.module.command.*
+import org.dreamexposure.ticketbird.module.command.CommandExecutor
+import org.dreamexposure.ticketbird.module.command.CommandListener
+import org.dreamexposure.ticketbird.module.command.DevCommand
+import org.dreamexposure.ticketbird.module.command.HelpCommand
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
 import org.springframework.stereotype.Component
@@ -18,7 +21,6 @@ class ListenerRegister(private val client: GatewayDiscordClient): ApplicationRun
 
         //Register commands.
         val executor = CommandExecutor.getExecutor()
-        executor.registerCommand(ProjectCommand())
         executor.registerCommand(HelpCommand())
         executor.registerCommand(DevCommand())
 
