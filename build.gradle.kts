@@ -127,7 +127,6 @@ gitProperties {
 
     customProperty("ticketbird.version", versionName)
     customProperty("ticketbird.version.d4j", d4jVersion)
-    customProperty("ticketbird.url.base", "https://ticketbird.dreamexposure.org")
 }
 
 kotlin {

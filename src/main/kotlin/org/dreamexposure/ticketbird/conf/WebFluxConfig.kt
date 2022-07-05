@@ -25,7 +25,6 @@ import io.lettuce.core.RedisClient
 import io.lettuce.core.RedisURI
 import kotlinx.coroutines.reactor.mono
 import org.dreamexposure.ticketbird.TicketBird
-import org.dreamexposure.ticketbird.database.DatabaseManager
 import org.dreamexposure.ticketbird.listeners.EventListener
 import org.dreamexposure.ticketbird.logger.LOGGER
 import org.dreamexposure.ticketbird.utils.GlobalVars
@@ -148,8 +147,6 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, 
     @PreDestroy
     fun onShutdown(client: GatewayDiscordClient) {
         LOGGER.info(GlobalVars.STATUS, "Shutting down shard")
-
-        DatabaseManager.getManager().disconnectFromMySQL()
 
         client.logout().subscribe()
     }
