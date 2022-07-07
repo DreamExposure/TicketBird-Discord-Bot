@@ -52,6 +52,14 @@ class TicketBird {
             BotSettings.SHARD_COUNT.get().toInt()
         }
 
+        fun getUptime(): Duration {
+            val mxBean = ManagementFactory.getRuntimeMXBean()
+
+            val rawDuration = System.currentTimeMillis() - mxBean.startTime
+            return Duration.ofMillis(rawDuration)
+        }
+
+        @JvmStatic
         fun main(args: Array<String>) {
             //Get settings
             val p = Properties()
@@ -67,13 +75,6 @@ class TicketBird {
                 e.printStackTrace()
                 LOGGER.error(GlobalVars.DEFAULT, "Spring error!", e)
             }
-        }
-
-        fun getUptime(): Duration {
-            val mxBean = ManagementFactory.getRuntimeMXBean()
-
-            val rawDuration = System.currentTimeMillis() - mxBean.startTime
-            return Duration.ofMillis(rawDuration)
         }
     }
 }
