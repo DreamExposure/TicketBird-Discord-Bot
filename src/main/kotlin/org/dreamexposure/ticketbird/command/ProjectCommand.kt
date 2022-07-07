@@ -50,6 +50,7 @@ class ProjectCommand(
         val prefix = event.options[0].getOption("prefix")
             .flatMap(ApplicationCommandInteractionOption::getValue)
             .map(ApplicationCommandInteractionOptionValue::asString)
+            .map { it.replace(Regex("\\W"), "") } // Keep only alphanumeric chars
             .map { it.substring(0, 16.coerceAtMost(it.length)) }
             .get()
 
