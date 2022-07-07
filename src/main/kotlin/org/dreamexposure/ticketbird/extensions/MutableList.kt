@@ -14,6 +14,3 @@ fun MutableList<String>.asStringList(): String {
 }
 
 fun String.listFromDb(): MutableList<String> = this.split(",").filter(String::isNotBlank).toMutableList()
-
-// For java
-fun setFromString(strList: String): MutableList<String> = strList.split(",").filter(String::isNotBlank).toMutableList()

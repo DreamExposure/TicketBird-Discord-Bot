@@ -1,39 +1,38 @@
 package org.dreamexposure.ticketbird.listeners
 
-import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
+import discord4j.core.event.domain.interaction.ButtonInteractionEvent
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.GuildSettingsService
 import org.dreamexposure.ticketbird.business.LocaleService
-import org.dreamexposure.ticketbird.command.SlashCommand
+import org.dreamexposure.ticketbird.interaction.ButtonHandler
 import org.dreamexposure.ticketbird.logger.LOGGER
 import org.springframework.stereotype.Component
 import java.util.*
 
 @Component
-class SlashCommandListener(
+class ButtonInteractionListener(
     private val settingsService: GuildSettingsService,
     private val localeService: LocaleService,
-    private val commands: List<SlashCommand>
-): EventListener<ChatInputInteractionEvent> {
-    override suspend fun handle(event: ChatInputInteractionEvent) {
+    private val buttons: List<ButtonHandler>
+): EventListener<ButtonInteractionEvent> {
+
+    override suspend fun handle(event: ButtonInteractionEvent) {
         if (!event.interaction.guildId.isPresent) {
-            event.reply(localeService.getString(Locale.ENGLISH, "command.dm-not-supported")).awaitSingleOrNull()
+            event.reply(localeService.getString(Locale.ENGLISH, "button.dm-not-supported")).awaitSingleOrNull()
             return
         }
 
-        val command = commands.firstOrNull { it.name == event.commandName }
+        val button = buttons.firstOrNull { it.id == event.customId }
 
-        if (command != null) {
-            event.deferReply().withEphemeral(command.ephemeral).awaitSingleOrNull()
-
+        if (button != null) {
             try {
-                command.handle(event, settingsService.getGuildSettings(event.interaction.guildId.get()))
+                button.handle(event, settingsService.getGuildSettings(event.interaction.guildId.get()))
             } catch (e: Exception) {
-                LOGGER.error("Error handling slash command | $event", e)
+                LOGGER.error("Error handling button interaction | $event", e)
 
                 // Attempt to provide a message if there's an unhandled exception
                 event.createFollowup(localeService.getString(Locale.ENGLISH, "generic.unknown-error"))
-                    .withEphemeral(command.ephemeral)
+                    .withEphemeral(true)
                     .awaitSingleOrNull()
             }
         } else {

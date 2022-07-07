@@ -1,39 +1,38 @@
 package org.dreamexposure.ticketbird.listeners
 
-import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
+import discord4j.core.event.domain.interaction.ModalSubmitInteractionEvent
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.GuildSettingsService
 import org.dreamexposure.ticketbird.business.LocaleService
-import org.dreamexposure.ticketbird.command.SlashCommand
+import org.dreamexposure.ticketbird.interaction.ModalHandler
 import org.dreamexposure.ticketbird.logger.LOGGER
 import org.springframework.stereotype.Component
 import java.util.*
 
 @Component
-class SlashCommandListener(
+class ModalInteractionListener(
     private val settingsService: GuildSettingsService,
     private val localeService: LocaleService,
-    private val commands: List<SlashCommand>
-): EventListener<ChatInputInteractionEvent> {
-    override suspend fun handle(event: ChatInputInteractionEvent) {
+    private val modals: List<ModalHandler>
+): EventListener<ModalSubmitInteractionEvent> {
+
+    override suspend fun handle(event: ModalSubmitInteractionEvent) {
         if (!event.interaction.guildId.isPresent) {
-            event.reply(localeService.getString(Locale.ENGLISH, "command.dm-not-supported")).awaitSingleOrNull()
+            event.reply(localeService.getString(Locale.ENGLISH, "modal.dm-not-supported")).awaitSingleOrNull()
             return
         }
 
-        val command = commands.firstOrNull { it.name == event.commandName }
+        val modal = modals.firstOrNull { it.id == event.customId }
 
-        if (command != null) {
-            event.deferReply().withEphemeral(command.ephemeral).awaitSingleOrNull()
-
+        if (modal != null) {
             try {
-                command.handle(event, settingsService.getGuildSettings(event.interaction.guildId.get()))
+                modal.handle(event, settingsService.getGuildSettings(event.interaction.guildId.get()))
             } catch (e: Exception) {
-                LOGGER.error("Error handling slash command | $event", e)
+                LOGGER.error("Error handling modal interaction | $event", e)
 
                 // Attempt to provide a message if there's an unhandled exception
                 event.createFollowup(localeService.getString(Locale.ENGLISH, "generic.unknown-error"))
-                    .withEphemeral(command.ephemeral)
+                    .withEphemeral(true)
                     .awaitSingleOrNull()
             }
         } else {

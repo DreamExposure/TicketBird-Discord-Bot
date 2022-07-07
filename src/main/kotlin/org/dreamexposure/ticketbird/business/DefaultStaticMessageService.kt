@@ -59,7 +59,7 @@ class DefaultStaticMessageService(
 
     override suspend fun getComponents(settings: GuildSettings): Array<LayoutComponent> {
         val button = Button.primary(
-            "ticketbird-create-ticket",
+            "create-ticket",
             ReactionEmoji.unicode("\uD83D\uDCE8"), // Incoming envelop emote
             localeService.getString(settings.locale, "button.open-ticket")
         )
