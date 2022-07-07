@@ -11,8 +11,6 @@ import java.util.concurrent.CopyOnWriteArrayList
 data class GuildSettings(
     val guildId: Snowflake,
     var locale: Locale = Locale.ENGLISH,
-    @Deprecated("chat commands no longer supported starting 2022-09-01")
-    var prefix: String = "=",
     var patronGuild: Boolean = false,
     var devGuild: Boolean = false,
     var useProjects: Boolean = false,
@@ -25,14 +23,11 @@ data class GuildSettings(
     var staticMessage: Snowflake? = null,
 
     var nextId: Int = 1,
-    @Deprecated(message = "Calculate on-the-fly instead")
-    var totalClosed: Int = 0,
     val staff: MutableList<String> = CopyOnWriteArrayList(),
 ) {
     constructor(data: GuildSettingsData) : this(
         guildId = Snowflake.of(data.guildId),
         locale = data.lang.handleLocaleDebt(),
-        prefix = data.prefix,
         patronGuild = data.patronGuild,
         useProjects = data.useProjects,
 
@@ -44,7 +39,6 @@ data class GuildSettings(
         staticMessage = data.staticMessage?.toSnowflake(),
 
         nextId = data.nextId,
-        totalClosed = data.closedTotal,
         staff = data.staff.listFromDb()
     )
 }

@@ -26,7 +26,6 @@ class DefaultGuildSettingsService(private val settingsRepository: GuildSettingsR
         return settingsRepository.save(GuildSettingsData(
             guildId = settings.guildId.asLong(),
             lang = settings.locale.toLanguageTag(),
-            prefix = settings.prefix,
             devGuild = settings.devGuild,
             patronGuild = settings.patronGuild,
             useProjects = settings.useProjects,
@@ -39,7 +38,6 @@ class DefaultGuildSettingsService(private val settingsRepository: GuildSettingsR
             staticMessage = settings.staticMessage?.asLong(),
 
             nextId = settings.nextId,
-            closedTotal = settings.totalClosed,
             staff = settings.staff.asStringList()
         )).map(::GuildSettings).awaitSingle()
     }
@@ -48,7 +46,6 @@ class DefaultGuildSettingsService(private val settingsRepository: GuildSettingsR
         settingsRepository.updateById(
             guildId = settings.guildId.asLong(),
             lang = settings.locale.toLanguageTag(),
-            prefix = settings.prefix,
             devGuild = settings.devGuild,
             patronGuild = settings.patronGuild,
             useProjects = settings.useProjects,
@@ -61,7 +58,6 @@ class DefaultGuildSettingsService(private val settingsRepository: GuildSettingsR
             staticMessage = settings.staticMessage?.asLong(),
 
             nextId = settings.nextId,
-            closedTotal = settings.totalClosed,
             staff = settings.staff.asStringList()
         ).awaitSingleOrNull()
     }

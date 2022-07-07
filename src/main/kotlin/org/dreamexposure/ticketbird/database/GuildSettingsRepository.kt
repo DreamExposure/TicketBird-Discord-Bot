@@ -9,7 +9,6 @@ interface GuildSettingsRepository: R2dbcRepository<GuildSettingsData, Long> {
     @Query("""
         UPDATE guild_settings
         SET lang = :lang,
-            prefix = :prefix,
             patron_guild = :patron_guild,
             dev_guild = :dev_guild,
             use_projects = :useProjects,
@@ -20,14 +19,12 @@ interface GuildSettingsRepository: R2dbcRepository<GuildSettingsData, Long> {
             support_channel = :supportChannel,
             static_message = :staticMessage,
             next_id = :nextId,
-            staff = :staff,
-            closed_total = :closedTotal
+            staff = :staff
         WHERE guild_id = :guildId
     """)
     fun updateById(
         guildId: Long,
         lang: String,
-        prefix: String,
         patronGuild: Boolean,
         devGuild: Boolean,
         useProjects: Boolean,
@@ -40,7 +37,6 @@ interface GuildSettingsRepository: R2dbcRepository<GuildSettingsData, Long> {
         staticMessage: Long?,
 
         nextId: Int,
-        closedTotal: Int,
         staff: String,
     ): Mono<Int>
 }

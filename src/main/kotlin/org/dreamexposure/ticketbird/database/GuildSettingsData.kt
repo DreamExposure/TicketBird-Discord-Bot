@@ -10,8 +10,6 @@ data class GuildSettingsData(
 
     var lang: String,
 
-    var prefix: String,
-
     var patronGuild: Boolean,
 
     var devGuild: Boolean,
@@ -27,8 +25,6 @@ data class GuildSettingsData(
     var staticMessage: Long?,
 
     var nextId: Int,
-
-    var closedTotal: Int,
 
     val staff: String,
 )
