@@ -46,6 +46,7 @@ class ProjectCommand(
         val name = event.options[0].getOption("name")
             .flatMap(ApplicationCommandInteractionOption::getValue)
             .map(ApplicationCommandInteractionOptionValue::asString)
+            .map { it.substring(0, 100.coerceAtMost(it.length)) }
             .get()
         val prefix = event.options[0].getOption("prefix")
             .flatMap(ApplicationCommandInteractionOption::getValue)
