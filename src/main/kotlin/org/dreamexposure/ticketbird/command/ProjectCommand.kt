@@ -55,8 +55,17 @@ class ProjectCommand(
             .get()
 
 
+        // Check if project with same name exists
         if (projectService.getProject(settings.guildId, name) != null) {
             return event.createFollowup(localeService.getString(settings.locale, "command.project.add.exists"))
+                .withEmbeds(listEmbed(settings))
+                .withEphemeral(ephemeral)
+                .awaitSingle()
+        }
+
+        // Check if max amount of projects has been created
+        if (projectService.getAllProjects(settings.guildId).size >= 25) {
+            return event.createFollowup(localeService.getString(settings.locale, "command.project.add.limit-reached"))
                 .withEmbeds(listEmbed(settings))
                 .withEphemeral(ephemeral)
                 .awaitSingle()
