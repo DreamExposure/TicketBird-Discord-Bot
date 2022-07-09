@@ -29,9 +29,10 @@ class MessageListener(
         val authorId = event.member.get().id
         val settings = settingsService.getGuildSettings(event.guildId.get())
 
-        // Check if in support channel, if so, delete
+        // Check if in support channel, if so, delete, update static message, so they can click button
         if (event.message.channelId == settings.supportChannel) {
             event.message.delete().awaitSingleOrNull()
+            staticMessageService.update(settings.guildId)
             return
         }
 

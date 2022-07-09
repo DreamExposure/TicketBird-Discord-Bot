@@ -7,7 +7,7 @@ import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.LocaleService
 import org.dreamexposure.ticketbird.business.ProjectService
-import org.dreamexposure.ticketbird.business.StateService
+import org.dreamexposure.ticketbird.business.state.StateService
 import org.dreamexposure.ticketbird.business.TicketService
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.`object`.TicketCreateState

@@ -4,7 +4,7 @@ import discord4j.core.event.domain.interaction.SelectMenuInteractionEvent
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.ComponentService
 import org.dreamexposure.ticketbird.business.LocaleService
-import org.dreamexposure.ticketbird.business.StateService
+import org.dreamexposure.ticketbird.business.state.StateService
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.`object`.TicketCreateState
 import org.springframework.stereotype.Component

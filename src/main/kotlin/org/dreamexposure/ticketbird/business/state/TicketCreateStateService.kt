@@ -1,4 +1,4 @@
-package org.dreamexposure.ticketbird.business
+package org.dreamexposure.ticketbird.business.state
 
 import org.dreamexposure.ticketbird.`object`.TicketCreateState
 import org.springframework.stereotype.Component

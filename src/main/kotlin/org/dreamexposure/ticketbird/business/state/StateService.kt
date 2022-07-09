@@ -1,4 +1,4 @@
-package org.dreamexposure.ticketbird.business
+package org.dreamexposure.ticketbird.business.state
 
 interface StateService<T> {
 
