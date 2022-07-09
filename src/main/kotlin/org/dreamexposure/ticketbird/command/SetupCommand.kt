@@ -17,6 +17,7 @@ class SetupCommand(
     private val settingsService: GuildSettingsService,
     private val permissionService: PermissionService,
     private val staticMessageService: StaticMessageService,
+    private val componentService: ComponentService,
     private val environmentService: EnvironmentService,
     private val localeService: LocaleService,
 ) : SlashCommand {
@@ -75,7 +76,7 @@ class SetupCommand(
         // Create static message
         val embed = staticMessageService.getEmbed(settings) ?: throw IllegalStateException("Failed to get embed during setup")
         supportChannel.createMessage(embed)
-            .withComponents(*staticMessageService.getComponents(settings))
+            .withComponents(*componentService.getStaticMessageComponents(settings))
             .doOnNext { settings.staticMessage = it.id }
             .awaitSingle()
 

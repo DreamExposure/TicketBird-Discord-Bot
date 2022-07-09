@@ -2,13 +2,9 @@ package org.dreamexposure.ticketbird.business
 
 import discord4j.common.util.Snowflake
 import discord4j.core.GatewayDiscordClient
-import discord4j.core.`object`.component.ActionRow
-import discord4j.core.`object`.component.Button
-import discord4j.core.`object`.component.LayoutComponent
 import discord4j.core.`object`.entity.Message
 import discord4j.core.`object`.entity.channel.Category
 import discord4j.core.`object`.entity.channel.TextChannel
-import discord4j.core.`object`.reaction.ReactionEmoji
 import discord4j.core.spec.EmbedCreateSpec
 import discord4j.rest.http.client.ClientException
 import kotlinx.coroutines.reactor.awaitSingle
@@ -24,6 +20,7 @@ import java.time.Instant
 class DefaultStaticMessageService(
     private val localeService: LocaleService,
     private val settingsService: GuildSettingsService,
+    private val componentService: ComponentService,
     private val discordClient: GatewayDiscordClient,
 ) : StaticMessageService {
     override suspend fun getEmbed(settings: GuildSettings): EmbedCreateSpec? {
@@ -55,16 +52,6 @@ class DefaultStaticMessageService(
             .footer(localeService.getString(settings.locale, "embed.static.footer"), null)
             .timestamp(Instant.now())
             .build()
-    }
-
-    override suspend fun getComponents(settings: GuildSettings): Array<LayoutComponent> {
-        val button = Button.primary(
-            "create-ticket",
-            ReactionEmoji.unicode("\uD83D\uDCE8"), // Incoming envelop emote
-            localeService.getString(settings.locale, "button.open-ticket")
-        )
-
-        return arrayOf(ActionRow.of(button))
     }
 
     override suspend fun update(guildId: Snowflake): Message? {
@@ -101,12 +88,12 @@ class DefaultStaticMessageService(
             // Update
             message.edit()
                 .withEmbeds(embed)
-                .withComponents(*getComponents(settings))
+                .withComponents(*componentService.getStaticMessageComponents(settings))
                 .awaitSingleOrNull()
         } else {
             // Static message deleted, create new one, update settings
             val newMessage = channel.createMessage(embed)
-                .withComponents(*getComponents(settings))
+                .withComponents(*componentService.getStaticMessageComponents(settings))
                 .doOnNext { settings.staticMessage = it.id }
                 .awaitSingle()
 

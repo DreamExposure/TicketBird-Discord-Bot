@@ -1,6 +1,8 @@
 package org.dreamexposure.ticketbird.business
 
 import discord4j.common.util.Snowflake
+import discord4j.core.`object`.entity.channel.TextChannel
+import org.dreamexposure.ticketbird.`object`.Project
 import org.dreamexposure.ticketbird.`object`.Ticket
 
 interface TicketService {
@@ -25,4 +27,8 @@ interface TicketService {
     suspend fun purgeTicket(guildId: Snowflake, channelId: Snowflake)
 
     suspend fun moveTicket(guildId: Snowflake, channelId: Snowflake, toCategory: Snowflake, withActivity: Boolean = true)
+
+    suspend fun createTicketChannel(guildId: Snowflake, creator: Snowflake, prefix: String? = null, number: Int): TextChannel
+
+    suspend fun createNewTicketFull(guildId: Snowflake, creatorId: Snowflake, project: Project? = null, info: String?): Ticket
 }

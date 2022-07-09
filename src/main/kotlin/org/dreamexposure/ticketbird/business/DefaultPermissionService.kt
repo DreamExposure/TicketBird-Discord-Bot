@@ -2,6 +2,7 @@ package org.dreamexposure.ticketbird.business
 
 import discord4j.common.util.Snowflake
 import discord4j.core.GatewayDiscordClient
+import discord4j.core.`object`.PermissionOverwrite
 import discord4j.core.`object`.entity.Member
 import discord4j.rest.util.Permission
 import discord4j.rest.util.PermissionSet
@@ -49,6 +50,26 @@ class DefaultPermissionService(
         Permission.VIEW_CHANNEL,
         Permission.READ_MESSAGE_HISTORY,
     )
+
+    override fun getTicketGrantOverrides() = PermissionSet.of(
+        Permission.MENTION_EVERYONE,
+        Permission.ATTACH_FILES,
+        Permission.EMBED_LINKS,
+        Permission.SEND_MESSAGES,
+        Permission.READ_MESSAGE_HISTORY,
+        Permission.VIEW_CHANNEL,
+        Permission.USE_SLASH_COMMANDS
+    )
+
+    override fun getTicketChannelOverwrites(guildId: Snowflake, creator: Snowflake, staff: List<Snowflake>): List<PermissionOverwrite> {
+        val overwrites = mutableListOf<PermissionOverwrite>()
+
+        overwrites += PermissionOverwrite.forMember(guildId, getTicketGrantOverrides(), PermissionSet.none())
+        overwrites += PermissionOverwrite.forRole(guildId, PermissionSet.none(), PermissionSet.all())
+        overwrites += staff.map { PermissionOverwrite.forMember(it, getTicketGrantOverrides(), PermissionSet.none()) }
+
+        return overwrites
+    }
 
     override fun hasRequiredElevatedPermissions(memberPermissions: PermissionSet) =
         memberPermissions.contains(Permission.MANAGE_GUILD) || memberPermissions.contains(Permission.ADMINISTRATOR)

@@ -3,12 +3,16 @@ package org.dreamexposure.ticketbird.business
 import discord4j.common.util.Snowflake
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.`object`.entity.channel.TextChannel
+import discord4j.core.spec.EmbedCreateSpec
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.database.TicketData
 import org.dreamexposure.ticketbird.database.TicketRepository
+import org.dreamexposure.ticketbird.`object`.Project
 import org.dreamexposure.ticketbird.`object`.Ticket
+import org.dreamexposure.ticketbird.utils.GlobalVars
 import org.springframework.stereotype.Component
+import java.time.Instant
 
 @Component
 class DefaultTicketService(
@@ -16,6 +20,8 @@ class DefaultTicketService(
     private val discordClient: GatewayDiscordClient,
     private val settingsService: GuildSettingsService,
     private val localeService: LocaleService,
+    private val permissionService: PermissionService,
+    private val componentService: ComponentService,
 ) : TicketService {
     override suspend fun getTicket(guildId: Snowflake, number: Int): Ticket? {
         return ticketRepository.findByGuildIdAndNumber(guildId.asLong(), number)
@@ -116,5 +122,57 @@ class DefaultTicketService(
 
         updateTicket(ticket)
         channel.edit().withParentIdOrNull(toCategory).awaitSingleOrNull()
+    }
+
+    override suspend fun createTicketChannel(guildId: Snowflake, creator: Snowflake, prefix: String?, number: Int): TextChannel {
+        val settings = settingsService.getGuildSettings(guildId)
+        val guild = discordClient.getGuildById(guildId).awaitSingle()
+
+        val name = if (prefix != null) "$prefix-ticket-$number" else "ticket-$number"
+        val staff = settings.staff.map(Snowflake::of)
+
+        return guild.createTextChannel(name)
+            .withPermissionOverwrites(permissionService.getTicketChannelOverwrites(guildId, creator, staff))
+            .withParentId(settings.awaitingCategory!!)
+            .withReason(localeService.getString(settings.locale, "env.channel.ticket.create-reason"))
+            .awaitSingle()
+    }
+
+    override suspend fun createNewTicketFull(guildId: Snowflake, creatorId: Snowflake, project: Project?, info: String?): Ticket {
+        // Get stuff
+        val creator = discordClient.getMemberById(guildId, creatorId).awaitSingle()
+        val settings = settingsService.getGuildSettings(guildId)
+        val ticketNumber = settings.nextId
+
+        // Update settings
+        settings.nextId++
+        settingsService.updateGuildSettings(settings)
+
+        // Build embed
+        val embedBuilder = EmbedCreateSpec.builder()
+            .author("@${creator.displayName}", null, creator.avatarUrl)
+            .color(GlobalVars.embedColor)
+            .timestamp(Instant.now())
+        if (!project?.name.isNullOrBlank()) embedBuilder.title(project!!.name)
+        if (info != null) embedBuilder.description(info)
+
+        // Create ticket channel + message
+        val channel = createTicketChannel(guildId, creatorId, project?.prefix, ticketNumber)
+
+        channel.createMessage()
+            .withContent(localeService.getString(settings.locale, "ticket.open.message", creatorId.asString()))
+            .withEmbeds(embedBuilder.build())
+            .withComponents(*componentService.getTicketMessageComponents(settings))
+            .awaitSingle()
+
+        return createTicket(Ticket(
+            guildId = guildId,
+            number = ticketNumber,
+            project = project?.name.orEmpty(),
+            creator = creatorId,
+            channel = channel.id,
+            category = settings.awaitingCategory!!,
+            lastActivity = System.currentTimeMillis()
+        ))
     }
 }
