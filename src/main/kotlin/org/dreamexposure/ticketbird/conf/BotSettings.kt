@@ -3,9 +3,6 @@ package org.dreamexposure.ticketbird.conf
 import java.util.*
 
 enum class BotSettings {
-    SQL_URL,
-    SQL_PREFIX,
-
     REDIS_HOSTNAME,
     REDIS_PORT,
     REDIS_PASSWORD,

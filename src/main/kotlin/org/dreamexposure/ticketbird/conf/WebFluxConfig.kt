@@ -26,8 +26,6 @@ import io.lettuce.core.RedisURI
 import kotlinx.coroutines.reactor.mono
 import org.dreamexposure.ticketbird.TicketBird
 import org.dreamexposure.ticketbird.listeners.EventListener
-import org.dreamexposure.ticketbird.logger.LOGGER
-import org.dreamexposure.ticketbird.utils.GlobalVars
 import org.springframework.boot.web.server.ConfigurableWebServerFactory
 import org.springframework.boot.web.server.ErrorPage
 import org.springframework.boot.web.server.WebServerFactoryCustomizer
@@ -51,7 +49,6 @@ import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver
 import org.thymeleaf.spring5.view.reactive.ThymeleafReactiveViewResolver
 import org.thymeleaf.templatemode.TemplateMode
 import reactor.core.publisher.Flux
-import javax.annotation.PreDestroy
 
 @Configuration
 @EnableWebFlux
@@ -142,13 +139,6 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, 
     @Bean
     fun discordRestClient(gatewayDiscordClient: GatewayDiscordClient): RestClient {
         return gatewayDiscordClient.restClient
-    }
-
-    @PreDestroy
-    fun onShutdown(client: GatewayDiscordClient) {
-        LOGGER.info(GlobalVars.STATUS, "Shutting down shard")
-
-        client.logout().subscribe()
     }
 
     private fun getStrategy(): ShardingStrategy {
