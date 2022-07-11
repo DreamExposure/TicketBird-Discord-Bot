@@ -26,7 +26,6 @@ import io.lettuce.core.RedisURI
 import kotlinx.coroutines.reactor.mono
 import org.dreamexposure.ticketbird.TicketBird
 import org.dreamexposure.ticketbird.listeners.EventListener
-import org.dreamexposure.ticketbird.logger.LOGGER
 import org.springframework.boot.web.server.ConfigurableWebServerFactory
 import org.springframework.boot.web.server.ErrorPage
 import org.springframework.boot.web.server.WebServerFactoryCustomizer
@@ -121,8 +120,6 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, 
 
     @Bean
     fun discordGatewayClient(listeners: List<EventListener<*>>): GatewayDiscordClient {
-        LOGGER.debug("Test 1")
-
         return DiscordClientBuilder.create(BotSettings.TOKEN.get())
             .build().gateway()
             .setEnabledIntents(getIntents())
@@ -134,7 +131,6 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, 
                 @Suppress("UNCHECKED_CAST")
                 (listeners as Iterable<EventListener<Event>>).toFlux()
                     .flatMap {
-                        LOGGER.debug("Registering event listener: $it")
                         dispatcher.on(it.genericType) { event -> mono { it.handle(event) } }
                     }
             }
