@@ -3,6 +3,7 @@ package org.dreamexposure.ticketbird.service
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.`object`.presence.ClientActivity
 import discord4j.core.`object`.presence.ClientPresence
+import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.reactor.mono
 import org.dreamexposure.ticketbird.GitProperty
@@ -18,9 +19,14 @@ class StatusChanger(private val client: GatewayDiscordClient) : ApplicationRunne
     private val index = AtomicInteger(0)
 
     private val statuses = listOf(
-        "/ticketbird for info",
+        "/ticketbird for info & help",
+        "Do you know what a square is?",
         "Version {version}",
-        "TicketBird is on Patreon!",
+        "Now supports Slash Commands!",
+        "Trans rights are human rights",
+        "Sorting tickets in {guild_count} guilds!",
+        "Proudly written in Kotlin using Discord4J",
+        "Slava Ukraini!",
     )
 
     private fun update() = mono {
@@ -32,8 +38,13 @@ class StatusChanger(private val client: GatewayDiscordClient) : ApplicationRunne
             index.lazySet(currentIndex + 1)
 
         //Get status we want to change to
-        val status = statuses[currentIndex]
+        var status = statuses[currentIndex]
             .replace("{version}", GitProperty.TICKETBIRD_VERSION.value)
+
+        if (status.contains("{guild_count}")) {
+            val count = client.guilds.count().awaitSingle()
+            status = status.replace("{guild_count}", "$count")
+        }
 
 
         client.updatePresence(ClientPresence.online(ClientActivity.playing(status))).awaitSingleOrNull()
