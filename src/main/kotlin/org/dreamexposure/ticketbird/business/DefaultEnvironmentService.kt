@@ -8,15 +8,19 @@ import discord4j.core.`object`.entity.channel.TextChannel
 import discord4j.rest.util.Permission
 import discord4j.rest.util.PermissionSet
 import kotlinx.coroutines.reactor.awaitSingle
+import org.springframework.beans.factory.BeanFactory
+import org.springframework.beans.factory.getBean
 import org.springframework.stereotype.Component
 
 @Component
 class DefaultEnvironmentService(
-    private val discordClient: GatewayDiscordClient,
+    private val beanFactory: BeanFactory,
     private val settingsService: GuildSettingsService,
     private val permissionService: PermissionService,
     private val localeService: LocaleService,
 ) : EnvironmentService {
+    private val discordClient
+        get() = beanFactory.getBean<GatewayDiscordClient>()
 
     override suspend fun createCategory(guildId: Snowflake, type: String): Category {
         val settings = settingsService.getGuildSettings(guildId)

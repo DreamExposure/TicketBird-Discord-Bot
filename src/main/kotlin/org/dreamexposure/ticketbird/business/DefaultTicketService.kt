@@ -11,18 +11,23 @@ import org.dreamexposure.ticketbird.database.TicketRepository
 import org.dreamexposure.ticketbird.`object`.Project
 import org.dreamexposure.ticketbird.`object`.Ticket
 import org.dreamexposure.ticketbird.utils.GlobalVars
+import org.springframework.beans.factory.BeanFactory
+import org.springframework.beans.factory.getBean
 import org.springframework.stereotype.Component
 import java.time.Instant
 
 @Component
 class DefaultTicketService(
     private val ticketRepository: TicketRepository,
-    private val discordClient: GatewayDiscordClient,
+    private val beanFactory: BeanFactory,
     private val settingsService: GuildSettingsService,
     private val localeService: LocaleService,
     private val permissionService: PermissionService,
     private val componentService: ComponentService,
 ) : TicketService {
+    private val discordClient
+        get() = beanFactory.getBean<GatewayDiscordClient>()
+
     override suspend fun getTicket(guildId: Snowflake, number: Int): Ticket? {
         return ticketRepository.findByGuildIdAndNumber(guildId.asLong(), number)
             .map(::Ticket)
@@ -114,7 +119,7 @@ class DefaultTicketService(
     }
 
     override suspend fun moveTicket(guildId: Snowflake, channelId: Snowflake, toCategory: Snowflake, withActivity: Boolean) {
-        val ticket = getTicket(guildId, channelId) ?:  return // return if ticket does not exist
+        val ticket = getTicket(guildId, channelId) ?: return // return if ticket does not exist
         val channel = discordClient.getChannelById(channelId).ofType(TextChannel::class.java).awaitSingle()
 
         ticket.category = toCategory

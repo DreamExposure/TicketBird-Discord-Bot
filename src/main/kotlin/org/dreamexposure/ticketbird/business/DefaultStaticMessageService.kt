@@ -13,6 +13,8 @@ import org.dreamexposure.ticketbird.logger.LOGGER
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.utils.GlobalVars.embedColor
 import org.dreamexposure.ticketbird.utils.GlobalVars.iconUrl
+import org.springframework.beans.factory.BeanFactory
+import org.springframework.beans.factory.getBean
 import org.springframework.stereotype.Component
 import java.time.Instant
 
@@ -21,8 +23,11 @@ class DefaultStaticMessageService(
     private val localeService: LocaleService,
     private val settingsService: GuildSettingsService,
     private val componentService: ComponentService,
-    private val discordClient: GatewayDiscordClient,
+    private val beanFactory: BeanFactory,
 ) : StaticMessageService {
+    private val discordClient
+        get() = beanFactory.getBean<GatewayDiscordClient>()
+
     override suspend fun getEmbed(settings: GuildSettings): EmbedCreateSpec? {
         if (settings.awaitingCategory == null || settings.respondedCategory == null || settings.holdCategory == null)
             return null

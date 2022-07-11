@@ -7,12 +7,17 @@ import discord4j.core.`object`.entity.Member
 import discord4j.rest.util.Permission
 import discord4j.rest.util.PermissionSet
 import kotlinx.coroutines.reactor.awaitSingle
+import org.springframework.beans.factory.BeanFactory
+import org.springframework.beans.factory.getBean
 import org.springframework.stereotype.Component
 
 @Component
 class DefaultPermissionService(
-    private val discordClient: GatewayDiscordClient,
+    private val beanFactory: BeanFactory,
 ): PermissionService {
+    private val discordClient
+        get() = beanFactory.getBean<GatewayDiscordClient>()
+
     override suspend fun checkingMissingBasePermissionsBot(guildId: Snowflake): PermissionSet {
         val current = discordClient.getSelfMember(guildId)
             .flatMap(Member::getBasePermissions)

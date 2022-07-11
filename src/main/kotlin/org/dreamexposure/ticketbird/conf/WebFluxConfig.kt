@@ -26,6 +26,7 @@ import io.lettuce.core.RedisURI
 import kotlinx.coroutines.reactor.mono
 import org.dreamexposure.ticketbird.TicketBird
 import org.dreamexposure.ticketbird.listeners.EventListener
+import org.dreamexposure.ticketbird.logger.LOGGER
 import org.springframework.boot.web.server.ConfigurableWebServerFactory
 import org.springframework.boot.web.server.ErrorPage
 import org.springframework.boot.web.server.WebServerFactoryCustomizer
@@ -48,7 +49,7 @@ import org.thymeleaf.spring5.SpringWebFluxTemplateEngine
 import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver
 import org.thymeleaf.spring5.view.reactive.ThymeleafReactiveViewResolver
 import org.thymeleaf.templatemode.TemplateMode
-import reactor.core.publisher.Flux
+import reactor.kotlin.core.publisher.toFlux
 
 @Configuration
 @EnableWebFlux
@@ -119,7 +120,9 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, 
     }
 
     @Bean
-    fun discordGatewayClient(listeners: List<EventListener<Event>>): GatewayDiscordClient {
+    fun discordGatewayClient(listeners: List<EventListener<*>>): GatewayDiscordClient {
+        LOGGER.debug("Test 1")
+
         return DiscordClientBuilder.create(BotSettings.TOKEN.get())
             .build().gateway()
             .setEnabledIntents(getIntents())
@@ -128,9 +131,12 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, 
             .setInitialPresence { ClientPresence.doNotDisturb(ClientActivity.playing("Booting Up!")) }
             .setMemberRequestFilter(MemberRequestFilter.none())
             .withEventDispatcher { dispatcher ->
-                Flux.fromIterable(listeners).flatMap {
-                    dispatcher.on(it.genericType) { event -> mono { it.handle(event) } }
-                }
+                @Suppress("UNCHECKED_CAST")
+                (listeners as Iterable<EventListener<Event>>).toFlux()
+                    .flatMap {
+                        LOGGER.debug("Registering event listener: $it")
+                        dispatcher.on(it.genericType) { event -> mono { it.handle(event) } }
+                    }
             }
             .login()
             .block()!!
