@@ -20,7 +20,6 @@ enum class BotSettings {
     RUN_API,
     USE_REDIS_STORES,
     USE_WEBHOOKS,
-    USE_SPECIAL_INTENTS,
 
     SHARD_COUNT,
     SHARD_INDEX,

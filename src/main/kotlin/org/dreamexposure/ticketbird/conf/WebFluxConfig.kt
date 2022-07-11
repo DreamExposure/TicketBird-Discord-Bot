@@ -167,17 +167,11 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, 
         } else JdkStoreService()
     }
 
-    private fun getIntents(): IntentSet {
-        val default = IntentSet.of(
-            Intent.GUILDS,
-            Intent.GUILD_MESSAGES,
-            Intent.GUILD_MESSAGE_REACTIONS,
-            Intent.DIRECT_MESSAGES,
-            Intent.DIRECT_MESSAGE_REACTIONS
-        )
-
-        return if (BotSettings.USE_SPECIAL_INTENTS.get().equals("true", true)) {
-            default.or(IntentSet.of(Intent.GUILD_MEMBERS))
-        } else default
-    }
+    private fun getIntents() = IntentSet.of(
+        Intent.GUILDS,
+        Intent.GUILD_MESSAGES,
+        Intent.GUILD_MESSAGE_REACTIONS,
+        Intent.DIRECT_MESSAGES,
+        Intent.DIRECT_MESSAGE_REACTIONS
+    )
 }
