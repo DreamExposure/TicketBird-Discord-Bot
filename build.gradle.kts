@@ -32,9 +32,12 @@ repositories {
     maven {
         url = uri("https://repo.maven.apache.org/maven2/")
     }
+    maven {
+        url = uri("https://oss.sonatype.org/content/repositories/snapshots")
+    }
 }
 //versions
-val d4jVersion = "3.2.2"
+val d4jVersion = "3.2.3-SNAPSHOT"
 val d4jStoresVersion = "3.2.1"
 
 val nettyForcedVersion = "4.1.56.Final"
