@@ -92,6 +92,7 @@ class DefaultStaticMessageService(
         return if (message != null) {
             // Update
             message.edit()
+                .withContentOrNull("")
                 .withEmbeds(embed)
                 .withComponents(*componentService.getStaticMessageComponents(settings))
                 .awaitSingleOrNull()
