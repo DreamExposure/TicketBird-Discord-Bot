@@ -9,8 +9,8 @@ interface GuildSettingsRepository: R2dbcRepository<GuildSettingsData, Long> {
     @Query("""
         UPDATE guild_settings
         SET lang = :lang,
-            patron_guild = :patron_guild,
-            dev_guild = :dev_guild,
+            patron_guild = :patronGuild,
+            dev_guild = :devGuild,
             use_projects = :useProjects,
             awaiting_category = :awaitingCategory,
             responded_category = :respondedCategory,
