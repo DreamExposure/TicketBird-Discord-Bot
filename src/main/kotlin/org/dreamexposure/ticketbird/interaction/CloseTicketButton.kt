@@ -2,6 +2,7 @@ package org.dreamexposure.ticketbird.interaction
 
 import discord4j.core.event.domain.interaction.ButtonInteractionEvent
 import kotlinx.coroutines.reactor.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.LocaleService
 import org.dreamexposure.ticketbird.business.StaticMessageService
 import org.dreamexposure.ticketbird.business.TicketService
@@ -15,8 +16,11 @@ class CloseTicketButton(
     private val localeService: LocaleService,
 ): ButtonHandler {
     override val id = "close-ticket"
-
     override suspend fun handle(event: ButtonInteractionEvent, settings: GuildSettings) {
+    event.deferReply()
+            .withEphemeral(true)
+            .awaitSingleOrNull()
+
         val ticket = ticketService.getTicket(settings.guildId, event.interaction.channelId)
 
         // Handle if not in a ticket channel
