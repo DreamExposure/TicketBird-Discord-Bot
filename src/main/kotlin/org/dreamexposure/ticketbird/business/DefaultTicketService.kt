@@ -105,6 +105,7 @@ class DefaultTicketService(
             .doOnNext { ticket.category = settings.holdCategory!! }
             .doOnNext { ticket.lastActivity = Instant.now() }
             .awaitSingle()
+        updateTicket(ticket)
 
         channel.createMessage(
             localeService.getString(settings.locale, "ticket.hold.creator", ticket.creator.asString())
