@@ -55,7 +55,7 @@ class DefaultTicketService(
             creator = ticket.creator.asLong(),
             channel = ticket.channel.asLong(),
             category = ticket.category.asLong(),
-            lastActivity = ticket.lastActivity,
+            lastActivity = ticket.lastActivity.toEpochMilli(),
         )).map(::Ticket).awaitSingle()
     }
 
@@ -67,7 +67,7 @@ class DefaultTicketService(
             creator = ticket.creator.asLong(),
             channel = ticket.channel.asLong(),
             category = ticket.category.asLong(),
-            lastActivity = ticket.lastActivity
+            lastActivity = ticket.lastActivity.toEpochMilli()
         ).awaitSingleOrNull()
     }
 
@@ -86,7 +86,7 @@ class DefaultTicketService(
 
         channel.edit().withParentIdOrNull(settings.closeCategory)
             .doOnNext { ticket.category = settings.closeCategory!! }
-            .doOnNext { ticket.lastActivity = System.currentTimeMillis() }
+            .doOnNext { ticket.lastActivity = Instant.now() }
             .awaitSingle()
         updateTicket(ticket)
 
@@ -103,7 +103,7 @@ class DefaultTicketService(
 
         channel.edit().withParentIdOrNull(settings.holdCategory)
             .doOnNext { ticket.category = settings.holdCategory!! }
-            .doOnNext { ticket.lastActivity = System.currentTimeMillis() }
+            .doOnNext { ticket.lastActivity = Instant.now() }
             .awaitSingle()
 
         channel.createMessage(
@@ -125,7 +125,7 @@ class DefaultTicketService(
         val channel = discordClient.getChannelById(channelId).ofType(TextChannel::class.java).awaitSingle()
 
         ticket.category = toCategory
-        if (withActivity) ticket.lastActivity = System.currentTimeMillis()
+        if (withActivity) ticket.lastActivity = Instant.now()
 
         updateTicket(ticket)
         channel.edit().withParentIdOrNull(toCategory).awaitSingleOrNull()
@@ -179,7 +179,7 @@ class DefaultTicketService(
             creator = creatorId,
             channel = channel.id,
             category = settings.awaitingCategory!!,
-            lastActivity = System.currentTimeMillis()
+            lastActivity = Instant.now()
         ))
     }
 }

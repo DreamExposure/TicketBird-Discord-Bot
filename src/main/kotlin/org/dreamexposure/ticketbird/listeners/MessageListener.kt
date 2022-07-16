@@ -11,6 +11,7 @@ import org.dreamexposure.ticketbird.business.LocaleService
 import org.dreamexposure.ticketbird.business.StaticMessageService
 import org.dreamexposure.ticketbird.business.TicketService
 import org.springframework.stereotype.Component
+import java.time.Instant
 
 @Component
 class MessageListener(
@@ -80,7 +81,7 @@ class MessageListener(
             }
             else -> {
                 // Active ticket, no change in status, update last activity
-                ticket.lastActivity = System.currentTimeMillis()
+                ticket.lastActivity = Instant.now()
                 ticketService.updateTicket(ticket)
             }
         }

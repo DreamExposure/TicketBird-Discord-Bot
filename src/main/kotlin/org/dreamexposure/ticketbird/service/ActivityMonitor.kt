@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.Duration
+import java.time.Instant
 
 @Component
 class ActivityMonitor(
@@ -43,7 +44,7 @@ class ActivityMonitor(
 
                 for (closedTicketChannel in closedCategoryChannels) {
                     val ticket = ticketService.getTicket(guild.id, closedTicketChannel.id)
-                    if (ticket != null && System.currentTimeMillis() - ticket.lastActivity > Duration.ofDays(1).toMillis()) {
+                    if (ticket != null && Duration.between(Instant.now(), ticket.lastActivity).abs() > Duration.ofDays(1)) {
                         // Ticket closed for over 24 hours, purge
                         ticketService.purgeTicket(settings.guildId, ticket.channel)
                     }
@@ -63,7 +64,7 @@ class ActivityMonitor(
                 for (openTicketChannel in awaitingCategoryChannels + respondedCategoryChannels) {
                     val ticket = ticketService.getTicket(guild.id, openTicketChannel.id)
 
-                    if (ticket != null && System.currentTimeMillis() - ticket.lastActivity > Duration.ofDays(7).toMillis()) {
+                    if (ticket != null && Duration.between(Instant.now(), ticket.lastActivity).abs() > Duration.ofDays(7)) {
                         // Inactive, auto-close
                         ticketService.closeTicket(settings.guildId, ticket.channel, inactive = true)
                     }

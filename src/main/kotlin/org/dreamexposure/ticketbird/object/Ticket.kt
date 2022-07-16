@@ -2,6 +2,7 @@ package org.dreamexposure.ticketbird.`object`
 
 import discord4j.common.util.Snowflake
 import org.dreamexposure.ticketbird.database.TicketData
+import java.time.Instant
 
 data class Ticket(
     val guildId: Snowflake,
@@ -16,7 +17,7 @@ data class Ticket(
 
     var category: Snowflake,
 
-    var lastActivity: Long,
+    var lastActivity: Instant,
 ) {
     constructor(data: TicketData): this(
         guildId = Snowflake.of(data.guildId),
@@ -25,6 +26,6 @@ data class Ticket(
         creator = Snowflake.of(data.creator),
         channel = Snowflake.of(data.channel),
         category = Snowflake.of(data.category),
-        lastActivity = data.lastActivity,
+        lastActivity = Instant.ofEpochMilli(data.lastActivity),
     )
 }
