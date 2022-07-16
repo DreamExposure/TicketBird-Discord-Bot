@@ -1,6 +1,5 @@
 package org.dreamexposure.ticketbird.command
 
-import discord4j.common.util.Snowflake
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import discord4j.core.`object`.command.ApplicationCommandInteractionOption
 import discord4j.core.`object`.command.ApplicationCommandInteractionOptionValue
@@ -76,7 +75,7 @@ class StaffCommand(
 
     private suspend fun list(event: ChatInputInteractionEvent, settings: GuildSettings): Message {
         val staffListStringBuilder = StringBuilder()
-        settings.staff.map(Snowflake::of).forEach { id -> staffListStringBuilder.append("<@$id>").append("\n") }
+        settings.staff.forEach { id -> staffListStringBuilder.append("<@$id>").append("\n") }
 
         val embed = EmbedCreateSpec.builder()
             .author(localeService.getString(settings.locale, "bot.name"), null, GlobalVars.iconUrl)
