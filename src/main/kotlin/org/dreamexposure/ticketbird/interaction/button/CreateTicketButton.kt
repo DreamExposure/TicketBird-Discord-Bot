@@ -1,4 +1,4 @@
-package org.dreamexposure.ticketbird.interaction
+package org.dreamexposure.ticketbird.interaction.button
 
 import discord4j.core.event.domain.interaction.ButtonInteractionEvent
 import kotlinx.coroutines.reactor.awaitSingleOrNull

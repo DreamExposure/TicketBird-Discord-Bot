@@ -4,7 +4,7 @@ import discord4j.core.event.domain.interaction.ModalSubmitInteractionEvent
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.GuildSettingsService
 import org.dreamexposure.ticketbird.business.LocaleService
-import org.dreamexposure.ticketbird.interaction.ModalHandler
+import org.dreamexposure.ticketbird.interaction.modal.ModalHandler
 import org.dreamexposure.ticketbird.logger.LOGGER
 import org.springframework.stereotype.Component
 import java.util.*

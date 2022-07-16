@@ -1,4 +1,4 @@
-package org.dreamexposure.ticketbird.interaction
+package org.dreamexposure.ticketbird.interaction.modal
 
 import discord4j.core.event.domain.interaction.ModalSubmitInteractionEvent
 import discord4j.core.`object`.component.TextInput
@@ -7,8 +7,8 @@ import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.LocaleService
 import org.dreamexposure.ticketbird.business.ProjectService
-import org.dreamexposure.ticketbird.business.state.StateService
 import org.dreamexposure.ticketbird.business.TicketService
+import org.dreamexposure.ticketbird.business.state.StateService
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.`object`.TicketCreateState
 import org.springframework.stereotype.Component

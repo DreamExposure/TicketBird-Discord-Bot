@@ -1,4 +1,4 @@
-package org.dreamexposure.ticketbird.interaction
+package org.dreamexposure.ticketbird.interaction.dropdown
 
 import discord4j.core.event.domain.interaction.SelectMenuInteractionEvent
 import kotlinx.coroutines.reactor.awaitSingleOrNull
