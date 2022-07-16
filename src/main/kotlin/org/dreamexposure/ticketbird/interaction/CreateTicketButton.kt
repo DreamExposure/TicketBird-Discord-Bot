@@ -21,7 +21,6 @@ class CreateTicketButton(
                 .withComponents(*componentService.getProjectSelectComponents(settings))
                 .withEphemeral(true)
                 .awaitSingleOrNull()
-            return
         } else {
             // Guild is not using projects, send to modal
             event.presentModal()

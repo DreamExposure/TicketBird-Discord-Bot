@@ -86,6 +86,7 @@ class DefaultTicketService(
 
         channel.edit().withParentIdOrNull(settings.closeCategory)
             .doOnNext { ticket.category = settings.closeCategory!! }
+            .doOnNext { ticket.lastActivity = System.currentTimeMillis() }
             .awaitSingle()
         updateTicket(ticket)
 
@@ -102,6 +103,7 @@ class DefaultTicketService(
 
         channel.edit().withParentIdOrNull(settings.holdCategory)
             .doOnNext { ticket.category = settings.holdCategory!! }
+            .doOnNext { ticket.lastActivity = System.currentTimeMillis() }
             .awaitSingle()
 
         channel.createMessage(
