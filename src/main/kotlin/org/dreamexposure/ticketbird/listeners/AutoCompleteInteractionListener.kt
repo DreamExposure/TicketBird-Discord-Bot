@@ -4,6 +4,7 @@ import discord4j.core.event.domain.interaction.ChatInputAutoCompleteEvent
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.interaction.autocomplete.AutoCompleteHandler
 import org.dreamexposure.ticketbird.logger.LOGGER
+import org.dreamexposure.ticketbird.utils.GlobalVars.DEFAULT
 import org.springframework.stereotype.Component
 
 @Component
@@ -23,7 +24,7 @@ class AutoCompleteInteractionListener(
             try {
                 handler.handle(event)
             } catch (e: Exception) {
-                LOGGER.error("Error handling auto complete interaction | $event", e)
+                LOGGER.error(DEFAULT, "Error handling auto complete interaction | $event", e)
 
                 // Attempt to respond with empty list so user doesn't have to wait
                 event.respondWithSuggestions(listOf())

@@ -6,6 +6,7 @@ import org.dreamexposure.ticketbird.business.GuildSettingsService
 import org.dreamexposure.ticketbird.business.LocaleService
 import org.dreamexposure.ticketbird.command.SlashCommand
 import org.dreamexposure.ticketbird.logger.LOGGER
+import org.dreamexposure.ticketbird.utils.GlobalVars.DEFAULT
 import org.springframework.stereotype.Component
 import java.util.*
 
@@ -29,7 +30,7 @@ class SlashCommandListener(
             try {
                 command.handle(event, settingsService.getGuildSettings(event.interaction.guildId.get()))
             } catch (e: Exception) {
-                LOGGER.error("Error handling slash command | $event", e)
+                LOGGER.error(DEFAULT, "Error handling slash command | $event", e)
 
                 // Attempt to provide a message if there's an unhandled exception
                 event.createFollowup(localeService.getString(Locale.ENGLISH, "generic.unknown-error"))

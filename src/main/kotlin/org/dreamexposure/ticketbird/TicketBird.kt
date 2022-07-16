@@ -2,7 +2,7 @@ package org.dreamexposure.ticketbird
 
 import org.dreamexposure.ticketbird.conf.BotSettings
 import org.dreamexposure.ticketbird.logger.LOGGER
-import org.dreamexposure.ticketbird.utils.GlobalVars
+import org.dreamexposure.ticketbird.utils.GlobalVars.DEFAULT
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.session.SessionAutoConfiguration
 import org.springframework.boot.builder.SpringApplicationBuilder
@@ -73,7 +73,7 @@ class TicketBird {
                     .run(*args)
             } catch (e: Exception) {
                 e.printStackTrace()
-                LOGGER.error(GlobalVars.DEFAULT, "Spring error!", e)
+                LOGGER.error(DEFAULT, "Spring error!", e)
             }
         }
     }
