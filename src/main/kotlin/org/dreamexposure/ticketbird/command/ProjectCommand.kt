@@ -72,7 +72,7 @@ class ProjectCommand(
                 .awaitSingle()
         }
 
-        projectService.createProject(Project(settings.guildId, name = name, prefix = prefix))
+        projectService.createProject(Project(guildId = settings.guildId, name = name, prefix = prefix))
 
         return event.createFollowup(localeService.getString(settings.locale, "command.project.add.success"))
             .withEmbeds(listEmbed(settings))

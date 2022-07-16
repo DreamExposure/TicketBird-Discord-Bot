@@ -17,11 +17,13 @@ interface ProjectRepository: R2dbcRepository<ProjectData, Long> {
 
     @Query("""
         UPDATE projects
-        SET project_prefix = :prefix
+        SET project_prefix = :prefix,
+            project_name = :name
         WHERE guild_id = :guildId
-            AND project_name = :name
+            AND id = :id
     """)
-    fun updateByIdAndName(
+    fun updateByIdAndGuildId(
+        id: Long,
         guildId: Long,
         prefix: String,
         name: String,

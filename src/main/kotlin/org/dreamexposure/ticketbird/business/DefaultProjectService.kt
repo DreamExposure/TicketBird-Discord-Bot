@@ -32,7 +32,8 @@ class DefaultProjectService(private val projectRepository: ProjectRepository): P
     }
 
     override suspend fun updateProject(project: Project) {
-        projectRepository.updateByIdAndName(
+        projectRepository.updateByIdAndGuildId(
+            id = project.id,
             guildId = project.guildId.asLong(),
             name = project.name,
             prefix = project.prefix,
@@ -41,6 +42,10 @@ class DefaultProjectService(private val projectRepository: ProjectRepository): P
 
     override suspend fun deleteProject(guildId: Snowflake, name: String) {
         projectRepository.deleteByGuildIdAndProjectName(guildId.asLong(), name).awaitSingleOrNull()
+    }
+
+    override suspend fun deleteProject(id: Long) {
+        projectRepository.deleteById(id).awaitSingleOrNull()
     }
 
     override suspend fun deleteAllProjects(guildId: Snowflake) {
