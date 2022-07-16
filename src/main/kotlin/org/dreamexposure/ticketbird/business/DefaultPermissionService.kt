@@ -26,15 +26,7 @@ class DefaultPermissionService(
         val missing = mutableListOf<Permission>()
 
         when {
-            !current.contains(Permission.MANAGE_CHANNELS) -> missing.add(Permission.MANAGE_CHANNELS)
-            !current.contains(Permission.SEND_MESSAGES) -> missing.add(Permission.SEND_MESSAGES)
-            !current.contains(Permission.MANAGE_MESSAGES) -> missing.add(Permission.MANAGE_MESSAGES)
-            !current.contains(Permission.EMBED_LINKS) -> missing.add(Permission.EMBED_LINKS)
-            !current.contains(Permission.READ_MESSAGE_HISTORY) -> missing.add(Permission.READ_MESSAGE_HISTORY)
-            !current.contains(Permission.MENTION_EVERYONE) -> missing.add(Permission.MENTION_EVERYONE)
-            !current.contains(Permission.USE_EXTERNAL_EMOJIS) -> missing.add(Permission.USE_EXTERNAL_EMOJIS)
-            !current.contains(Permission.VIEW_CHANNEL) -> missing.add(Permission.VIEW_CHANNEL)
-            current.contains(Permission.ADMINISTRATOR) -> missing.clear() // Admin  overrides all of these perms
+            !current.contains(Permission.ADMINISTRATOR) -> missing.add(Permission.ADMINISTRATOR)
         }
 
         return PermissionSet.of(*missing.toTypedArray())
