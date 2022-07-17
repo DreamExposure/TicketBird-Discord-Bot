@@ -6,23 +6,23 @@ import org.springframework.data.relational.core.mapping.Table
 data class GuildSettingsData(
     val guildId: Long,
 
-    var lang: String,
+    val lang: String,
 
-    var patronGuild: Boolean,
+    val patronGuild: Boolean,
 
-    var devGuild: Boolean,
+    val devGuild: Boolean,
 
-    var useProjects: Boolean,
+    val useProjects: Boolean,
 
-    var awaitingCategory: Long?,
-    var respondedCategory: Long?,
-    var holdCategory: Long?,
-    var closeCategory: Long?,
+    val awaitingCategory: Long?,
+    val respondedCategory: Long?,
+    val holdCategory: Long?,
+    val closeCategory: Long?,
 
-    var supportChannel: Long?,
-    var staticMessage: Long?,
+    val supportChannel: Long?,
+    val staticMessage: Long?,
 
-    var nextId: Int,
+    val nextId: Int,
 
     val staff: String,
 )

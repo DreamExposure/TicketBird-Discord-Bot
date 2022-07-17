@@ -6,11 +6,11 @@ import org.springframework.data.relational.core.mapping.Table
 data class TicketData(
     val guildId: Long,
     val number: Int,
-    val project: String = "N/a",
+    val project: String,
 
     val creator: Long,
     val channel: Long,
     var category: Long,
 
-    var lastActivity: Long = System.currentTimeMillis(),
+    val lastActivity: Long,
 )

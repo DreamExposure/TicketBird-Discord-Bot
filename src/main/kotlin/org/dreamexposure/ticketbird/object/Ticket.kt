@@ -9,7 +9,7 @@ data class Ticket(
 
     val number: Int,
 
-    val project: String,
+    val project: String = "N/a",
 
     val creator: Snowflake,
 
@@ -17,7 +17,7 @@ data class Ticket(
 
     var category: Snowflake,
 
-    var lastActivity: Instant,
+    var lastActivity: Instant = Instant.now(),
 ) {
     constructor(data: TicketData): this(
         guildId = Snowflake.of(data.guildId),
