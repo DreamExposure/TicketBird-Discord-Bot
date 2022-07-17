@@ -13,11 +13,13 @@ import org.springframework.stereotype.Component
 @Component
 class DefaultGuildSettingsService(private val settingsRepository: GuildSettingsRepository) : GuildSettingsService {
     override suspend fun hasGuildSettings(guildId: Snowflake): Boolean {
-        return settingsRepository.existsById(guildId.asLong()).awaitSingle()
+        return settingsRepository.findByGuildId(guildId.asLong())
+            .map { true }
+            .awaitFirstOrDefault(false)
     }
 
     override suspend fun getGuildSettings(guildId: Snowflake): GuildSettings {
-        return settingsRepository.findById(guildId.asLong())
+        return settingsRepository.findByGuildId(guildId.asLong())
             .map(::GuildSettings)
             .awaitFirstOrDefault(GuildSettings(guildId = guildId))
     }
@@ -43,7 +45,7 @@ class DefaultGuildSettingsService(private val settingsRepository: GuildSettingsR
     }
 
     override suspend fun updateGuildSettings(settings: GuildSettings) {
-        settingsRepository.updateById(
+        settingsRepository.updateByGuildId(
             guildId = settings.guildId.asLong(),
             lang = settings.locale.toLanguageTag(),
             devGuild = settings.devGuild,
@@ -63,7 +65,7 @@ class DefaultGuildSettingsService(private val settingsRepository: GuildSettingsR
     }
 
     override suspend fun deleteGuildSettings(guildId: Snowflake) {
-        settingsRepository.deleteById(guildId.asLong()).awaitSingle()
+        settingsRepository.deleteByGuildId(guildId.asLong()).awaitSingle()
     }
 
     override suspend fun createOrUpdateGuildSettings(settings: GuildSettings): GuildSettings {

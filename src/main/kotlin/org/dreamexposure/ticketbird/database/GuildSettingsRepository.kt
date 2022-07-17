@@ -5,6 +5,7 @@ import org.springframework.data.r2dbc.repository.R2dbcRepository
 import reactor.core.publisher.Mono
 
 interface GuildSettingsRepository: R2dbcRepository<GuildSettingsData, Long> {
+    fun findByGuildId(guildId: Long): Mono<GuildSettingsData>
 
     @Query("""
         UPDATE guild_settings
@@ -22,7 +23,7 @@ interface GuildSettingsRepository: R2dbcRepository<GuildSettingsData, Long> {
             staff = :staff
         WHERE guild_id = :guildId
     """)
-    fun updateById(
+    fun updateByGuildId(
         guildId: Long,
         lang: String,
         patronGuild: Boolean,
@@ -39,4 +40,6 @@ interface GuildSettingsRepository: R2dbcRepository<GuildSettingsData, Long> {
         nextId: Int,
         staff: String,
     ): Mono<Int>
+
+    fun deleteByGuildId(guildId: Long): Mono<Void>
 }

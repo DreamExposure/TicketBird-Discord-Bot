@@ -1,11 +1,9 @@
 package org.dreamexposure.ticketbird.database
 
-import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 
 @Table("guild_settings")
 data class GuildSettingsData(
-    @Id
     val guildId: Long,
 
     var lang: String,

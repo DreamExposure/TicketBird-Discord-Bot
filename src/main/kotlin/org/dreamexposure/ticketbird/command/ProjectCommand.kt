@@ -130,10 +130,18 @@ class ProjectCommand(
             )
         }
 
-        if (!settings.useProjects) {
+        if (!settings.useProjects && projects.isNotEmpty()) {
             builder.addField(
                 localeService.getString(settings.locale, "embed.projects.field.note"),
-                localeService.getString(settings.locale, "embed.projects.field.note.value"),
+                localeService.getString(settings.locale, "embed.projects.field.note.disabled-with-any"),
+                false
+            )
+        }
+
+        if (settings.useProjects && projects.isEmpty()) {
+            builder.addField(
+                localeService.getString(settings.locale, "embed.projects.field.note"),
+                localeService.getString(settings.locale, "embed.projects.field.note.enabled-and-none"),
                 false
             )
         }
