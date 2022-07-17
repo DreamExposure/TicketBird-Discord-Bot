@@ -130,6 +130,14 @@ class ProjectCommand(
             )
         }
 
+        if (!settings.useProjects) {
+            builder.addField(
+                localeService.getString(settings.locale, "embed.projects.field.note"),
+                localeService.getString(settings.locale, "embed.projects.field.note.value"),
+                false
+            )
+        }
+
         return builder.build()
     }
 }
