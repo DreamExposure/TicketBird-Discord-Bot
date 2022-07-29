@@ -49,7 +49,7 @@ This bot is a hobby project for me, please note that while these features are pl
 - Spring Boot (Data, Dependency Injection, etc)
 - Flyway for automatic database migrations
 - Enterprise repository & service pattern for maintainability
-- Fully containerized with Docker (hosted in Kubernetes!)
+- Fully containerized with Docker (hosted in Kubernetes, docker-compose for local development)
 
 # ✏️ Contributing
 TicketBird is an open source, GPL-3 project. We always welcome and appreciate contributions.
@@ -61,9 +61,8 @@ For development, you should have the Java 17 JDK and Docker installed (and runni
 2. Write your code and add applicable tests
 3. Build with `./gradlew clean build jibDockerBuild` (this will also build a docker image for testing)
 4. Place config in `./docker/bot-config/application.properties` and start with `docker compose up -d`
+    - You can connect to the debugger at port `5005`
 5. Create a pull request and describe your changes! <3
-
-> **NOTE**: This is *not* recommended for self-hosting since docker compose is not persistent.
 
 # 🌐 Localization (translations)
 Please only submit localizations if you speak and/or write the language you are translating to.

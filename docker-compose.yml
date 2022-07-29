@@ -4,7 +4,7 @@ services:
   mysql:
     image: mysql:8.0
     # NOTE: use of "mysql_native_password" is not recommended: https://dev.mysql.com/doc/refman/8.0/en/upgrading-from-previous-series.html#upgrade-caching-sha2-password
-    # (this is just an example, not intended to be a production configuration)
+    # This is only for local debugging and development. DO NOT USE IN PRODUCTION!!!!!
     command: --default-authentication-plugin=mysql_native_password
     environment:
       - MYSQL_ROOT_PASSWORD=password
@@ -15,8 +15,11 @@ services:
 
   bot:
     image: rg.nl-ams.scw.cloud/dreamexposure/ticketbird:latest
+    environment:
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
     ports:
       - "8080:8080"
+      - "5005:5005"
     volumes:
       - ./.docker/bot-config:/ticketbird/bot
     working_dir: /ticketbird/bot
