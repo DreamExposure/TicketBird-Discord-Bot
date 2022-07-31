@@ -1,6 +1,6 @@
 package org.dreamexposure.ticketbird
 
-import org.dreamexposure.ticketbird.conf.BotSettings
+import org.dreamexposure.ticketbird.config.BotSettings
 import org.dreamexposure.ticketbird.logger.LOGGER
 import org.dreamexposure.ticketbird.utils.GlobalVars.DEFAULT
 import org.springframework.boot.autoconfigure.SpringBootApplication

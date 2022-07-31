@@ -1,4 +1,4 @@
-package org.dreamexposure.ticketbird.conf
+package org.dreamexposure.ticketbird.config
 
 import java.util.*
 

@@ -7,7 +7,7 @@ import club.minnced.discord.webhook.send.WebhookEmbed
 import club.minnced.discord.webhook.send.WebhookEmbedBuilder
 import org.dreamexposure.ticketbird.GitProperty
 import org.dreamexposure.ticketbird.TicketBird
-import org.dreamexposure.ticketbird.conf.BotSettings
+import org.dreamexposure.ticketbird.config.BotSettings
 import org.dreamexposure.ticketbird.utils.GlobalVars
 import org.dreamexposure.ticketbird.utils.GlobalVars.DEFAULT
 import org.dreamexposure.ticketbird.utils.GlobalVars.STATUS

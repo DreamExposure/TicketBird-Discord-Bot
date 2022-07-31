@@ -8,7 +8,7 @@ import org.dreamexposure.ticketbird.GitProperty.TICKETBIRD_VERSION
 import org.dreamexposure.ticketbird.GitProperty.TICKETBIRD_VERSION_D4J
 import org.dreamexposure.ticketbird.TicketBird
 import org.dreamexposure.ticketbird.business.LocaleService
-import org.dreamexposure.ticketbird.conf.BotSettings
+import org.dreamexposure.ticketbird.config.BotSettings
 import org.dreamexposure.ticketbird.extensions.getHumanReadable
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.utils.GlobalVars
