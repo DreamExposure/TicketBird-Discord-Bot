@@ -8,6 +8,9 @@ import org.dreamexposure.ticketbird.database.GuildSettingsData
 import org.dreamexposure.ticketbird.database.GuildSettingsRepository
 import org.dreamexposure.ticketbird.extensions.asStringList
 import org.dreamexposure.ticketbird.`object`.GuildSettings
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.CachePut
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Component
 
 @Component
@@ -18,12 +21,14 @@ class DefaultGuildSettingsService(private val settingsRepository: GuildSettingsR
             .awaitFirstOrDefault(false)
     }
 
+    @Cacheable("settingsCache", key = "#guildId.asLong()")
     override suspend fun getGuildSettings(guildId: Snowflake): GuildSettings {
         return settingsRepository.findByGuildId(guildId.asLong())
             .map(::GuildSettings)
             .awaitFirstOrDefault(GuildSettings(guildId = guildId))
     }
 
+    @CachePut("settingsCache", key = "#settings.guildId.asLong()")
     override suspend fun createGuildSettings(settings: GuildSettings): GuildSettings {
         return settingsRepository.save(GuildSettingsData(
             guildId = settings.guildId.asLong(),
@@ -44,6 +49,7 @@ class DefaultGuildSettingsService(private val settingsRepository: GuildSettingsR
         )).map(::GuildSettings).awaitSingle()
     }
 
+    @CachePut("settingsCache", key = "#settings.guildId.asLong()", condition = "#result != null")
     override suspend fun updateGuildSettings(settings: GuildSettings) {
         settingsRepository.updateByGuildId(
             guildId = settings.guildId.asLong(),
@@ -64,6 +70,7 @@ class DefaultGuildSettingsService(private val settingsRepository: GuildSettingsR
         ).awaitSingleOrNull()
     }
 
+    @CacheEvict("settingsCache", key = "#guildId.asLong()")
     override suspend fun deleteGuildSettings(guildId: Snowflake) {
         settingsRepository.deleteByGuildId(guildId.asLong()).awaitSingle()
     }

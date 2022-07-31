@@ -26,6 +26,7 @@ import io.lettuce.core.RedisURI
 import kotlinx.coroutines.reactor.mono
 import org.dreamexposure.ticketbird.TicketBird
 import org.dreamexposure.ticketbird.listeners.EventListener
+import org.springframework.boot.autoconfigure.cache.RedisCacheManagerBuilderCustomizer
 import org.springframework.boot.web.server.ConfigurableWebServerFactory
 import org.springframework.boot.web.server.ErrorPage
 import org.springframework.boot.web.server.WebServerFactoryCustomizer
@@ -35,6 +36,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
 import org.springframework.core.io.ClassPathResource
+import org.springframework.data.redis.cache.RedisCacheConfiguration
 import org.springframework.http.HttpStatus
 import org.springframework.web.reactive.config.CorsRegistry
 import org.springframework.web.reactive.config.EnableWebFlux
@@ -49,6 +51,7 @@ import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver
 import org.thymeleaf.spring5.view.reactive.ThymeleafReactiveViewResolver
 import org.thymeleaf.templatemode.TemplateMode
 import reactor.kotlin.core.publisher.toFlux
+import java.time.Duration
 
 @Configuration
 @EnableWebFlux
@@ -176,4 +179,18 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, 
         Intent.DIRECT_MESSAGES,
         Intent.DIRECT_MESSAGE_REACTIONS
     )
+
+    // Cache
+    @Bean
+    fun redisCacheManagerBuilderCustomizer(): RedisCacheManagerBuilderCustomizer {
+        return RedisCacheManagerBuilderCustomizer {
+            it.withCacheConfiguration("settingsCache",
+                RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(60))
+            ).withCacheConfiguration("ticketCache",
+                RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(60))
+            ).withCacheConfiguration("projectCache",
+                RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(120))
+            ).build()
+        }
+    }
 }
