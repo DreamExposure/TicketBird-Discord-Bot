@@ -61,11 +61,11 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 
     // Web
-    implementation("org.thymeleaf:thymeleaf:3.0.14.RELEASE")
-    implementation("org.thymeleaf:thymeleaf-spring5:3.0.14.RELEASE")
-    implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:3.0.0")
+    implementation("org.thymeleaf:thymeleaf:3.0.15.RELEASE")
+    implementation("org.thymeleaf:thymeleaf-spring5:3.0.15.RELEASE")
+    implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:3.1.0")
 
-    implementation("com.squareup.okhttp3:okhttp:4.9.3")
+    implementation("com.squareup.okhttp3:okhttp:4.10.0")
 
     // Database
     implementation("org.flywaydb:flyway-core")
@@ -84,8 +84,7 @@ dependencies {
     implementation("com.discord4j:stores-redis:$d4jStoresVersion") {
         exclude("io.netty", "*")
     }
-    implementation("com.github.DiscordBotList:Java-Wrapper:v1.0")
-    implementation("club.minnced:discord-webhooks:0.7.4")
+    implementation("club.minnced:discord-webhooks:0.8.0")
 
     // Forced version nonsense
     implementation("io.netty:netty-all:$nettyForcedVersion")

@@ -56,6 +56,7 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, 
 
     private var ctx: ApplicationContext? = null
 
+    // Web stuff
     override fun customize(factory: ConfigurableWebServerFactory?) {
         factory?.addErrorPages(ErrorPage(HttpStatus.NOT_FOUND, "/"))
     }
@@ -111,6 +112,7 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, 
         return viewResolver
     }
 
+    // Discord
     @Bean
     @Primary
     fun objectMapper(): ObjectMapper {
