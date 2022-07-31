@@ -10,22 +10,32 @@ import org.dreamexposure.ticketbird.extensions.asStringList
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.CachePut
-import org.springframework.cache.annotation.Cacheable
+import org.springframework.data.redis.cache.RedisCache
+import org.springframework.data.redis.cache.RedisCacheManager
 import org.springframework.stereotype.Component
 
 @Component
-class DefaultGuildSettingsService(private val settingsRepository: GuildSettingsRepository) : GuildSettingsService {
+class DefaultGuildSettingsService(
+    private val settingsRepository: GuildSettingsRepository,
+    cacheManager: RedisCacheManager,
+) : GuildSettingsService {
+    private val cache = cacheManager.getCache("settingsCache")!! as RedisCache
+
     override suspend fun hasGuildSettings(guildId: Snowflake): Boolean {
         return settingsRepository.findByGuildId(guildId.asLong())
             .map { true }
             .awaitFirstOrDefault(false)
     }
 
-    @Cacheable("settingsCache", key = "#guildId.asLong()")
     override suspend fun getGuildSettings(guildId: Snowflake): GuildSettings {
+        val exists = cache.get(guildId.asLong(), GuildSettings::class.java)
+        if (exists != null) return exists
+
         return settingsRepository.findByGuildId(guildId.asLong())
             .map(::GuildSettings)
-            .awaitFirstOrDefault(GuildSettings(guildId = guildId))
+            .defaultIfEmpty(GuildSettings(guildId = guildId))
+            .doOnNext { cache.put(it.guildId.asLong(), it) }
+            .awaitSingle()
     }
 
     @CachePut("settingsCache", key = "#settings.guildId.asLong()")

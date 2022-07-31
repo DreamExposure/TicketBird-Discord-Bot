@@ -37,6 +37,8 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
 import org.springframework.core.io.ClassPathResource
 import org.springframework.data.redis.cache.RedisCacheConfiguration
+import org.springframework.data.redis.cache.RedisCacheManager
+import org.springframework.data.redis.connection.RedisConnectionFactory
 import org.springframework.http.HttpStatus
 import org.springframework.web.reactive.config.CorsRegistry
 import org.springframework.web.reactive.config.EnableWebFlux
@@ -192,5 +194,10 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, 
                 RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(120))
             ).build()
         }
+    }
+
+    @Bean
+    fun redisCache(connection: RedisConnectionFactory): RedisCacheManager {
+        return RedisCacheManager.create(connection)
     }
 }
