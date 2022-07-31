@@ -11,6 +11,7 @@ import org.dreamexposure.ticketbird.config.BotSettings
 import org.dreamexposure.ticketbird.utils.GlobalVars
 import org.dreamexposure.ticketbird.utils.GlobalVars.DEFAULT
 import org.dreamexposure.ticketbird.utils.GlobalVars.STATUS
+import java.time.Instant
 
 class DiscordWebhookAppender : AppenderBase<ILoggingEvent>() {
     private val defaultHook: WebhookClient?
@@ -46,6 +47,7 @@ class DiscordWebhookAppender : AppenderBase<ILoggingEvent>() {
             .setDescription(event.formattedMessage)
             .setColor(GlobalVars.embedColor.rgb)
             .setFooter(WebhookEmbed.EmbedFooter("v${GitProperty.TICKETBIRD_VERSION.value}", null))
+            .setTimestamp(Instant.now())
 
         if (event.throwableProxy != null) {
             content.addField(WebhookEmbed.EmbedField(false, "Error Message", event.throwableProxy.message))
@@ -72,6 +74,7 @@ class DiscordWebhookAppender : AppenderBase<ILoggingEvent>() {
             .setDescription(event.formattedMessage)
             .setColor(GlobalVars.embedColor.rgb)
             .setFooter(WebhookEmbed.EmbedFooter("v${GitProperty.TICKETBIRD_VERSION.value}", null))
+            .setTimestamp(Instant.now())
 
         if (event.throwableProxy != null) {
             content.addField(WebhookEmbed.EmbedField(false, "Error Message", event.throwableProxy.message))
