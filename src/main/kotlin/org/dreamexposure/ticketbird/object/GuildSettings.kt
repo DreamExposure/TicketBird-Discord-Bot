@@ -5,7 +5,6 @@ import org.dreamexposure.ticketbird.database.GuildSettingsData
 import org.dreamexposure.ticketbird.extensions.handleLocaleDebt
 import org.dreamexposure.ticketbird.extensions.listFromDb
 import org.dreamexposure.ticketbird.extensions.toSnowflake
-import java.io.Serializable
 import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -25,7 +24,7 @@ data class GuildSettings(
 
     var nextId: Int = 1,
     val staff: MutableList<String> = CopyOnWriteArrayList(),
-): Serializable {
+) {
     constructor(data: GuildSettingsData) : this(
         guildId = Snowflake.of(data.guildId),
         locale = data.lang.handleLocaleDebt(),

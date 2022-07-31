@@ -55,6 +55,7 @@ import org.thymeleaf.templatemode.TemplateMode
 import reactor.kotlin.core.publisher.toFlux
 import java.time.Duration
 
+
 @Configuration
 @EnableWebFlux
 class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, ApplicationContextAware, WebFluxConfigurer {
