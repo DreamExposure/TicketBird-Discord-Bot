@@ -27,32 +27,33 @@ class DefaultTicketService(
     private val permissionService: PermissionService,
     private val componentService: ComponentService,
 ) : TicketService {
-    //TODO: cache ticket stuff!!!
 
     private val discordClient
         get() = beanFactory.getBean<GatewayDiscordClient>()
 
     override suspend fun getTicket(guildId: Snowflake, number: Int): Ticket? {
-        return ticketRepository.findByGuildIdAndNumber(guildId.asLong(), number)
-            .map(::Ticket)
-            .awaitSingleOrNull()
+        return getAllTickets(guildId).firstOrNull { it.number == number }
     }
 
     override suspend fun getTicket(guildId: Snowflake, channelId: Snowflake): Ticket? {
-        return ticketRepository.findByGuildIdAndChannel(guildId.asLong(), channelId.asLong())
-            .map(::Ticket)
-            .awaitSingleOrNull()
+        return getAllTickets(guildId).firstOrNull { it.channel == channelId }
     }
 
     override suspend fun getAllTickets(guildId: Snowflake): List<Ticket> {
-        return ticketRepository.findByGuildId(guildId.asLong())
+        var projects = ticketCache.get(guildId.asLong())
+        if (projects != null) return projects
+
+        projects = ticketRepository.findByGuildId(guildId.asLong())
             .map(::Ticket)
             .collectList()
             .awaitSingle()
+
+        ticketCache.put(guildId.asLong(), projects)
+        return projects
     }
 
     override suspend fun createTicket(ticket: Ticket): Ticket {
-        return ticketRepository.save(TicketData(
+        val newTicket = ticketRepository.save(TicketData(
             guildId = ticket.guildId.asLong(),
             number = ticket.number,
             project = ticket.project,
@@ -61,6 +62,11 @@ class DefaultTicketService(
             category = ticket.category.asLong(),
             lastActivity = ticket.lastActivity.toEpochMilli(),
         )).map(::Ticket).awaitSingle()
+
+        val cached = ticketCache.get(ticket.guildId.asLong())
+        if (cached != null) ticketCache.put(ticket.guildId.asLong(), cached + newTicket)
+
+        return newTicket
     }
 
     override suspend fun updateTicket(ticket: Ticket) {
@@ -73,14 +79,29 @@ class DefaultTicketService(
             category = ticket.category.asLong(),
             lastActivity = ticket.lastActivity.toEpochMilli()
         ).awaitSingleOrNull()
+
+        val cached = ticketCache.get(ticket.guildId.asLong())
+        if (cached != null) {
+            val newList = cached.toMutableList()
+            newList.removeIf { it.number == ticket.number }
+            ticketCache.put(ticket.guildId.asLong(), newList + ticket)
+        }
     }
 
     override suspend fun deleteTicket(guildId: Snowflake, number: Int) {
         ticketRepository.deleteByGuildIdAndNumber(guildId.asLong(), number).awaitSingleOrNull()
+
+        val cached = ticketCache.get(guildId.asLong())
+        if (cached != null) {
+            val newList = cached.toMutableList()
+            newList.removeIf { it.number == number }
+            ticketCache.put(guildId.asLong(), newList)
+        }
     }
 
     override suspend fun deleteAllTickets(guildId: Snowflake) {
         ticketRepository.deleteAllByGuildId(guildId.asLong()).awaitSingleOrNull()
+        ticketCache.evict(guildId.asLong())
     }
 
     override suspend fun closeTicket(guildId: Snowflake, channelId: Snowflake, inactive: Boolean) {
