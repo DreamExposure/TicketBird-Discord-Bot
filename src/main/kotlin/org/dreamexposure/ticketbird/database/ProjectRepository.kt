@@ -6,9 +6,6 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 interface ProjectRepository: R2dbcRepository<ProjectData, Long> {
-
-    fun findByGuildIdAndProjectName(guildId: Long, projectName: String): Mono<ProjectData>
-
     fun findByGuildId(guildId: Long): Flux<ProjectData>
 
     fun deleteAllByGuildId(guildId: Long): Mono<Void>

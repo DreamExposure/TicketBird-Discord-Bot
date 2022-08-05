@@ -1,6 +1,7 @@
 package org.dreamexposure.ticketbird.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import discord4j.common.JacksonResources
 import discord4j.common.store.Store
@@ -26,6 +27,7 @@ import io.lettuce.core.RedisURI
 import kotlinx.coroutines.reactor.mono
 import org.dreamexposure.ticketbird.TicketBird
 import org.dreamexposure.ticketbird.listeners.EventListener
+import org.dreamexposure.ticketbird.mapper.SnowflakeMapper
 import org.springframework.boot.autoconfigure.cache.RedisCacheManagerBuilderCustomizer
 import org.springframework.boot.web.server.ConfigurableWebServerFactory
 import org.springframework.boot.web.server.ErrorPage
@@ -59,7 +61,6 @@ import java.time.Duration
 @Configuration
 @EnableWebFlux
 class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, ApplicationContextAware, WebFluxConfigurer {
-
     private var ctx: ApplicationContext? = null
 
     // Web stuff
@@ -123,7 +124,10 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, 
     @Primary
     fun objectMapper(): ObjectMapper {
         // Use d4j's object mapper
-        return JacksonResources.create().objectMapper.registerKotlinModule()
+        return JacksonResources.create().objectMapper
+            .registerKotlinModule()
+            .registerModule(JavaTimeModule())
+            .registerModule(SnowflakeMapper())
     }
 
     @Bean
@@ -158,6 +162,7 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, 
             .build()
     }
 
+    //TODO: See if I can get this using Spring's connection stuff so I don't need an additional connection
     private fun getStores(): StoreService {
         return if (BotSettings.USE_REDIS_STORES.get().equals("true", ignoreCase = true)) {
             val uri = RedisURI.Builder

@@ -14,7 +14,7 @@ interface ProjectService {
 
     suspend fun deleteProject(guildId: Snowflake, name: String)
 
-    suspend fun deleteProject(id: Long)
+    suspend fun deleteProject(guildId: Snowflake, id: Long)
 
     suspend fun deleteAllProjects(guildId: Snowflake)
 }
