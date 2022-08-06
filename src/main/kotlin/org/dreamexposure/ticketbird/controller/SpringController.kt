@@ -1,6 +1,6 @@
 package org.dreamexposure.ticketbird.controller
 
-import org.dreamexposure.ticketbird.config.BotSettings
+import discord4j.rest.RestClient
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.server.ServerWebExchange
@@ -8,12 +8,12 @@ import reactor.core.publisher.Mono
 import java.time.LocalDate
 
 @Controller
-class SpringController {
+class SpringController(private val discordClient: RestClient) {
 
     private fun getModel(): MutableMap<String, Any> {
         return mutableMapOf(
                 "loggedIn" to false,
-                "client" to BotSettings.ID.get(),
+                "client" to discordClient.applicationId.block()!!,
                 "year" to LocalDate.now().year,
         )
     }

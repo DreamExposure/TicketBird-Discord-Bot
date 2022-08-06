@@ -4,16 +4,6 @@ import java.util.*
 
 enum class BotSettings {
     LOG_FOLDER,
-
-    TOKEN,
-    SECRET,
-    ID,
-
-    GG_TOKEN,
-    DBO_TOKEN,
-
-    UPDATE_SITES,
-    RUN_API,
     USE_WEBHOOKS,
 
     SHARD_COUNT,
@@ -21,10 +11,6 @@ enum class BotSettings {
 
     DEBUG_WEBHOOK,
     STATUS_WEBHOOK,
-
-    BASE_URL,
-    SUPPORT_URL,
-    INVITE_URL,
 
     PROFILE;
 

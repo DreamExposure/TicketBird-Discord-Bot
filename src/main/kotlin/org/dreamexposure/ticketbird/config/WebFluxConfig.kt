@@ -139,8 +139,12 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, 
     }
 
     @Bean
-    fun discordGatewayClient(listeners: List<EventListener<*>>, stores: StoreService): GatewayDiscordClient {
-        return DiscordClientBuilder.create(BotSettings.TOKEN.get())
+    fun discordGatewayClient(
+        @Value("\${bot.secret.token}") token: String,
+        listeners: List<EventListener<*>>,
+        stores: StoreService
+    ): GatewayDiscordClient {
+        return DiscordClientBuilder.create(token)
             .build().gateway()
             .setEnabledIntents(getIntents())
             .setSharding(getStrategy())

@@ -8,15 +8,21 @@ import org.dreamexposure.ticketbird.GitProperty.TICKETBIRD_VERSION
 import org.dreamexposure.ticketbird.GitProperty.TICKETBIRD_VERSION_D4J
 import org.dreamexposure.ticketbird.TicketBird
 import org.dreamexposure.ticketbird.business.LocaleService
-import org.dreamexposure.ticketbird.config.BotSettings
 import org.dreamexposure.ticketbird.extensions.getHumanReadable
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.utils.GlobalVars
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.time.Instant
 
 @Component
 class TicketBirdCommand(
+    @Value("\${bot.url.base}")
+    private val baseUrl: String,
+    @Value("\${bot.url.support}")
+    private val supportUrl: String,
+    @Value("\${bot.url.invite}")
+    private val inviteUrl: String,
     private val localeService: LocaleService,
 ): SlashCommand {
     override val name = "ticketbird"
@@ -34,17 +40,17 @@ class TicketBirdCommand(
             .addField(localeService.getString(settings.locale, "embed.info.field.shard"), formattedIndex(), true)
             .addField(localeService.getString(settings.locale, "embed.info.field.guilds"), "$guilds", true)
             .addField(
-                localeService.getString(settings.locale, "embed.info.field.uptime"),
                 TicketBird.getUptime().getHumanReadable(),
+                localeService.getString(settings.locale, "embed.info.field.uptime"),
                 false
             ).addField(
                 localeService.getString(settings.locale, "embed.info.field.links"),
                 localeService.getString(
                     settings.locale,
                     "embed.info.field.links.value",
-                    "${BotSettings.BASE_URL.get()}/commands",
-                    BotSettings.SUPPORT_URL.get(),
-                    BotSettings.INVITE_URL.get(),
+                    "${baseUrl}/commands",
+                    supportUrl,
+                    inviteUrl,
                     "https://www.patreon.com/Novafox"
                 ),
                 false
