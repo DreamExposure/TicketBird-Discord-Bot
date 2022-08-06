@@ -3,7 +3,6 @@ package org.dreamexposure.ticketbird.config
 import java.util.*
 
 enum class BotSettings {
-    LOG_FOLDER,
     USE_WEBHOOKS,
 
     SHARD_COUNT,
