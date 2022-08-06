@@ -3,6 +3,7 @@ package org.dreamexposure.ticketbird.business.cache
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.dreamexposure.ticketbird.`object`.GuildSettings
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.cache.Cache
 import org.springframework.context.annotation.Primary
 import org.springframework.data.redis.cache.RedisCacheManager
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Component
 
 @Primary
 @Component
+@ConditionalOnProperty("bot.cache.redis", havingValue = "true")
 class GuildSettingsRedisCacheRepository(
     redisCacheManager: RedisCacheManager,
     private val mapper: ObjectMapper,

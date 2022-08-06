@@ -40,16 +40,16 @@ class DefaultTicketService(
     }
 
     override suspend fun getAllTickets(guildId: Snowflake): List<Ticket> {
-        var projects = ticketCache.get(guildId.asLong())
-        if (projects != null) return projects
+        var tickets = ticketCache.get(guildId.asLong())
+        if (tickets != null) return tickets
 
-        projects = ticketRepository.findByGuildId(guildId.asLong())
+        tickets = ticketRepository.findByGuildId(guildId.asLong())
             .map(::Ticket)
             .collectList()
             .awaitSingle()
 
-        ticketCache.put(guildId.asLong(), projects)
-        return projects
+        ticketCache.put(guildId.asLong(), tickets)
+        return tickets
     }
 
     override suspend fun createTicket(ticket: Ticket): Ticket {

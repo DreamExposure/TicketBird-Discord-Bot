@@ -3,10 +3,6 @@ package org.dreamexposure.ticketbird.config
 import java.util.*
 
 enum class BotSettings {
-    REDIS_HOSTNAME,
-    REDIS_PORT,
-    REDIS_PASSWORD,
-
     LOG_FOLDER,
 
     TOKEN,
@@ -18,7 +14,6 @@ enum class BotSettings {
 
     UPDATE_SITES,
     RUN_API,
-    USE_REDIS_STORES,
     USE_WEBHOOKS,
 
     SHARD_COUNT,

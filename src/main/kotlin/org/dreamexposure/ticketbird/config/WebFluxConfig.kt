@@ -21,14 +21,22 @@ import discord4j.rest.RestClient
 import discord4j.store.api.mapping.MappingStoreService
 import discord4j.store.api.service.StoreService
 import discord4j.store.jdk.JdkStoreService
+import discord4j.store.redis.RedisClusterStoreService
 import discord4j.store.redis.RedisStoreService
 import io.lettuce.core.RedisClient
 import io.lettuce.core.RedisURI
+import io.lettuce.core.cluster.RedisClusterClient
 import kotlinx.coroutines.reactor.mono
 import org.dreamexposure.ticketbird.TicketBird
+import org.dreamexposure.ticketbird.business.cache.JdkCacheRepository
 import org.dreamexposure.ticketbird.listeners.EventListener
 import org.dreamexposure.ticketbird.mapper.SnowflakeMapper
+import org.dreamexposure.ticketbird.`object`.GuildSettings
+import org.dreamexposure.ticketbird.`object`.Project
+import org.dreamexposure.ticketbird.`object`.Ticket
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.cache.RedisCacheManagerBuilderCustomizer
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.web.server.ConfigurableWebServerFactory
 import org.springframework.boot.web.server.ErrorPage
 import org.springframework.boot.web.server.WebServerFactoryCustomizer
@@ -131,12 +139,12 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, 
     }
 
     @Bean
-    fun discordGatewayClient(listeners: List<EventListener<*>>): GatewayDiscordClient {
+    fun discordGatewayClient(listeners: List<EventListener<*>>, stores: StoreService): GatewayDiscordClient {
         return DiscordClientBuilder.create(BotSettings.TOKEN.get())
             .build().gateway()
             .setEnabledIntents(getIntents())
             .setSharding(getStrategy())
-            .setStore(Store.fromLayout(LegacyStoreLayout.of(getStores())))
+            .setStore(Store.fromLayout(LegacyStoreLayout.of(stores)))
             .setInitialPresence { ClientPresence.doNotDisturb(ClientActivity.playing("Booting Up!")) }
             .setMemberRequestFilter(MemberRequestFilter.none())
             .withEventDispatcher { dispatcher ->
@@ -162,17 +170,29 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, 
             .build()
     }
 
-    //TODO: See if I can get this using Spring's connection stuff so I don't need an additional connection
-    private fun getStores(): StoreService {
-        return if (BotSettings.USE_REDIS_STORES.get().equals("true", ignoreCase = true)) {
-            val uri = RedisURI.Builder
-                .redis(BotSettings.REDIS_HOSTNAME.get(), BotSettings.REDIS_PORT.get().toInt())
-                //.withPassword(BotSettings.REDIS_PASSWORD.get())
-                .build()
+    @Bean
+    fun discordStores(
+        @Value("\${bot.cache.redis:false}") useRedis: Boolean,
+        @Value("\${spring.redis.host:null}") redisHost: String?,
+        @Value("\${spring.redis.port:null}") redisPort: String?,
+        @Value("\${spring.redis.password:null}") redisPassword: CharSequence?,
+        @Value("\${redis.cluster:false}") redisCluster: Boolean,
+    ): StoreService {
+        return if (useRedis) {
+            val uriBuilder = RedisURI.Builder
+                .redis(redisHost, redisPort!!.toInt())
+            if (redisPassword != null) uriBuilder.withPassword(redisPassword)
 
-            val rss = RedisStoreService.Builder()
-                .redisClient(RedisClient.create(uri))
-                .build()
+            val rss = if (redisCluster) {
+                RedisClusterStoreService.Builder()
+                    .redisClient(RedisClusterClient.create(uriBuilder.build()))
+                    .build()
+            } else {
+                RedisStoreService.Builder()
+                    .redisClient(RedisClient.create(uriBuilder.build()))
+                    .build()
+            }
+
 
             MappingStoreService.create()
                 .setMappings(rss, GuildData::class.java, MessageData::class.java)
@@ -190,20 +210,34 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, 
 
     // Cache
     @Bean
-    fun redisCacheManagerBuilderCustomizer(): RedisCacheManagerBuilderCustomizer {
+    fun redisCacheManagerBuilderCustomizer(
+        @Value("\${bot.cache.ttl-minutes.settings:60}") settings: Long,
+        @Value("\${bot.cache.ttl-minutes.ticket:60}") ticket: Long,
+        @Value("\${bot.cache.ttl-minutes.project:120}") project: Long
+    ): RedisCacheManagerBuilderCustomizer {
         return RedisCacheManagerBuilderCustomizer {
             it.withCacheConfiguration("settingsCache",
-                RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(60))
+                RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(settings))
             ).withCacheConfiguration("ticketCache",
-                RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(60))
+                RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(ticket))
             ).withCacheConfiguration("projectCache",
-                RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(120))
+                RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(project))
             ).build()
         }
     }
 
     @Bean
+    @ConditionalOnProperty("bot.cache.redis", havingValue = "true")
     fun redisCache(connection: RedisConnectionFactory): RedisCacheManager {
         return RedisCacheManager.create(connection)
     }
+
+    @Bean
+    fun guidSettingsFallbackCache(@Value("\${bot.cache.ttl-minutes.settings:60}") minutes: Long) = JdkCacheRepository<Long, GuildSettings>(Duration.ofMinutes(minutes))
+
+    @Bean
+    fun ticketFallbackCache(@Value("\${bot.cache.ttl-minutes.ticket:60}") minutes: Long) = JdkCacheRepository<Long, List<Ticket>>(Duration.ofMinutes(minutes))
+
+    @Bean
+    fun projectFallbackCache(@Value("\${bot.cache.ttl-minutes.project:120}") minutes: Long) = JdkCacheRepository<Long, List<Project>>(Duration.ofMinutes(minutes))
 }

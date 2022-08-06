@@ -1,13 +1,11 @@
 package org.dreamexposure.ticketbird.business.cache
 
-import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 
-@Component
-class FallbackCacheRepository<K : Any, V> : CacheRepository<K, V> {
+class JdkCacheRepository<K : Any, V>(override val ttl: Duration) : CacheRepository<K, V> {
     private val cache = ConcurrentHashMap<K, Pair<Instant, V>>()
 
     init {
@@ -29,6 +27,6 @@ class FallbackCacheRepository<K : Any, V> : CacheRepository<K, V> {
     }
 
     private fun evictOld() {
-        cache.forEach { (key, pair) -> if (Duration.between(pair.first, Instant.now()) > ttl) cache.remove(key) }
+        cache.forEach { (key, pair) -> if (Duration.between(pair.first, Instant.now()) >= ttl) cache.remove(key) }
     }
 }
