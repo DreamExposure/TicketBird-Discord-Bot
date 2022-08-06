@@ -13,6 +13,10 @@ services:
       - MYSQL_DATABASE=ticketbird
     restart: unless-stopped
 
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+
   bot:
     image: rg.nl-ams.scw.cloud/dreamexposure/ticketbird:latest
     environment:
@@ -25,7 +29,7 @@ services:
     working_dir: /ticketbird/bot
     depends_on:
       - mysql
-    restart: unless-stopped
+      - redis
 
 volumes:
   ticketbird_data: {}
