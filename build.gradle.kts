@@ -10,7 +10,7 @@ plugins {
     kotlin("plugin.spring") version "1.7.0"
 
     id("com.google.cloud.tools.jib") version "3.2.1"
-    id ("org.springframework.boot") version "2.6.6"
+    id("org.springframework.boot") version "2.6.6"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
 
     id("com.gorylenko.gradle-git-properties") version "2.4.1"
@@ -40,10 +40,6 @@ repositories {
 val d4jVersion = "3.2.3-SNAPSHOT"
 val d4jStoresVersion = "3.2.1"
 
-val nettyForcedVersion = "4.1.56.Final"
-val reactorCoreVersion = "3.4.14"
-val reactorNettyVersion = "1.0.15"
-
 val kotlinSrcDir: File = buildDir.resolve("src/main/kotlin")
 
 dependencies {
@@ -71,28 +67,17 @@ dependencies {
 
     // Database
     implementation("org.flywaydb:flyway-core")
-    implementation("dev.miku:r2dbc-mysql") {
-        exclude("io.netty", "*")
-        exclude("io.projectreactor", "*")
-    }
+    implementation("dev.miku:r2dbc-mysql")
     implementation("mysql:mysql-connector-java")
 
     // Serialization
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
-    implementation("org.json:json:20220320")
 
     // Discord
     implementation("com.discord4j:discord4j-core:$d4jVersion")
-    implementation("com.discord4j:stores-redis:$d4jStoresVersion") {
-        exclude("io.netty", "*")
-    }
-    implementation("club.minnced:discord-webhooks:0.8.0")
-
-    // Forced version nonsense
-    implementation("io.netty:netty-all:$nettyForcedVersion")
-    implementation("io.projectreactor:reactor-core:$reactorCoreVersion")
-    implementation("io.projectreactor.netty:reactor-netty:$reactorNettyVersion")
+    implementation("com.discord4j:stores-redis:$d4jStoresVersion")
+    implementation("club.minnced:discord-webhooks:0.8.2")
 
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
@@ -148,31 +133,29 @@ tasks {
             val enumPairs = gitProperties.mapKeys { it.key.replace('.', '_').toUpperCase() }
 
             val enumBuilder = TypeSpec.enumBuilder("GitProperty")
-                    .primaryConstructor(
-                            com.squareup.kotlinpoet.FunSpec.constructorBuilder()
-                                    .addParameter("value", String::class)
-                                    .build()
-                    )
+                .primaryConstructor(
+                    com.squareup.kotlinpoet.FunSpec.constructorBuilder()
+                        .addParameter("value", String::class)
+                        .build()
+                )
 
             val enums = enumPairs.entries.fold(enumBuilder) { accumulator, (key, value) ->
                 accumulator.addEnumConstant(
-                        key, TypeSpec.anonymousClassBuilder()
-                        .addSuperclassConstructorParameter("%S", value)
-                        .build()
+                    key, TypeSpec.anonymousClassBuilder()
+                    .addSuperclassConstructorParameter("%S", value)
+                    .build()
                 )
             }
 
             val enumFile = FileSpec.builder("org.dreamexposure.ticketbird", "GitProperty")
-                    .addType(
-                            enums // https://github.com/square/kotlinpoet#enums
-                                    .addProperty(
-                                           PropertySpec.builder("value", String::class)
-                                                    .initializer("value")
-                                                    .build()
-                                    )
-                                    .build()
-                    )
-                    .build()
+                .addType(
+                    // https://github.com/square/kotlinpoet#enums
+                    enums.addProperty(
+                        PropertySpec.builder("value", String::class)
+                            .initializer("value")
+                            .build()
+                    ).build()
+                ).build()
 
             enumFile.writeTo(kotlinSrcDir)
         }
