@@ -4,6 +4,7 @@ import java.util.*
 
 enum class BotSettings {
     USE_WEBHOOKS,
+    ALL_ERRORS_WEBHOOK,
 
     SHARD_COUNT,
     SHARD_INDEX,

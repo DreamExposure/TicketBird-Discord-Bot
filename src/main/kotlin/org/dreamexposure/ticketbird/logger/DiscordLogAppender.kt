@@ -11,27 +11,42 @@ import org.dreamexposure.ticketbird.config.BotSettings
 import org.dreamexposure.ticketbird.utils.GlobalVars
 import org.dreamexposure.ticketbird.utils.GlobalVars.DEFAULT
 import org.dreamexposure.ticketbird.utils.GlobalVars.STATUS
+import org.slf4j.event.Level
 import java.time.Instant
 
 class DiscordWebhookAppender : AppenderBase<ILoggingEvent>() {
     private val defaultHook: WebhookClient?
     private val statusHook: WebhookClient?
+    private val allErrorsWebhook: Boolean
 
     init {
         if (BotSettings.USE_WEBHOOKS.get().equals("true", true)) {
             defaultHook = WebhookClient.withUrl(BotSettings.DEBUG_WEBHOOK.get())
             statusHook = WebhookClient.withUrl(BotSettings.STATUS_WEBHOOK.get())
+            allErrorsWebhook = BotSettings.ALL_ERRORS_WEBHOOK.get().equals("true", ignoreCase = true)
         } else {
             defaultHook = null
             statusHook = null
+            allErrorsWebhook = false
         }
     }
 
     override fun append(eventObject: ILoggingEvent) {
+        BotSettings.ALL_ERRORS_WEBHOOK
         if (BotSettings.USE_WEBHOOKS.get().equals("true", true)) {
             when {
-                eventObject.marker.equals(DEFAULT) -> executeDefault(eventObject)
-                eventObject.marker.equals(STATUS) -> executeStatus(eventObject)
+                eventObject.marker.equals(STATUS) -> {
+                    executeStatus(eventObject)
+                    return
+                }
+                eventObject.marker.equals(DEFAULT) -> {
+                    executeDefault(eventObject)
+                    return
+                }
+                eventObject.level.equals(Level.ERROR) && allErrorsWebhook -> {
+                    executeDefault(eventObject)
+                    return
+                }
             }
         }
     }
