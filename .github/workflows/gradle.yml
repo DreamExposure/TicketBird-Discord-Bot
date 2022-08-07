@@ -40,10 +40,10 @@ jobs:
       # Build project and have jib push images to private container registry
       - name: Build with Gradle
         run: ./gradlew build
-  release:
-    name: Publish artifacts
+  deploy-for-develop:
+    name: Publish artifacts on develop
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && github.ref_name == 'develop'
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -78,7 +78,6 @@ jobs:
       # Have K8S pull latest images for dev pods
       - name: Trigger dev deploy
         uses: Consensys/kubernetes-action@master
-        if: github.ref_name == 'develop'
         env:
           KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
         with:
