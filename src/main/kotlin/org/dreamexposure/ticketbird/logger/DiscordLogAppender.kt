@@ -8,6 +8,7 @@ import club.minnced.discord.webhook.send.WebhookEmbedBuilder
 import org.dreamexposure.ticketbird.GitProperty
 import org.dreamexposure.ticketbird.TicketBird
 import org.dreamexposure.ticketbird.config.BotSettings
+import org.dreamexposure.ticketbird.extensions.embedDescriptionSafe
 import org.dreamexposure.ticketbird.extensions.embedFieldSafe
 import org.dreamexposure.ticketbird.utils.GlobalVars
 import org.dreamexposure.ticketbird.utils.GlobalVars.DEFAULT
@@ -60,7 +61,7 @@ class DiscordWebhookAppender : AppenderBase<ILoggingEvent>() {
             .addField(WebhookEmbed.EmbedField(false, "Logger", event.loggerName.embedFieldSafe()))
             .addField(WebhookEmbed.EmbedField(true, "Level", event.level.levelStr))
             .addField(WebhookEmbed.EmbedField(true, "Thread", event.threadName.embedFieldSafe()))
-            .setDescription(event.formattedMessage.embedFieldSafe())
+            .setDescription(event.formattedMessage.embedDescriptionSafe())
             .setColor(GlobalVars.embedColor.rgb)
             .setFooter(WebhookEmbed.EmbedFooter("v${GitProperty.TICKETBIRD_VERSION.value}", null))
             .setTimestamp(Instant.now())
@@ -87,7 +88,7 @@ class DiscordWebhookAppender : AppenderBase<ILoggingEvent>() {
             .addField(WebhookEmbed.EmbedField(false, "Logger", event.loggerName.embedFieldSafe()))
             .addField(WebhookEmbed.EmbedField(true, "Level", event.level.levelStr))
             .addField(WebhookEmbed.EmbedField(true, "Thread", event.threadName.embedFieldSafe()))
-            .setDescription(event.formattedMessage.embedFieldSafe())
+            .setDescription(event.formattedMessage.embedDescriptionSafe())
             .setColor(GlobalVars.embedColor.rgb)
             .setFooter(WebhookEmbed.EmbedFooter("v${GitProperty.TICKETBIRD_VERSION.value}", null))
             .setTimestamp(Instant.now())
