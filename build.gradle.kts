@@ -10,15 +10,15 @@ plugins {
     kotlin("plugin.spring") version "1.7.0"
 
     id("com.google.cloud.tools.jib") version "3.2.1"
-    id("org.springframework.boot") version "2.6.6"
-    id("io.spring.dependency-management") version "1.0.11.RELEASE"
+    id("org.springframework.boot") version "2.7.2"
+    id("io.spring.dependency-management") version "1.0.12.RELEASE"
 
     id("com.gorylenko.gradle-git-properties") version "2.4.1"
 }
 
 buildscript {
     dependencies {
-        classpath("com.squareup:kotlinpoet:1.11.0")
+        classpath("com.squareup:kotlinpoet:1.12.0")
     }
 }
 
@@ -44,7 +44,7 @@ val kotlinSrcDir: File = buildDir.resolve("src/main/kotlin")
 
 dependencies {
     // Tools
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.7.0")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
@@ -59,15 +59,16 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-cache")
 
     // Web
-    implementation("org.thymeleaf:thymeleaf:3.0.15.RELEASE")
-    implementation("org.thymeleaf:thymeleaf-spring5:3.0.15.RELEASE")
-    implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:3.1.0")
+    implementation("org.thymeleaf:thymeleaf")
+    implementation("org.thymeleaf:thymeleaf-spring5")
+    implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect")
 
-    implementation("com.squareup.okhttp3:okhttp:4.10.0")
+    implementation("com.squareup.okhttp3:okhttp")
 
     // Database
     implementation("org.flywaydb:flyway-core")
-    implementation("dev.miku:r2dbc-mysql")
+    implementation("org.flywaydb:flyway-mysql")
+    implementation("dev.miku:r2dbc-mysql:0.8.2.RELEASE")
     implementation("mysql:mysql-connector-java")
 
     // Serialization
