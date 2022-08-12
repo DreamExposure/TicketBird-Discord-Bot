@@ -7,10 +7,13 @@ import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.reactor.mono
 import org.dreamexposure.ticketbird.GitProperty
+import org.dreamexposure.ticketbird.logger.LOGGER
+import org.dreamexposure.ticketbird.utils.GlobalVars.DEFAULT
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -53,6 +56,8 @@ class StatusChanger(private val client: GatewayDiscordClient) : ApplicationRunne
     override fun run(args: ApplicationArguments?) {
         Flux.interval(Duration.ofMinutes(5))
             .flatMap { update() }
+            .doOnError { LOGGER.error(DEFAULT, "StatusChanger | Processor failure ", it) }
+            .onErrorResume { Mono.empty() }
             .subscribe()
     }
 }

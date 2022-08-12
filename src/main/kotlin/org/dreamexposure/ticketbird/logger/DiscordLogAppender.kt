@@ -25,7 +25,7 @@ class DiscordWebhookAppender : AppenderBase<ILoggingEvent>() {
         if (BotSettings.USE_WEBHOOKS.get().equals("true", true)) {
             defaultHook = WebhookClient.withUrl(BotSettings.DEBUG_WEBHOOK.get())
             statusHook = WebhookClient.withUrl(BotSettings.STATUS_WEBHOOK.get())
-            allErrorsWebhook = BotSettings.ALL_ERRORS_WEBHOOK.get().equals("true", ignoreCase = true)
+            allErrorsWebhook = BotSettings.ALL_ERRORS_WEBHOOK.get().toBoolean()
         } else {
             defaultHook = null
             statusHook = null
@@ -34,18 +34,17 @@ class DiscordWebhookAppender : AppenderBase<ILoggingEvent>() {
     }
 
     override fun append(eventObject: ILoggingEvent) {
-        BotSettings.ALL_ERRORS_WEBHOOK
-        if (BotSettings.USE_WEBHOOKS.get().equals("true", true)) {
+        if (BotSettings.USE_WEBHOOKS.get().toBoolean()) {
             when {
+                eventObject.level.equals(Level.ERROR) && allErrorsWebhook -> {
+                    executeDefault(eventObject)
+                    return
+                }
                 eventObject.marker.equals(STATUS) -> {
                     executeStatus(eventObject)
                     return
                 }
                 eventObject.marker.equals(DEFAULT) -> {
-                    executeDefault(eventObject)
-                    return
-                }
-                eventObject.level.equals(Level.ERROR) && allErrorsWebhook -> {
                     executeDefault(eventObject)
                     return
                 }
