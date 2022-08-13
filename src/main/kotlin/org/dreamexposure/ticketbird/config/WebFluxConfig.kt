@@ -216,16 +216,17 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, 
     @ConditionalOnProperty("bot.cache.redis", havingValue = "true")
     fun redisCache(
         connection: RedisConnectionFactory,
+        @Value("\${bot.cache.prefix}") prefix: String,
         @Value("\${bot.cache.ttl-minutes.settings:60}") settings: Long,
         @Value("\${bot.cache.ttl-minutes.ticket:60}") ticket: Long,
         @Value("\${bot.cache.ttl-minutes.project:120}") project: Long
     ): RedisCacheManager {
         return RedisCacheManager.builder(connection)
-            .withCacheConfiguration("settingsCache",
+            .withCacheConfiguration("$prefix.settingsCache",
                 RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(settings))
-            ).withCacheConfiguration("ticketCache",
+            ).withCacheConfiguration("$prefix.ticketCache",
                 RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(ticket))
-            ).withCacheConfiguration("projectCache",
+            ).withCacheConfiguration("$prefix.projectCache",
                 RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(project))
             ).build()
     }

@@ -3,6 +3,7 @@ package org.dreamexposure.ticketbird.business.cache
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.dreamexposure.ticketbird.`object`.Project
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.cache.Cache
 import org.springframework.context.annotation.Primary
@@ -13,10 +14,11 @@ import org.springframework.stereotype.Component
 @Component
 @ConditionalOnProperty("bot.cache.redis", havingValue = "true")
 class ProjectRedisCacheRepository(
+    @Value("\${bot.cache.prefix}") prefix: String,
     redisCacheManager: RedisCacheManager,
     private val mapper: ObjectMapper,
 ): CacheRepository<Long, List<Project>> {
-    private val cache: Cache = redisCacheManager.getCache("projectRepository")!!
+    private val cache: Cache = redisCacheManager.getCache("$prefix.projectRepository")!!
 
     override suspend fun put(key: Long, value: List<Project>) {
         mapper.writer()

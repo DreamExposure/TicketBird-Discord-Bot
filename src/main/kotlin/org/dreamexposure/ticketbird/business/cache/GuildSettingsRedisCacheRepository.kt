@@ -3,6 +3,7 @@ package org.dreamexposure.ticketbird.business.cache
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.dreamexposure.ticketbird.`object`.GuildSettings
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.cache.Cache
 import org.springframework.context.annotation.Primary
@@ -13,10 +14,11 @@ import org.springframework.stereotype.Component
 @Component
 @ConditionalOnProperty("bot.cache.redis", havingValue = "true")
 class GuildSettingsRedisCacheRepository(
+    @Value("\${bot.cache.prefix}") prefix: String,
     redisCacheManager: RedisCacheManager,
     private val mapper: ObjectMapper,
 ): CacheRepository<Long, GuildSettings> {
-    private val cache: Cache = redisCacheManager.getCache("settingsRepository")!!
+    private val cache: Cache = redisCacheManager.getCache("$prefix.settingsRepository")!!
 
     override suspend fun put(key: Long, value: GuildSettings) {
         mapper.writer()
