@@ -35,7 +35,6 @@ import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.`object`.Project
 import org.dreamexposure.ticketbird.`object`.Ticket
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.autoconfigure.cache.RedisCacheManagerBuilderCustomizer
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.web.server.ConfigurableWebServerFactory
 import org.springframework.boot.web.server.ErrorPage
@@ -214,26 +213,21 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, 
 
     // Cache
     @Bean
-    fun redisCacheManagerBuilderCustomizer(
+    @ConditionalOnProperty("bot.cache.redis", havingValue = "true")
+    fun redisCache(
+        connection: RedisConnectionFactory,
         @Value("\${bot.cache.ttl-minutes.settings:60}") settings: Long,
         @Value("\${bot.cache.ttl-minutes.ticket:60}") ticket: Long,
         @Value("\${bot.cache.ttl-minutes.project:120}") project: Long
-    ): RedisCacheManagerBuilderCustomizer {
-        return RedisCacheManagerBuilderCustomizer {
-            it.withCacheConfiguration("settingsCache",
+    ): RedisCacheManager {
+        return RedisCacheManager.builder(connection)
+            .withCacheConfiguration("settingsCache",
                 RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(settings))
             ).withCacheConfiguration("ticketCache",
                 RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(ticket))
             ).withCacheConfiguration("projectCache",
                 RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(project))
             ).build()
-        }
-    }
-
-    @Bean
-    @ConditionalOnProperty("bot.cache.redis", havingValue = "true")
-    fun redisCache(connection: RedisConnectionFactory): RedisCacheManager {
-        return RedisCacheManager.create(connection)
     }
 
     @Bean
