@@ -1,6 +1,7 @@
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
+import org.gradle.api.tasks.wrapper.Wrapper.DistributionType.ALL
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -179,4 +180,8 @@ tasks {
         duplicatesStrategy = DuplicatesStrategy.INCLUDE
     }
 
+    wrapper {
+        distributionType = ALL
+        gradleVersion = "7.5.1"
+    }
 }
