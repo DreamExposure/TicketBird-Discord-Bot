@@ -38,7 +38,7 @@ repositories {
     }
 }
 //versions
-val d4jVersion = "3.2.3-SNAPSHOT"
+val d4jVersion = "3.2.3"
 val d4jStoresVersion = "3.2.1"
 
 val kotlinSrcDir: File = buildDir.resolve("src/main/kotlin")
