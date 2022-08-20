@@ -40,10 +40,10 @@ jobs:
       # Build project and have jib push images to private container registry
       - name: Build with Gradle
         run: ./gradlew build
-  deploy-for-develop:
+  publish-artifacts:
     name: Publish artifacts on develop
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request' && github.ref_name == 'develop'
+    if: ${{ github.event_name != 'pull_request' && (github.ref_name == 'develop' || github.ref_name == 'master') }}
     needs: build
     steps:
       - uses: actions/checkout@v2
@@ -63,9 +63,6 @@ jobs:
           java-version: 17
           distribution: 'adopt'
 
-      - name: Validate gradle
-        uses: gradle/wrapper-validation-action@v1
-
       - name: Change wrapper permissions
         run: chmod +x ./gradlew
 
@@ -73,7 +70,16 @@ jobs:
         env:
           SCW_USER: ${{ secrets.SCW_USER }}
           SCW_SECRET: ${{ secrets.SCW_SECRET }}
-        run: ./gradlew clean build jib -Djib.to.auth.username=${SCW_USER} -Djib.to.auth.password=${SCW_SECRET}
+        run: ./gradlew jib -Djib.to.auth.username=${SCW_USER} -Djib.to.auth.password=${SCW_SECRET}
+  deploy-dev:
+    name: Deploy dev
+    runs-on: ubuntu-latest
+    if: github.ref_name == 'develop'
+    needs: publish-artifacts
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       # Have K8S pull latest images for dev pods
       - name: Trigger dev deploy
