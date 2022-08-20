@@ -93,7 +93,7 @@ dependencies {
 }
 
 group = "org.dreamexposure"
-version = "2.0.0-SNAPSHOT"
+version = "2.0.0"
 description = "TicketBird"
 java.sourceCompatibility = JavaVersion.VERSION_17
 

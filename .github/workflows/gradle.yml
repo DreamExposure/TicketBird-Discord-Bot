@@ -41,7 +41,7 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
   publish-artifacts:
-    name: Publish artifacts on develop
+    name: Publish Artifacts
     runs-on: ubuntu-latest
     if: ${{ github.event_name != 'pull_request' && (github.ref_name == 'develop' || github.ref_name == 'master') }}
     needs: build
