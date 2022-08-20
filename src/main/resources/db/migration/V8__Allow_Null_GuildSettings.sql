@@ -1,0 +1,7 @@
+ALTER TABLE guild_settings MODIFY awaiting_category MEDIUMTEXT NULL DEFAULT NULL;
+ALTER TABLE guild_settings MODIFY responded_category MEDIUMTEXT NULL DEFAULT NULL;
+ALTER TABLE guild_settings MODIFY hold_category MEDIUMTEXT NULL DEFAULT NULL;
+ALTER TABLE guild_settings MODIFY close_category MEDIUMTEXT NULL DEFAULT NULL;
+
+ALTER TABLE guild_settings MODIFY support_channel MEDIUMTEXT NULL DEFAULT NULL;
+ALTER TABLE guild_settings MODIFY static_message MEDIUMTEXT NULL DEFAULT NULL;

@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true">
+    <!-- Properties -->
+    <property name="LOG_DIR" value="logs"/>
+    <property name="ERROR_LOG_FILE" value="exceptions"/>
+    <property name="DEBUG_LOG_FILE" value="debug"/>
+
+    <!-- Logs we care about -->
+    <logger name="org.dreamexposure.discal" level="DEBUG"/>
     <logger name="org.springframework.web" level="INFO"/>
     <logger name="io.netty" level="INFO"/>
     <logger name="reactor" level="INFO"/>
@@ -7,20 +14,47 @@
     <logger name="reactor.retry" level="DEBUG"/>
     <logger name="discord4j.core" level="DEBUG"/>
     <logger name="discord4j.gateway" level="INFO"/>
-    <logger name="discord4j.gateway.client" level="DEBUG"/>
+    <logger name="discord4j.gateway.client" level="INFO"/>
+    <logger name="dev.miku.r2dbc.mysql" level="INFO"/>
     <logger name="io.lettuce" level="INFO"/>
 
-    <turboFilter class="org.dreamexposure.ticketbird.filter.GatewayEventFilter">
+    <!-- Filters -->
+    <turboFilter class="org.dreamexposure.ticketbird.logger.GatewayEventFilter">
         <Exclude>PRESENCE_UPDATE,GUILD_CREATE,GUILD_MEMBERS_CHUNK</Exclude>
     </turboFilter>
 
+    <!-- Appenders -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
+    <appender name="DISCAL_WEBHOOK" class="org.dreamexposure.ticketbird.logger.DiscordWebhookAppender"/>
+
+    <appender name="FILE_ERROR_LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>WARN</level>
+        </filter>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <fileNamePattern>${LOG_DIR}/${ERROR_LOG_FILE}.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+
+            <!-- keep 30 days' worth of history capped at 2GB total size -->
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>2GB</totalSizeCap>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Assigning default appenders -->
     <root level="DEBUG">
         <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="DISCAL_WEBHOOK"/>
+        <appender-ref ref="FILE_ERROR_LOG"/>
     </root>
 </configuration>

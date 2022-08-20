@@ -1,0 +1,45 @@
+{
+  "name": "setup",
+  "description": "A set of commands for setting up and configuring TicketBird",
+  "default_member_permissions": "32",
+  "dm_permissions": false,
+  "options": [
+    {
+      "type": 1,
+      "name": "init",
+      "description": "Initiates the bot and setups needed channels and categories"
+    },
+    {
+      "type": 1,
+      "name": "language",
+      "description": "Sets the language for the bot to use when sending responses. Defaults to english",
+      "options": [
+        {
+          "type": 3,
+          "name": "language",
+          "description": "The language for the bot to use when sending responses",
+          "required": true,
+          "choices": [
+            {
+              "name": "English",
+              "value": "en"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": 1,
+      "name": "use-projects",
+      "description": "Sets whether to use projects for helping sort tickets. Defaults to false",
+      "options": [
+        {
+          "type": 5,
+          "name": "use",
+          "description": "Whether to use projects for helping sort tickets",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

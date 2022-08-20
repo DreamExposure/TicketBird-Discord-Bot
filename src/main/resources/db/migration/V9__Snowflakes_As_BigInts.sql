@@ -1,0 +1,15 @@
+ALTER TABLE guild_settings MODIFY guild_id BIGINT NOT NULL;
+ALTER TABLE guild_settings MODIFY awaiting_category BIGINT NULL DEFAULT NULL;
+ALTER TABLE guild_settings MODIFY responded_category BIGINT NULL DEFAULT NULL;
+ALTER TABLE guild_settings MODIFY hold_category BIGINT NULL DEFAULT NULL;
+ALTER TABLE guild_settings MODIFY close_category BIGINT NULL DEFAULT NULL;
+ALTER TABLE guild_settings MODIFY support_channel BIGINT NULL DEFAULT NULL;
+ALTER TABLE guild_settings MODIFY static_message BIGINT NULL DEFAULT NULL;
+
+ALTER TABLE projects MODIFY guild_id BIGINT NOT NULL;
+
+ALTER TABLE tickets MODIFY guild_id BIGINT NOT NULL;
+ALTER TABLE tickets MODIFY creator BIGINT NOT NULL;
+ALTER TABLE tickets MODIFY channel BIGINT NOT NULL;
+ALTER TABLE tickets MODIFY category BIGINT NOT NULL;
+ALTER TABLE tickets MODIFY last_activity BIGINT NOT NULL;

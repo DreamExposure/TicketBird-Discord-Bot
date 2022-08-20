@@ -1,107 +1,108 @@
-
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
+import org.gradle.api.tasks.wrapper.Wrapper.DistributionType.ALL
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.5.21"
+    kotlin("jvm") version "1.7.0"
     java
 
-    kotlin("plugin.spring") version "1.5.21"
+    kotlin("plugin.spring") version "1.7.0"
 
-    id("com.google.cloud.tools.jib") version("3.0.0")
-    id ("org.springframework.boot") version ("2.5.0")
+    id("com.google.cloud.tools.jib") version "3.2.1"
+    id("org.springframework.boot") version "2.7.2"
+    id("io.spring.dependency-management") version "1.0.12.RELEASE"
 
-    id("com.gorylenko.gradle-git-properties") version "2.3.1"
+    id("com.gorylenko.gradle-git-properties") version "2.4.1"
 }
 
 buildscript {
     dependencies {
-        classpath("com.squareup:kotlinpoet:1.7.2")
+        classpath("com.squareup:kotlinpoet:1.12.0")
     }
 }
 
 repositories {
+    mavenCentral()
     mavenLocal()
     maven {
         url = uri("https://jitpack.io")
     }
 
     maven {
-        url = uri("https://emily.dreamexposure.org/artifactory/dreamexposure-public/")
-    }
-
-    maven {
         url = uri("https://repo.maven.apache.org/maven2/")
+    }
+    maven {
+        url = uri("https://oss.sonatype.org/content/repositories/snapshots")
     }
 }
 //versions
-val d4jVersion = "3.2.0-RC1"
+val d4jVersion = "3.2.3"
 val d4jStoresVersion = "3.2.1"
-val springVersion = "2.5.1"
-
-val springSecVersion = "5.5.1"
-val nettyForcedVersion = "4.1.56.Final"
-val reactorCoreVersion = "3.4.7"
-val reactorNettyVersion = "1.0.8"
-val r2dbcMysqlVersion = "0.8.1.RELEASE"
-val r2dbcPoolVersion = "0.8.3.RELEASE"
 
 val kotlinSrcDir: File = buildDir.resolve("src/main/kotlin")
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.21")
+    // Tools
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+    implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
 
-    implementation("org.dreamexposure:NovaUtils:1.0.0-SNAPSHOT")
+    // Spring
+    implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
+    implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
+    implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
+    implementation("org.springframework.boot:spring-boot-starter-cache")
 
+    // Web
+    implementation("org.thymeleaf:thymeleaf")
+    implementation("org.thymeleaf:thymeleaf-spring5")
+    implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect")
+
+    implementation("com.squareup.okhttp3:okhttp")
+
+    // Database
+    implementation("org.flywaydb:flyway-core")
+    implementation("org.flywaydb:flyway-mysql")
+    implementation("dev.miku:r2dbc-mysql:0.8.2.RELEASE")
+    implementation("mysql:mysql-connector-java")
+
+    // Serialization
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+
+    // Discord
     implementation("com.discord4j:discord4j-core:$d4jVersion")
-    implementation("com.discord4j:stores-redis:$d4jStoresVersion") {
-        exclude("io.netty", "*")
+    implementation("com.discord4j:stores-redis:$d4jStoresVersion")
+    implementation("club.minnced:discord-webhooks:0.8.2")
+
+    // Test
+    testImplementation("org.springframework.boot:spring-boot-starter-test") {
+        exclude(module = "junit")
+        exclude(module = "mockito-core")
     }
-
-    implementation("mysql:mysql-connector-java:8.0.26")
-    implementation("org.json:json:20210307")
-
-    implementation("dev.miku:r2dbc-mysql:$r2dbcMysqlVersion") {
-        exclude("io.netty", "*")
-        exclude("io.projectreactor", "*")
-    }
-    implementation("io.r2dbc:r2dbc-pool:$r2dbcPoolVersion")
-
-    //Forced version nonsense
-    implementation("io.netty:netty-all:$nettyForcedVersion")
-    implementation("io.projectreactor:reactor-core:$reactorCoreVersion")
-    implementation("io.projectreactor.netty:reactor-netty:$reactorNettyVersion")
-
-    implementation("org.thymeleaf:thymeleaf:3.0.12.RELEASE")
-    implementation("org.thymeleaf:thymeleaf-spring5:3.0.12.RELEASE")
-    implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:2.5.3")
-
-    implementation("org.springframework.boot:spring-boot-starter-thymeleaf:$springVersion")
-    implementation("org.springframework.boot:spring-boot-starter-webflux:$springVersion")
-    implementation("org.springframework.boot:spring-boot-starter-data-r2dbc:$springVersion")
-    implementation("org.springframework.session:spring-session-data-redis:$springVersion")
-    implementation("org.springframework.security:spring-security-core:$springSecVersion")
-    implementation("org.springframework.security:spring-security-web:$springSecVersion")
-
-    implementation("com.squareup.okhttp3:okhttp:4.9.1")
-    implementation("com.github.DiscordBotList:Java-Wrapper:v1.0")
-    implementation("club.minnced:discord-webhooks:0.5.7")
-    implementation("org.flywaydb:flyway-core:7.9.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-api")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    testImplementation("io.projectreactor:reactor-test")
+    testImplementation("com.ninja-squad:springmockk:3.1.1")
 }
 
 group = "org.dreamexposure"
-version = "1.0.3-SNAPSHOT"
+version = "2.0.0-SNAPSHOT"
 description = "TicketBird"
-java.sourceCompatibility = JavaVersion.VERSION_16
+java.sourceCompatibility = JavaVersion.VERSION_17
 
 jib {
     var imageVersion = version.toString()
     if (imageVersion.contains("SNAPSHOT")) imageVersion = "latest"
 
     to.image = "rg.nl-ams.scw.cloud/dreamexposure/ticketbird:$imageVersion"
-    from.image = "adoptopenjdk/openjdk16:alpine-jre"
+    from.image = "eclipse-temurin:17-jre-alpine"
     container.creationTime = "USE_CURRENT_TIMESTAMP"
 }
 
@@ -109,14 +110,13 @@ gitProperties {
     extProperty = "gitPropertiesExt"
 
     val versionName = if (System.getenv("BUILD_NUMBER") != null) {
-        "$version.b${System.getenv("BUILD_NUMBER")}"
+        "$version.${System.getenv("BUILD_NUMBER")}"
     } else {
         "$version.d${System.currentTimeMillis().div(1000)}" //Seconds since epoch
     }
 
     customProperty("ticketbird.version", versionName)
     customProperty("ticketbird.version.d4j", d4jVersion)
-    customProperty("ticketbird.url.base", "https://ticketbird.dreamexposure.org")
 }
 
 kotlin {
@@ -135,31 +135,29 @@ tasks {
             val enumPairs = gitProperties.mapKeys { it.key.replace('.', '_').toUpperCase() }
 
             val enumBuilder = TypeSpec.enumBuilder("GitProperty")
-                    .primaryConstructor(
-                            com.squareup.kotlinpoet.FunSpec.constructorBuilder()
-                                    .addParameter("value", String::class)
-                                    .build()
-                    )
+                .primaryConstructor(
+                    com.squareup.kotlinpoet.FunSpec.constructorBuilder()
+                        .addParameter("value", String::class)
+                        .build()
+                )
 
             val enums = enumPairs.entries.fold(enumBuilder) { accumulator, (key, value) ->
                 accumulator.addEnumConstant(
-                        key, TypeSpec.anonymousClassBuilder()
-                        .addSuperclassConstructorParameter("%S", value)
-                        .build()
+                    key, TypeSpec.anonymousClassBuilder()
+                    .addSuperclassConstructorParameter("%S", value)
+                    .build()
                 )
             }
 
             val enumFile = FileSpec.builder("org.dreamexposure.ticketbird", "GitProperty")
-                    .addType(
-                            enums // https://github.com/square/kotlinpoet#enums
-                                    .addProperty(
-                                           PropertySpec.builder("value", String::class)
-                                                    .initializer("value")
-                                                    .build()
-                                    )
-                                    .build()
-                    )
-                    .build()
+                .addType(
+                    // https://github.com/square/kotlinpoet#enums
+                    enums.addProperty(
+                        PropertySpec.builder("value", String::class)
+                            .initializer("value")
+                            .build()
+                    ).build()
+                ).build()
 
             enumFile.writeTo(kotlinSrcDir)
         }
@@ -170,12 +168,20 @@ tasks {
 
         kotlinOptions {
             freeCompilerArgs = listOf("-Xjsr305=strict")
-            jvmTarget = targetCompatibility
+            jvmTarget = java.targetCompatibility.majorVersion
         }
+    }
+
+    withType<Test> {
+        useJUnitPlatform()
     }
 
     bootJar {
         duplicatesStrategy = DuplicatesStrategy.INCLUDE
     }
 
+    wrapper {
+        distributionType = ALL
+        gradleVersion = "7.5.1"
+    }
 }
