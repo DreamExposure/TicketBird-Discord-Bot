@@ -3,6 +3,7 @@ package org.dreamexposure.ticketbird.service
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.`object`.entity.channel.Category
 import discord4j.core.`object`.entity.channel.TextChannel
+import discord4j.rest.http.client.ClientException
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.mono
 import org.dreamexposure.ticketbird.business.GuildSettingsService
@@ -37,18 +38,56 @@ class ActivityMonitor(
 
         client.guilds.collectList().awaitSingle().forEach { guild ->
             val settings = settingsService.getGuildSettings(guild.id)
+            if (settings.requiresRepair) return@forEach // Skip processing this guild until they decide to run repair command
 
             // Isolate errors to guild-level
-            // TODO: Add a way to disable this for a guild with a broken setup. Need to think of a clever solution so we aren't just swallowing 403/404
             try {
-                if (settings.closeCategory != null) {
-                    // Loop closed tickets
+                if (settings.hasRequiredIdsSet()) {
+                    // Get closed tickets
                     val closedCategoryChannels = guild.getChannelById(settings.closeCategory!!)
                         .ofType(Category::class.java)
+                        .doOnError(ClientException.isStatusCode(404)) {
+                            settings.closeCategory = null
+                            settings.requiresRepair = true
+                        }.doOnError(ClientException.isStatusCode(403)) {
+                            settings.requiresRepair = true
+                        }
                         .onErrorResume { Mono.empty() }
                         .flatMapMany { it.channels.ofType(TextChannel::class.java) }
                         .collectList().awaitSingle()
 
+
+                    // Get open tickets
+                    val awaitingCategoryChannels = guild.getChannelById(settings.awaitingCategory!!)
+                        .ofType(Category::class.java)
+                        .doOnError(ClientException.isStatusCode(404)) {
+                            settings.awaitingCategory = null
+                            settings.requiresRepair = true
+                        }.doOnError(ClientException.isStatusCode(403)) {
+                            settings.requiresRepair = true
+                        }
+                        .onErrorResume { Mono.empty() }
+                        .flatMapMany { it.channels.ofType(TextChannel::class.java) }
+                        .collectList().awaitSingle()
+                    val respondedCategoryChannels = guild.getChannelById(settings.respondedCategory!!)
+                        .ofType(Category::class.java)
+                        .doOnError(ClientException.isStatusCode(404)) {
+                            settings.respondedCategory = null
+                            settings.requiresRepair = true
+                        }.doOnError(ClientException.isStatusCode(403)) {
+                            settings.requiresRepair = true
+                        }
+                        .onErrorResume { Mono.empty() }
+                        .flatMapMany { it.channels.ofType(TextChannel::class.java) }
+                        .collectList().awaitSingle()
+
+                    // save settings and don't process if requiresRepair is true, there was an expected error above
+                    if (settings.requiresRepair) {
+                        settingsService.createOrUpdateGuildSettings(settings)
+                        return@forEach // Break
+                    }
+
+                    // Loop closed tickets
                     for (closedTicketChannel in closedCategoryChannels) {
                         val ticket = ticketService.getTicket(guild.id, closedTicketChannel.id)
                         if (ticket != null && Duration.between(Instant.now(), ticket.lastActivity).abs() > Duration.ofDays(1)) {
@@ -58,17 +97,6 @@ class ActivityMonitor(
                     }
 
                     // Loop open tickets
-                    val awaitingCategoryChannels = guild.getChannelById(settings.awaitingCategory!!)
-                        .ofType(Category::class.java)
-                        .onErrorResume { Mono.empty() }
-                        .flatMapMany { it.channels.ofType(TextChannel::class.java) }
-                        .collectList().awaitSingle()
-                    val respondedCategoryChannels = guild.getChannelById(settings.respondedCategory!!)
-                        .ofType(Category::class.java)
-                        .onErrorResume { Mono.empty() }
-                        .flatMapMany { it.channels.ofType(TextChannel::class.java) }
-                        .collectList().awaitSingle()
-
                     for (openTicketChannel in awaitingCategoryChannels + respondedCategoryChannels) {
                         val ticket = ticketService.getTicket(guild.id, openTicketChannel.id)
 

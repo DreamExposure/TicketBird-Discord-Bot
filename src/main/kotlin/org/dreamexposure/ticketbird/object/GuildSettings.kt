@@ -14,6 +14,7 @@ data class GuildSettings(
     var patronGuild: Boolean = false,
     var devGuild: Boolean = false,
     var useProjects: Boolean = false,
+    var requiresRepair: Boolean = false,
 
     var awaitingCategory: Snowflake? = null,
     var respondedCategory: Snowflake? = null,
@@ -30,6 +31,7 @@ data class GuildSettings(
         locale = data.lang.handleLocaleDebt(),
         patronGuild = data.patronGuild,
         useProjects = data.useProjects,
+        requiresRepair = data.requiresRepair,
 
         awaitingCategory = data.awaitingCategory?.toSnowflake(),
         respondedCategory = data.respondedCategory?.toSnowflake(),
@@ -41,4 +43,13 @@ data class GuildSettings(
         nextId = data.nextId,
         staff = data.staff.listFromDb()
     )
+
+    fun hasRequiredIdsSet(): Boolean {
+        return awaitingCategory != null
+            && respondedCategory != null
+            && holdCategory != null
+            && closeCategory != null
+            && supportChannel != null
+            && staticMessage != null
+    }
 }

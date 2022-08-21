@@ -146,6 +146,15 @@ class ProjectCommand(
             )
         }
 
+        // Even tho this isn't completely related, we still want to make this state visible
+        if (settings.requiresRepair) {
+            builder.addField(
+                localeService.getString(settings.locale, "embed.field.warning"),
+                localeService.getString(settings.locale, "generic.repair-required"),
+                false
+            )
+        }
+
         return builder.build()
     }
 }

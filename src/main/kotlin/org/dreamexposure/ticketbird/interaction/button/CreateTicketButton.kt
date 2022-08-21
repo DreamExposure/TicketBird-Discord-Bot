@@ -15,6 +15,12 @@ class CreateTicketButton(
     override val id = "create-ticket"
 
     override suspend fun handle(event: ButtonInteractionEvent, settings: GuildSettings) {
+        if (settings.requiresRepair) {
+            event.reply(localeService.getString(settings.locale, "generic.repair-required"))
+                .withEphemeral(true)
+                .awaitSingleOrNull()
+        }
+
         if (settings.useProjects) {
             // Guild is set up to use projects, send an ephemeral select menu to let them select the project
             event.reply(localeService.getString(settings.locale, "dropdown.select-project.prompt"))
