@@ -39,6 +39,7 @@ class ActivityMonitor(
             val settings = settingsService.getGuildSettings(guild.id)
 
             // Isolate errors to guild-level
+            // TODO: Add a way to disable this for a guild with a broken setup. Need to think of a clever solution so we aren't just swallowing 403/404
             try {
                 if (settings.closeCategory != null) {
                     // Loop closed tickets
@@ -64,6 +65,7 @@ class ActivityMonitor(
                         .collectList().awaitSingle()
                     val respondedCategoryChannels = guild.getChannelById(settings.respondedCategory!!)
                         .ofType(Category::class.java)
+                        .onErrorResume { Mono.empty() }
                         .flatMapMany { it.channels.ofType(TextChannel::class.java) }
                         .collectList().awaitSingle()
 
