@@ -61,7 +61,7 @@ class DefaultPermissionService(
     override fun getTicketChannelOverwrites(guildId: Snowflake, creator: Snowflake, staff: List<Snowflake>): List<PermissionOverwrite> {
         val overwrites = mutableListOf<PermissionOverwrite>()
 
-        overwrites += PermissionOverwrite.forMember(guildId, getTicketGrantOverrides(), PermissionSet.none())
+        overwrites += PermissionOverwrite.forMember(creator, getTicketGrantOverrides(), PermissionSet.none())
         overwrites += PermissionOverwrite.forRole(guildId, PermissionSet.none(), PermissionSet.all())
         overwrites += staff.map { PermissionOverwrite.forMember(it, getTicketGrantOverrides(), PermissionSet.none()) }
 
