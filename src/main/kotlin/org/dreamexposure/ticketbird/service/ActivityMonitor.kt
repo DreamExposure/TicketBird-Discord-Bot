@@ -64,6 +64,7 @@ class ActivityMonitor(
                         .collectList().awaitSingle()
                     val respondedCategoryChannels = guild.getChannelById(settings.respondedCategory!!)
                         .ofType(Category::class.java)
+                        .onErrorResume { Mono.empty() }
                         .flatMapMany { it.channels.ofType(TextChannel::class.java) }
                         .collectList().awaitSingle()
 
