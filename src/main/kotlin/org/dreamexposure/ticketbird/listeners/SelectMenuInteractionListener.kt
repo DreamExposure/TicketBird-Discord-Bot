@@ -4,7 +4,7 @@ import discord4j.core.event.domain.interaction.SelectMenuInteractionEvent
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.GuildSettingsService
 import org.dreamexposure.ticketbird.business.LocaleService
-import org.dreamexposure.ticketbird.interaction.dropdown.SelectMenuHandler
+import org.dreamexposure.ticketbird.interaction.InteractionHandler
 import org.dreamexposure.ticketbird.logger.LOGGER
 import org.dreamexposure.ticketbird.utils.GlobalVars.DEFAULT
 import org.springframework.stereotype.Component
@@ -14,7 +14,7 @@ import java.util.*
 class SelectMenuInteractionListener(
     private val settingsService: GuildSettingsService,
     private val localeService: LocaleService,
-    private val dropdowns: List<SelectMenuHandler>
+    private val dropdowns: List<InteractionHandler<SelectMenuInteractionEvent>>
 ): EventListener<SelectMenuInteractionEvent> {
 
     override suspend fun handle(event: SelectMenuInteractionEvent) {

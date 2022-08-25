@@ -34,6 +34,7 @@ import org.dreamexposure.ticketbird.mapper.SnowflakeMapper
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.`object`.Project
 import org.dreamexposure.ticketbird.`object`.Ticket
+import org.dreamexposure.ticketbird.`object`.TicketCreateState
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.web.server.ConfigurableWebServerFactory
@@ -219,7 +220,8 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, 
         @Value("\${bot.cache.prefix}") prefix: String,
         @Value("\${bot.cache.ttl-minutes.settings:60}") settings: Long,
         @Value("\${bot.cache.ttl-minutes.ticket:60}") ticket: Long,
-        @Value("\${bot.cache.ttl-minutes.project:120}") project: Long
+        @Value("\${bot.cache.ttl-minutes.project:120}") project: Long,
+        @Value("\${bot.cache.ttl-minutes.ticket-create-state:15}") ticketCreateState: Long,
     ): RedisCacheManager {
         return RedisCacheManager.builder(connection)
             .withCacheConfiguration("$prefix.settingsCache",
@@ -228,15 +230,24 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, 
                 RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(ticket))
             ).withCacheConfiguration("$prefix.projectCache",
                 RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(project))
-            ).build()
+            ).withCacheConfiguration("$prefix.ticketCreateStateCache",
+                RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(ticketCreateState)))
+            .build()
     }
 
     @Bean
-    fun guidSettingsFallbackCache(@Value("\${bot.cache.ttl-minutes.settings:60}") minutes: Long) = JdkCacheRepository<Long, GuildSettings>(Duration.ofMinutes(minutes))
+    fun guidSettingsFallbackCache(@Value("\${bot.cache.ttl-minutes.settings:60}") minutes: Long) =
+        JdkCacheRepository<Long, GuildSettings>(Duration.ofMinutes(minutes))
 
     @Bean
-    fun ticketFallbackCache(@Value("\${bot.cache.ttl-minutes.ticket:60}") minutes: Long) = JdkCacheRepository<Long, List<Ticket>>(Duration.ofMinutes(minutes))
+    fun ticketFallbackCache(@Value("\${bot.cache.ttl-minutes.ticket:60}") minutes: Long) =
+        JdkCacheRepository<Long, List<Ticket>>(Duration.ofMinutes(minutes))
 
     @Bean
-    fun projectFallbackCache(@Value("\${bot.cache.ttl-minutes.project:120}") minutes: Long) = JdkCacheRepository<Long, List<Project>>(Duration.ofMinutes(minutes))
+    fun projectFallbackCache(@Value("\${bot.cache.ttl-minutes.project:120}") minutes: Long) =
+        JdkCacheRepository<Long, List<Project>>(Duration.ofMinutes(minutes))
+
+    @Bean
+    fun ticketCreateStateCache(@Value("\${bot.cache.ttl-minutes.ticket-create-state:15}") minutes: Long) =
+        JdkCacheRepository<Long, TicketCreateState>(Duration.ofMinutes(minutes))
 }
