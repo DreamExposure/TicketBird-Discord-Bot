@@ -30,6 +30,14 @@ class TicketRedisCacheRepository(
         return if (raw != null) mapper.readValue<List<Ticket>>(raw) else null
     }
 
+    override suspend fun getAndRemove(key: Long): List<Ticket>? {
+        val raw = cache.get(key, String::class.java)
+        val parsed = if (raw != null) mapper.readValue<List<Ticket>>(raw) else null
+
+        evict(key)
+        return parsed
+    }
+
     override suspend fun evict(key: Long) {
         cache.evictIfPresent(key)
     }

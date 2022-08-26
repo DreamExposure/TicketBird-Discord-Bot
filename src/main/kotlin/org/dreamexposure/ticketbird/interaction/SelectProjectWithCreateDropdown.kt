@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class SelectProjectWithCreateDropdown(
-    private val ticketCreateStateCache: CacheRepository<Long, TicketCreateState>,
+    private val ticketCreateStateCache: CacheRepository<String, TicketCreateState>,
     private val ticketService: TicketService,
     private val projectService: ProjectService,
     private val localeService: LocaleService,
@@ -28,13 +28,13 @@ class SelectProjectWithCreateDropdown(
             guildId = settings.guildId,
             creatorId = event.interaction.user.id,
             project = projectService.getProject(settings.guildId, selected),
-            info = ticketCreateStateCache.get(event.interaction.user.id.asLong())?.ticketInfo
+            info = ticketCreateStateCache.getAndRemove("${settings.guildId}.${event.interaction.user.id.asLong()}")?.ticketInfo
         )
 
         // Respond
         event.createFollowup(localeService.getString(
             settings.locale,
-            "modal.ticket-detail.response.success", //TODO: Swap out this string...
+            "generic.success.ticket-open",
             ticket.channel.asString()
         )).awaitSingle()
     }

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class SelectProjectDropdown(
-    private val ticketCreateStateCache: CacheRepository<Long, TicketCreateState>,
+    private val ticketCreateStateCache: CacheRepository<String, TicketCreateState>,
     private val componentService: ComponentService,
     private val localeService: LocaleService,
 ): InteractionHandler<SelectMenuInteractionEvent> {
@@ -21,7 +21,7 @@ class SelectProjectDropdown(
         val selected = event.values[0]
 
         // Save selected project to state
-        ticketCreateStateCache.put(event.interaction.user.id.asLong(), TicketCreateState(selected))
+        ticketCreateStateCache.put("${settings.guildId}.${event.interaction.user.id.asLong()}", TicketCreateState(selected))
 
         // Pop modal
         event.presentModal()

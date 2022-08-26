@@ -17,7 +17,7 @@ class TicketDetailModal(
     private val ticketService: TicketService,
     private val localeService: LocaleService,
     private val projectService: ProjectService,
-    private val ticketCreateStateCache: CacheRepository<Long, TicketCreateState>
+    private val ticketCreateStateCache: CacheRepository<String, TicketCreateState>
 ): InteractionHandler<ModalSubmitInteractionEvent> {
     override val id = "ticket-detail"
 
@@ -25,7 +25,7 @@ class TicketDetailModal(
         // Defer, it could take a moment
         event.deferReply().withEphemeral(true).awaitSingleOrNull()
 
-        val projectName = ticketCreateStateCache.get(event.interaction.user.id.asLong())?.projectName.orEmpty()
+        val projectName = ticketCreateStateCache.getAndRemove("${settings.guildId}.${event.interaction.user.id.asLong()}")?.projectName.orEmpty()
 
         // Create ticket
         val ticket = ticketService.createNewTicketFull(
@@ -38,7 +38,7 @@ class TicketDetailModal(
         // Respond
         event.createFollowup(localeService.getString(
             settings.locale,
-            "modal.ticket-detail.response.success",
+            "generic.success.ticket-open",
             ticket.channel.asString()
         )).awaitSingle()
     }

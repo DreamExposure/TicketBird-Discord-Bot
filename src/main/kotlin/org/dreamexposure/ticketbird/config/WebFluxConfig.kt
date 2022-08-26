@@ -249,5 +249,5 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, 
 
     @Bean
     fun ticketCreateStateCache(@Value("\${bot.cache.ttl-minutes.ticket-create-state:15}") minutes: Long) =
-        JdkCacheRepository<Long, TicketCreateState>(Duration.ofMinutes(minutes))
+        JdkCacheRepository<String, TicketCreateState>(Duration.ofMinutes(minutes))
 }
