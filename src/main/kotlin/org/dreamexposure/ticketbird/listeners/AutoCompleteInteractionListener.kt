@@ -1,6 +1,5 @@
 package org.dreamexposure.ticketbird.listeners
 
-import discord4j.core.event.domain.interaction.AutoCompleteInteractionEvent
 import discord4j.core.event.domain.interaction.ChatInputAutoCompleteEvent
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.GuildSettingsService
@@ -11,7 +10,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class AutoCompleteInteractionListener(
-    private val handlers: List<InteractionHandler<AutoCompleteInteractionEvent>>,
+    private val handlers: List<InteractionHandler<ChatInputAutoCompleteEvent>>,
     private val settingsService: GuildSettingsService,
 ): EventListener<ChatInputAutoCompleteEvent> {
     override suspend fun handle(event: ChatInputAutoCompleteEvent) {

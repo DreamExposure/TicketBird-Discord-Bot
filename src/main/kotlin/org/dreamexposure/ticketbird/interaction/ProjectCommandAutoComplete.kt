@@ -15,7 +15,7 @@ class ProjectCommandAutoComplete(
     override val id = "project.name,support.topic"
 
     override suspend fun handle(event: ChatInputAutoCompleteEvent, settings: GuildSettings) {
-        when (event.focusedOption.name) {
+        when ("${event.commandName}.${event.focusedOption.name}") {
             "project.name" -> projectName(event)
             "support.topic" -> supportTopic(event, settings)
             else -> event.respondWithSuggestions(listOf()).awaitSingleOrNull()
@@ -47,11 +47,8 @@ class ProjectCommandAutoComplete(
     }
 
     private suspend fun supportTopic(event: ChatInputAutoCompleteEvent, settings: GuildSettings) {
-        if (!settings.useProjects) {
-            // If not using projects, no need to waste their time
-            event.respondWithSuggestions(listOf()).awaitSingleOrNull()
-            return
-        }
-        projectName(event)
+        // If not using projects, no need to waste their time
+        if (settings.useProjects) return projectName(event)
+        else event.respondWithSuggestions(listOf()).awaitSingleOrNull()
     }
 }

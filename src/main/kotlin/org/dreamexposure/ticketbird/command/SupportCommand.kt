@@ -35,8 +35,8 @@ class SupportCommand(
             .map(ApplicationCommandInteractionOptionValue::asString)
             .orElse("")
 
-        // Check if project required but missing; cache info, give them project dropdown
-        if (settings.useProjects && info.isNullOrBlank()) {
+        // Check if project required but missing; if so; cache info, give them project dropdown
+        if (settings.useProjects && topic.isNullOrBlank()) {
             ticketCreateStateCache.put("${settings.guildId}.${event.interaction.user.id.asLong()}", TicketCreateState(ticketInfo = info))
 
             return event.createFollowup(localeService.getString(settings.locale, "dropdown.select-project.prompt"))
@@ -45,9 +45,11 @@ class SupportCommand(
                 .awaitSingle()
         }
 
-        // Check if project exists; cache info, give them project dropdown
-        val project = projectService.getProject(settings.guildId, topic)
-        if (project == null) {
+        // Only get projects if using project, otherwise no reason to do the fetch
+        val project = if (settings.useProjects) projectService.getProject(settings.guildId, topic) else null
+
+        // Check if project required and exists; if not; cache info, give them project dropdown
+        if (settings.useProjects && project == null) {
             ticketCreateStateCache.put("${settings.guildId}.${event.interaction.user.id.asLong()}", TicketCreateState(ticketInfo = info))
 
             return event.createFollowup(localeService.getString(settings.locale, "command.support.topic.not-found"))
