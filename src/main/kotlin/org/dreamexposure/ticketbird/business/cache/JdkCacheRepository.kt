@@ -22,6 +22,13 @@ class JdkCacheRepository<K : Any, V>(override val ttl: Duration) : CacheReposito
         return cache[key]?.second
     }
 
+    override suspend fun getAndRemove(key: K): V? {
+        val cached = cache[key]?.second
+
+        evict(key)
+        return cached
+    }
+
     override suspend fun evict(key: K) {
         cache.remove(key)
     }

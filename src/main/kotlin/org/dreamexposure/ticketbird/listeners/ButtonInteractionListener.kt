@@ -4,7 +4,7 @@ import discord4j.core.event.domain.interaction.ButtonInteractionEvent
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.GuildSettingsService
 import org.dreamexposure.ticketbird.business.LocaleService
-import org.dreamexposure.ticketbird.interaction.button.ButtonHandler
+import org.dreamexposure.ticketbird.interaction.InteractionHandler
 import org.dreamexposure.ticketbird.logger.LOGGER
 import org.dreamexposure.ticketbird.utils.GlobalVars.DEFAULT
 import org.springframework.stereotype.Component
@@ -14,7 +14,7 @@ import java.util.*
 class ButtonInteractionListener(
     private val settingsService: GuildSettingsService,
     private val localeService: LocaleService,
-    private val buttons: List<ButtonHandler>
+    private val buttons: List<InteractionHandler<ButtonInteractionEvent>>
 ): EventListener<ButtonInteractionEvent> {
 
     override suspend fun handle(event: ButtonInteractionEvent) {

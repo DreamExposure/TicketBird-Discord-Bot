@@ -10,5 +10,6 @@ interface CacheRepository<K, V> {
 
     suspend fun get(key: K): V?
 
+    suspend fun getAndRemove(key: K): V?
     suspend fun evict(key: K)
 }

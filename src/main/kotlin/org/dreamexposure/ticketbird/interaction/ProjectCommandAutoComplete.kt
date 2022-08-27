@@ -1,27 +1,29 @@
-package org.dreamexposure.ticketbird.interaction.autocomplete
+package org.dreamexposure.ticketbird.interaction
 
 import discord4j.core.event.domain.interaction.ChatInputAutoCompleteEvent
 import discord4j.core.`object`.command.ApplicationCommandInteractionOptionValue
 import discord4j.discordjson.json.ApplicationCommandOptionChoiceData
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.ProjectService
+import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.springframework.stereotype.Component
 
 @Component
 class ProjectCommandAutoComplete(
     private val projectService: ProjectService,
-) : AutoCompleteHandler {
-    override val id = "project"
+) : InteractionHandler<ChatInputAutoCompleteEvent> {
+    override val id = "project.name,support.topic"
 
-    override suspend fun handle(event: ChatInputAutoCompleteEvent) {
-        when (event.focusedOption.name) {
-            "name" -> projectName(event)
+    override suspend fun handle(event: ChatInputAutoCompleteEvent, settings: GuildSettings) {
+        when ("${event.commandName}.${event.focusedOption.name}") {
+            "project.name" -> projectName(event)
+            "support.topic" -> supportTopic(event, settings)
             else -> event.respondWithSuggestions(listOf()).awaitSingleOrNull()
         }
     }
 
-
     private suspend fun projectName(event: ChatInputAutoCompleteEvent) {
+
         val input = event.focusedOption.value
             .map(ApplicationCommandInteractionOptionValue::asString)
             .get()
@@ -42,5 +44,11 @@ class ProjectCommandAutoComplete(
 
         event.respondWithSuggestions(toSend)
             .awaitSingleOrNull()
+    }
+
+    private suspend fun supportTopic(event: ChatInputAutoCompleteEvent, settings: GuildSettings) {
+        // If not using projects, no need to waste their time
+        if (settings.useProjects) return projectName(event)
+        else event.respondWithSuggestions(listOf()).awaitSingleOrNull()
     }
 }
