@@ -10,7 +10,7 @@ import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.springframework.stereotype.Component
 
 @Component
-class HoldTicketBird(
+class HoldTicketButton(
     private val ticketService: TicketService,
     private val staticMessageService: StaticMessageService,
     private val localeService: LocaleService,
