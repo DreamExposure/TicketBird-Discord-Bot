@@ -22,7 +22,7 @@ class AutoCompleteInteractionListener(
 
         // We use contains since this is meant to be re-usable but Discord uses the app command structure, so we have to handle that
         val id = "${event.commandName}.${event.focusedOption.name}"
-        val handler = handlers.firstOrNull { it.id.contains(id, ignoreCase = false) }
+        val handler = handlers.firstOrNull { it.ids.contains(id) }
 
         if (handler != null) {
             try {

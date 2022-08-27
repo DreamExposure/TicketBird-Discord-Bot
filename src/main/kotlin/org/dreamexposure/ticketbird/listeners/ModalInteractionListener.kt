@@ -23,7 +23,7 @@ class ModalInteractionListener(
             return
         }
 
-        val modal = modals.firstOrNull { it.id == event.customId }
+        val modal = modals.firstOrNull { it.ids.contains(event.customId) }
 
         if (modal != null) {
             try {

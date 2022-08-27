@@ -12,7 +12,7 @@ class CreateTicketButton(
     private val componentService: ComponentService,
     private val localeService: LocaleService,
 ): InteractionHandler<ButtonInteractionEvent> {
-    override val id = "create-ticket"
+    override val ids = arrayOf("create-ticket")
 
     override suspend fun handle(event: ButtonInteractionEvent, settings: GuildSettings) {
         if (settings.useProjects) {

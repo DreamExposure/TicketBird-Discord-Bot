@@ -19,7 +19,7 @@ class TicketDetailModal(
     private val projectService: ProjectService,
     private val ticketCreateStateCache: CacheRepository<String, TicketCreateState>
 ): InteractionHandler<ModalSubmitInteractionEvent> {
-    override val id = "ticket-detail"
+    override val ids = arrayOf("ticket-detail")
 
     override suspend fun handle(event: ModalSubmitInteractionEvent, settings: GuildSettings) {
         // Defer, it could take a moment

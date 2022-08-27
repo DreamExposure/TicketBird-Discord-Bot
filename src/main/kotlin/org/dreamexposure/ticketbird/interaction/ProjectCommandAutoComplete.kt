@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component
 class ProjectCommandAutoComplete(
     private val projectService: ProjectService,
 ) : InteractionHandler<ChatInputAutoCompleteEvent> {
-    override val id = "project.name,support.topic"
+    override val ids = arrayOf("project.name", "support.topic")
 
     override suspend fun handle(event: ChatInputAutoCompleteEvent, settings: GuildSettings) {
         when ("${event.commandName}.${event.focusedOption.name}") {

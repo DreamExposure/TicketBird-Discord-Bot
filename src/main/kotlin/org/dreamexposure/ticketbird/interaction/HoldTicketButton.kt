@@ -15,7 +15,8 @@ class HoldTicketButton(
     private val staticMessageService: StaticMessageService,
     private val localeService: LocaleService,
 ): InteractionHandler<ButtonInteractionEvent> {
-    override val id = "hold-ticket"
+    override val ids = arrayOf("hold-ticket")
+
     override suspend fun handle(event: ButtonInteractionEvent, settings: GuildSettings) {
         event.deferReply()
                 .withEphemeral(true)

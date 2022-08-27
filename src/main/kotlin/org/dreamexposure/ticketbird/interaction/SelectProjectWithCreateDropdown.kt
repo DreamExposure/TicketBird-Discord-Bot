@@ -18,7 +18,7 @@ class SelectProjectWithCreateDropdown(
     private val projectService: ProjectService,
     private val localeService: LocaleService,
 ): InteractionHandler<SelectMenuInteractionEvent> {
-    override val id = "select-project-with-create"
+    override val ids = arrayOf("select-project-with-create")
 
     override suspend fun handle(event: SelectMenuInteractionEvent, settings: GuildSettings) {
         val selected = event.values[0]

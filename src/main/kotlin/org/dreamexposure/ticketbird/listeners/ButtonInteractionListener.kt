@@ -23,7 +23,7 @@ class ButtonInteractionListener(
             return
         }
 
-        val button = buttons.firstOrNull { it.id == event.customId }
+        val button = buttons.firstOrNull { it.ids.contains(event.customId) }
 
         if (button != null) {
             try {

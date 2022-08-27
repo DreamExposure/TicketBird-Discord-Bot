@@ -23,7 +23,7 @@ class SelectMenuInteractionListener(
             return
         }
 
-        val dropdown = dropdowns.firstOrNull { it.id == event.customId }
+        val dropdown = dropdowns.firstOrNull { it.ids.contains(event.customId) }
 
         if (dropdown != null) {
             try {
