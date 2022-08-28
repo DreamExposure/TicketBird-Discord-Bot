@@ -30,6 +30,14 @@ class ProjectRedisCacheRepository(
         return if (raw != null) mapper.readValue<List<Project>>(raw) else null
     }
 
+    override suspend fun getAndRemove(key: Long): List<Project>? {
+        val raw = cache.get(key, String::class.java)
+        val parsed =  if (raw != null) mapper.readValue<List<Project>>(raw) else null
+
+        evict(key)
+        return parsed
+    }
+
     override suspend fun evict(key: Long) {
         cache.evictIfPresent(key)
     }

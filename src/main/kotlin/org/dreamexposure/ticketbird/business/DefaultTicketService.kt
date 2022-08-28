@@ -9,6 +9,7 @@ import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.cache.CacheRepository
 import org.dreamexposure.ticketbird.database.TicketData
 import org.dreamexposure.ticketbird.database.TicketRepository
+import org.dreamexposure.ticketbird.extensions.embedDescriptionSafe
 import org.dreamexposure.ticketbird.`object`.Project
 import org.dreamexposure.ticketbird.`object`.Ticket
 import org.dreamexposure.ticketbird.utils.GlobalVars
@@ -187,7 +188,7 @@ class DefaultTicketService(
             .color(GlobalVars.embedColor)
             .timestamp(Instant.now())
         if (!project?.name.isNullOrBlank()) embedBuilder.title(project!!.name)
-        if (info != null) embedBuilder.description(info)
+        if (!info.isNullOrBlank()) embedBuilder.description(info.embedDescriptionSafe())
 
         // Create ticket channel + message
         val channel = createTicketChannel(guildId, creatorId, project?.prefix, ticketNumber)

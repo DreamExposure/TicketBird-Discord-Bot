@@ -20,11 +20,13 @@ class DefaultComponentService(
         return arrayOf(ActionRow.of(button))
     }
 
-    override suspend fun getProjectSelectComponents(settings: GuildSettings): Array<LayoutComponent> {
+    override suspend fun getProjectSelectComponents(settings: GuildSettings, withCreate: Boolean): Array<LayoutComponent> {
         val projectsAsOptions = projectService.getAllProjects(settings.guildId)
             .map { SelectMenu.Option.of(it.name, it.name) }
 
-        val selectMenu = SelectMenu.of("select-project", projectsAsOptions)
+        val id = if (withCreate) "select-project-with-create" else "select-project"
+
+        val selectMenu = SelectMenu.of(id, projectsAsOptions)
             .withPlaceholder(localeService.getString(settings.locale, "dropdown.select-project.placeholder"))
 
         return arrayOf(ActionRow.of(selectMenu))
