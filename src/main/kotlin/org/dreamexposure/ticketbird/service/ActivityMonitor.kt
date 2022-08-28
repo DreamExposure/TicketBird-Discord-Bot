@@ -3,9 +3,9 @@ package org.dreamexposure.ticketbird.service
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.`object`.entity.channel.Category
 import discord4j.core.`object`.entity.channel.TextChannel
-import discord4j.rest.http.client.ClientException
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.mono
+import org.dreamexposure.ticketbird.business.EnvironmentService
 import org.dreamexposure.ticketbird.business.GuildSettingsService
 import org.dreamexposure.ticketbird.business.TicketService
 import org.dreamexposure.ticketbird.logger.LOGGER
@@ -23,6 +23,7 @@ class ActivityMonitor(
     private val client: GatewayDiscordClient,
     private val settingsService: GuildSettingsService,
     private val ticketService: TicketService,
+    private val environmentService: EnvironmentService,
 ) : ApplicationRunner {
 
     override fun run(args: ApplicationArguments?) {
@@ -39,6 +40,7 @@ class ActivityMonitor(
         client.guilds.collectList().awaitSingle().forEach { guild ->
             val settings = settingsService.getGuildSettings(guild.id)
             if (settings.requiresRepair) return@forEach // Skip processing this guild until they decide to run repair command
+            if (!environmentService.validateAllEntitiesExist(settings.guildId)) return@forEach // Skip processing since we know something doesn't exist
 
             // Isolate errors to guild-level
             try {
@@ -46,12 +48,6 @@ class ActivityMonitor(
                     // Get closed tickets
                     val closedCategoryChannels = guild.getChannelById(settings.closeCategory!!)
                         .ofType(Category::class.java)
-                        .doOnError(ClientException.isStatusCode(404)) {
-                            settings.closeCategory = null
-                            settings.requiresRepair = true
-                        }.doOnError(ClientException.isStatusCode(403)) {
-                            settings.requiresRepair = true
-                        }
                         .onErrorResume { Mono.empty() }
                         .flatMapMany { it.channels.ofType(TextChannel::class.java) }
                         .collectList().awaitSingle()
@@ -60,32 +56,14 @@ class ActivityMonitor(
                     // Get open tickets
                     val awaitingCategoryChannels = guild.getChannelById(settings.awaitingCategory!!)
                         .ofType(Category::class.java)
-                        .doOnError(ClientException.isStatusCode(404)) {
-                            settings.awaitingCategory = null
-                            settings.requiresRepair = true
-                        }.doOnError(ClientException.isStatusCode(403)) {
-                            settings.requiresRepair = true
-                        }
                         .onErrorResume { Mono.empty() }
                         .flatMapMany { it.channels.ofType(TextChannel::class.java) }
                         .collectList().awaitSingle()
                     val respondedCategoryChannels = guild.getChannelById(settings.respondedCategory!!)
                         .ofType(Category::class.java)
-                        .doOnError(ClientException.isStatusCode(404)) {
-                            settings.respondedCategory = null
-                            settings.requiresRepair = true
-                        }.doOnError(ClientException.isStatusCode(403)) {
-                            settings.requiresRepair = true
-                        }
                         .onErrorResume { Mono.empty() }
                         .flatMapMany { it.channels.ofType(TextChannel::class.java) }
                         .collectList().awaitSingle()
-
-                    // save settings and don't process if requiresRepair is true, there was an expected error above
-                    if (settings.requiresRepair) {
-                        settingsService.createOrUpdateGuildSettings(settings)
-                        return@forEach // Break
-                    }
 
                     // Loop closed tickets
                     for (closedTicketChannel in closedCategoryChannels) {

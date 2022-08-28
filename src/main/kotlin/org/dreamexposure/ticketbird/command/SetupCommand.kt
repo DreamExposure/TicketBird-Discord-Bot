@@ -87,11 +87,11 @@ class SetupCommand(
             .awaitSingle()
     }
 
-    // TODO: Finish this subcommand's logic and then add it to setup.json 
+    // TODO: Finish this subcommand's logic and then add it to setup.json
     private suspend fun repair(event: ChatInputInteractionEvent, settings: GuildSettings): Message {
         // Check if setup has already been done
-        if (settings.supportChannel != null) {
-            return event.createFollowup(localeService.getString(settings.locale, "command.setup.repair.never-run"))
+        if (!settings.requiresRepair && settings.hasRequiredIdsSet()) {
+            return event.createFollowup(localeService.getString(settings.locale, "command.setup.repair.never-init"))
                 .withEphemeral(ephemeral)
                 .awaitSingle()
         }
@@ -107,13 +107,20 @@ class SetupCommand(
                 .awaitSingle()
         }
 
-        // TODO: Check categories
+        // Validate that all required discord entities exist
+        if (environmentService.validateAllEntitiesExist(settings.guildId)) {
+            // Everything exists, return
+            return event.createFollowup(localeService.getString(settings.locale, "command.setup.repair.no-issue-detected"))
+                .withEphemeral(ephemeral)
+                .awaitSingle()
+        }
 
-        // TODO: Check support request channel
+        environmentService.recreateMissingEntities(settings.guildId)
 
-        // TODO: Check static message
-
-        TODO("Not yet implemented")
+        //  Respond with success
+        return event.createFollowup(localeService.getString(settings.locale, "command.setup.repair.success"))
+            .withEphemeral(ephemeral)
+            .awaitSingle()
     }
 
     private suspend fun language(event: ChatInputInteractionEvent, settings: GuildSettings): Message {

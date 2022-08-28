@@ -35,6 +35,20 @@ class SupportCommand(
             .map(ApplicationCommandInteractionOptionValue::asString)
             .orElse("")
 
+        // Check if ticket bird is even functional
+        if (!settings.hasRequiredIdsSet() && !settings.requiresRepair) {
+            // TicketBird never init
+            return event.createFollowup(localeService.getString(settings.locale, "generic.not-init"))
+                .withEphemeral(true)
+                .awaitSingle()
+        }
+        if (settings.requiresRepair) {
+            // TicketBird broken, needs repair
+            return event.createFollowup(localeService.getString(settings.locale, "generic.repair-required"))
+                .withEphemeral(true)
+                .awaitSingle()
+        }
+
         // Check if project required but missing; if so; cache info, give them project dropdown
         if (settings.useProjects && topic.isNullOrBlank()) {
             ticketCreateStateCache.put("${settings.guildId}.${event.interaction.user.id.asLong()}", TicketCreateState(ticketInfo = info))
