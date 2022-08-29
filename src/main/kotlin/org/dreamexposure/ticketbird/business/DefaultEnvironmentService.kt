@@ -131,7 +131,7 @@ class DefaultEnvironmentService(
         if (settings.awaitingCategory == null) settings.awaitingCategory = createCategory(guildId, "awaiting").id
         if (settings.respondedCategory == null) settings.respondedCategory = createCategory(guildId, "responded").id
         if (settings.holdCategory == null) settings.holdCategory = createCategory(guildId, "hold").id
-        if (settings.closeCategory == null) settings.closeCategory = createCategory(guildId, "close").id
+        if (settings.closeCategory == null) settings.closeCategory = createCategory(guildId, "closed").id
 
         if (settings.supportChannel == null) {
             val supportChannel = createSupportChannel(guildId)

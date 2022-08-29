@@ -7,6 +7,7 @@ import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.mono
 import org.dreamexposure.ticketbird.business.EnvironmentService
 import org.dreamexposure.ticketbird.business.GuildSettingsService
+import org.dreamexposure.ticketbird.business.StaticMessageService
 import org.dreamexposure.ticketbird.business.TicketService
 import org.dreamexposure.ticketbird.logger.LOGGER
 import org.dreamexposure.ticketbird.utils.GlobalVars.DEFAULT
@@ -24,6 +25,7 @@ class ActivityMonitor(
     private val settingsService: GuildSettingsService,
     private val ticketService: TicketService,
     private val environmentService: EnvironmentService,
+    private val staticMessageService: StaticMessageService,
 ) : ApplicationRunner {
 
     override fun run(args: ApplicationArguments?) {
@@ -40,7 +42,11 @@ class ActivityMonitor(
         client.guilds.collectList().awaitSingle().forEach { guild ->
             val settings = settingsService.getGuildSettings(guild.id)
             if (settings.requiresRepair) return@forEach // Skip processing this guild until they decide to run repair command
-            if (!environmentService.validateAllEntitiesExist(settings.guildId)) return@forEach // Skip processing since we know something doesn't exist
+            if (!environmentService.validateAllEntitiesExist(settings.guildId)) {
+                // Skip processing since we know something doesn't exist
+                staticMessageService.update(settings.guildId)
+                return@forEach
+            }
 
             // Isolate errors to guild-level
             try {
@@ -48,7 +54,6 @@ class ActivityMonitor(
                     // Get closed tickets
                     val closedCategoryChannels = guild.getChannelById(settings.closeCategory!!)
                         .ofType(Category::class.java)
-                        .onErrorResume { Mono.empty() }
                         .flatMapMany { it.channels.ofType(TextChannel::class.java) }
                         .collectList().awaitSingle()
 
@@ -56,12 +61,10 @@ class ActivityMonitor(
                     // Get open tickets
                     val awaitingCategoryChannels = guild.getChannelById(settings.awaitingCategory!!)
                         .ofType(Category::class.java)
-                        .onErrorResume { Mono.empty() }
                         .flatMapMany { it.channels.ofType(TextChannel::class.java) }
                         .collectList().awaitSingle()
                     val respondedCategoryChannels = guild.getChannelById(settings.respondedCategory!!)
                         .ofType(Category::class.java)
-                        .onErrorResume { Mono.empty() }
                         .flatMapMany { it.channels.ofType(TextChannel::class.java) }
                         .collectList().awaitSingle()
 

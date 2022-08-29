@@ -2,11 +2,13 @@ package org.dreamexposure.ticketbird.listeners
 
 import discord4j.core.event.domain.channel.CategoryDeleteEvent
 import org.dreamexposure.ticketbird.business.GuildSettingsService
+import org.dreamexposure.ticketbird.business.StaticMessageService
 import org.springframework.stereotype.Component
 
 @Component
 class CategoryDeleteListener(
-    private val settingsService: GuildSettingsService
+    private val settingsService: GuildSettingsService,
+    private val staticMessageService: StaticMessageService,
 ): EventListener<CategoryDeleteEvent> {
 
     override suspend fun handle(event: CategoryDeleteEvent) {
@@ -34,5 +36,7 @@ class CategoryDeleteListener(
 
         // If we made it here, we should update the settings
         settingsService.createOrUpdateGuildSettings(settings)
+
+        if (settings.requiresRepair) staticMessageService.update(settings.guildId)
     }
 }

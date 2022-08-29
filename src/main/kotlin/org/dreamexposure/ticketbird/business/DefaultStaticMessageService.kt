@@ -9,7 +9,6 @@ import discord4j.core.spec.EmbedCreateSpec
 import discord4j.rest.http.client.ClientException
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
-import org.dreamexposure.ticketbird.logger.LOGGER
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.utils.GlobalVars.embedColor
 import org.dreamexposure.ticketbird.utils.GlobalVars.iconUrl
@@ -81,8 +80,6 @@ class DefaultStaticMessageService(
         val channel = try {
             discordClient.getChannelById(settings.supportChannel!!).ofType(TextChannel::class.java).awaitSingle()
         } catch (ex: ClientException) {
-            LOGGER.error("Failed to get support channel", ex)
-
             if (ex.status.code() == 404) settings.staticMessage = null
             if ((ex.status.code() == 403) || (ex.status.code() == 404)) settings.requiresRepair = true
 
@@ -96,8 +93,6 @@ class DefaultStaticMessageService(
         val message = try {
             channel.getMessageById(settings.staticMessage!!).awaitSingleOrNull()
         } catch (ex: ClientException) {
-            LOGGER.error("Failed to get static message", ex)
-
             null
         }
 

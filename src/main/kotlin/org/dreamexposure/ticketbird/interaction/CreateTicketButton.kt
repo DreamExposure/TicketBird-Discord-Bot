@@ -19,6 +19,7 @@ class CreateTicketButton(
             event.reply(localeService.getString(settings.locale, "generic.repair-required"))
                 .withEphemeral(true)
                 .awaitSingleOrNull()
+            return
         }
 
         if (settings.useProjects) {

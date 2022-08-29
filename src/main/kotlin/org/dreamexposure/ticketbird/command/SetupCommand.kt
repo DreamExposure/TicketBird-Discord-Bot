@@ -116,6 +116,7 @@ class SetupCommand(
         }
 
         environmentService.recreateMissingEntities(settings.guildId)
+        staticMessageService.update(settings.guildId)
 
         //  Respond with success
         return event.createFollowup(localeService.getString(settings.locale, "command.setup.repair.success"))
