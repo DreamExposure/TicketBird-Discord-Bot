@@ -11,6 +11,11 @@
     },
     {
       "type": 1,
+      "name": "repair",
+      "description": "Repairs the bot's configuration and recreates missing channels or categories"
+    },
+    {
+      "type": 1,
       "name": "language",
       "description": "Sets the language for the bot to use when sending responses. Defaults to english",
       "options": [

@@ -31,7 +31,7 @@ class TicketBirdCommand(
     override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings): Message {
         val guilds = event.client.guilds.count().awaitSingle()
 
-        val embed = EmbedCreateSpec.builder()
+        val builder = EmbedCreateSpec.builder()
             .author(localeService.getString(settings.locale, "bot.name"), null, GlobalVars.iconUrl)
             .color(GlobalVars.embedColor)
             .title(localeService.getString(settings.locale, "embed.info.title"))
@@ -56,10 +56,18 @@ class TicketBirdCommand(
                 false
             ).footer(localeService.getString(settings.locale, "embed.info.footer"), null)
             .timestamp(Instant.now())
-            .build()
+
+        // Even tho this is an info command, we want this state to be easily visible
+        if (settings.requiresRepair) {
+            builder.addField(
+                localeService.getString(settings.locale, "embed.field.warning"),
+                localeService.getString(settings.locale, "generic.repair-required"),
+                false
+            )
+        }
 
         return event.createFollowup()
-            .withEmbeds(embed)
+            .withEmbeds(builder.build())
             .withEphemeral(ephemeral)
             .awaitSingle()
     }

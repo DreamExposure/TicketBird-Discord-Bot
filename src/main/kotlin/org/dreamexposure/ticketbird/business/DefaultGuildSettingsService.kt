@@ -43,6 +43,7 @@ class DefaultGuildSettingsService(
             devGuild = settings.devGuild,
             patronGuild = settings.patronGuild,
             useProjects = settings.useProjects,
+            requiresRepair = settings.requiresRepair,
 
             awaitingCategory = settings.awaitingCategory?.asLong(),
             respondedCategory = settings.respondedCategory?.asLong(),
@@ -66,6 +67,7 @@ class DefaultGuildSettingsService(
             devGuild = settings.devGuild,
             patronGuild = settings.patronGuild,
             useProjects = settings.useProjects,
+            requiresRepair = settings.requiresRepair,
 
             awaitingCategory = settings.awaitingCategory?.asLong(),
             respondedCategory = settings.respondedCategory?.asLong(),

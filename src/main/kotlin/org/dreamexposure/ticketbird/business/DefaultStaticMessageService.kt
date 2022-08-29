@@ -9,7 +9,6 @@ import discord4j.core.spec.EmbedCreateSpec
 import discord4j.rest.http.client.ClientException
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
-import org.dreamexposure.ticketbird.logger.LOGGER
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.utils.GlobalVars.embedColor
 import org.dreamexposure.ticketbird.utils.GlobalVars.iconUrl
@@ -29,9 +28,26 @@ class DefaultStaticMessageService(
         get() = beanFactory.getBean<GatewayDiscordClient>()
 
     override suspend fun getEmbed(settings: GuildSettings): EmbedCreateSpec? {
-        if (settings.awaitingCategory == null || settings.respondedCategory == null || settings.holdCategory == null)
-            return null
+        val builder = EmbedCreateSpec.builder()
+            .author(localeService.getString(settings.locale, "bot.name"), null, iconUrl)
+            .color(embedColor)
+            .title(localeService.getString(settings.locale, "embed.static.title"))
+            .description(localeService.getString(settings.locale, "embed.static.desc"))
+            .footer(localeService.getString(settings.locale, "embed.static.footer"), null)
+            .timestamp(Instant.now())
 
+        // Short circuit if repair is required, so we can still make this state visible to end users
+        if (settings.requiresRepair || !settings.hasRequiredIdsSet()) {
+            builder.addField(
+                localeService.getString(settings.locale, "embed.field.warning"),
+                localeService.getString(settings.locale, "generic.repair-required"),
+                false
+            )
+
+            return builder.build()
+        }
+
+        // Add ticket stats
         val awaiting = discordClient.getChannelById(settings.awaitingCategory!!).ofType(Category::class.java)
             .flatMap { it.channels.count() }
             .awaitSingle()
@@ -46,17 +62,12 @@ class DefaultStaticMessageService(
         val closed = allTickets - awaiting - responded - hold
         val open = awaiting + responded
 
-        return EmbedCreateSpec.builder()
-            .author(localeService.getString(settings.locale, "bot.name"), null, iconUrl)
-            .color(embedColor)
-            .title(localeService.getString(settings.locale, "embed.static.title"))
-            .description(localeService.getString(settings.locale, "embed.static.desc"))
+        builder
             .addField(localeService.getString(settings.locale, "embed.static.field.open"), "$open", true)
             .addField(localeService.getString(settings.locale, "embed.static.field.hold"), "$hold", true)
             .addField(localeService.getString(settings.locale, "embed.static.field.closed"), "$closed", true)
-            .footer(localeService.getString(settings.locale, "embed.static.footer"), null)
-            .timestamp(Instant.now())
-            .build()
+
+        return builder.build()
     }
 
     override suspend fun update(guildId: Snowflake): Message? {
@@ -69,13 +80,12 @@ class DefaultStaticMessageService(
         val channel = try {
             discordClient.getChannelById(settings.supportChannel!!).ofType(TextChannel::class.java).awaitSingle()
         } catch (ex: ClientException) {
-            LOGGER.error("Failed to get support channel", ex)
+            if (ex.status.code() == 404) settings.staticMessage = null
+            if ((ex.status.code() == 403) || (ex.status.code() == 404)) settings.requiresRepair = true
 
-            if (ex.status.code() == 403 || ex.status.code() == 404) {
-                // Permission denied or channel not found
-                settings.staticMessage = null
-                settingsService.updateGuildSettings(settings)
-            }
+            // Save if needed
+            if (settings.requiresRepair) settingsService.updateGuildSettings(settings)
+
             return null
         }
 
@@ -83,8 +93,6 @@ class DefaultStaticMessageService(
         val message = try {
             channel.getMessageById(settings.staticMessage!!).awaitSingleOrNull()
         } catch (ex: ClientException) {
-            LOGGER.error("Failed to get static message", ex)
-
             null
         }
 

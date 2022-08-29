@@ -13,6 +13,7 @@ interface GuildSettingsRepository: R2dbcRepository<GuildSettingsData, Long> {
             patron_guild = :patronGuild,
             dev_guild = :devGuild,
             use_projects = :useProjects,
+            requires_repair = :requiresRepair,
             awaiting_category = :awaitingCategory,
             responded_category = :respondedCategory,
             hold_category = :holdCategory,
@@ -29,6 +30,7 @@ interface GuildSettingsRepository: R2dbcRepository<GuildSettingsData, Long> {
         patronGuild: Boolean,
         devGuild: Boolean,
         useProjects: Boolean,
+        requiresRepair: Boolean,
 
         awaitingCategory: Long?,
         respondedCategory: Long?,

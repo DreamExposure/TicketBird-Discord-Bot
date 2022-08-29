@@ -15,7 +15,7 @@ class DefaultComponentService(
             "create-ticket",
             ReactionEmoji.unicode("\uD83D\uDCE8"), // Incoming envelop emote
             localeService.getString(settings.locale, "button.create-ticket.label")
-        )
+        ).disabled(settings.requiresRepair)
 
         return arrayOf(ActionRow.of(button))
     }

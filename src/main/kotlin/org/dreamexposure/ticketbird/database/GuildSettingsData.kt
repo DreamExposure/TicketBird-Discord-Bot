@@ -14,6 +14,8 @@ data class GuildSettingsData(
 
     val useProjects: Boolean,
 
+    val requiresRepair: Boolean,
+
     val awaitingCategory: Long?,
     val respondedCategory: Long?,
     val holdCategory: Long?,
