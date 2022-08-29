@@ -87,7 +87,6 @@ class SetupCommand(
             .awaitSingle()
     }
 
-    // TODO: Finish this subcommand's logic and then add it to setup.json
     private suspend fun repair(event: ChatInputInteractionEvent, settings: GuildSettings): Message {
         // Check if setup has already been done
         if (!settings.requiresRepair && settings.hasRequiredIdsSet()) {
