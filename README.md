@@ -12,7 +12,7 @@ TicketBird is a simple help desk and ticket managing Discord bot allowing you to
 
 # 💎 Core Features
 - Simple setup (just use one command to get everything initiated)
-- Easy for users to understand and use without a single command
+- Easy for users to understand and use without a single command (but can also open tickets with a command)
 - Allow users to pick from up to 25 topics (called projects), if desired
 - Won't disrupt your community. TicketBird will not affect anything beyond the channels it manages for tickets.
 - Auto-close tickets after 7 days of inactivity, and auto-delete tickets after being closed for 24 hours
@@ -22,9 +22,11 @@ TicketBird is a simple help desk and ticket managing Discord bot allowing you to
 | Command             | Description                                                             | Permissions |
 |---------------------|-------------------------------------------------------------------------|-------------|
 | /ticketbird         | Shows info about the bot                                                | Everyone    |
+| /support            | Opens a new ticket                                                      | Everyone    |
 | /close              | Closes a ticket when run in a ticket channel                            | Everyone    |
 | /hold               | Places a ticket on hold when run in a ticket channel                    | Everyone    |
 | /setup init         | Lets the bot setup by creating needed channels/categories               | Admin-only  |
+| /setup repair       | Attempts to automatically repair any configuration issues               | Admin-only  |
 | /setup use-projects | Whether to use "projects" or ticket topics to help sort tickets         | Admin-only  |
 | /setup language     | Allows you to select the language for the bot to use                    | Admin-only  |
 | /staff add          | Add a user as being "TicketBird Staff" allowing them to see all tickets | Admin-only  |
@@ -47,7 +49,8 @@ This bot is a hobby project for me, please note that while these features are pl
 - Java 17
 - 100% Kotlin utilizing Kotlin Coroutines
 - Spring Boot (Data, Dependency Injection, etc)
-- Flyway for automatic database migrations
+- Flyway for automatic database migrations (MySQL)
+- Redis cluster caching
 - Enterprise repository & service pattern for maintainability
 - Fully containerized with Docker (hosted in Kubernetes, docker-compose for local development)
 
