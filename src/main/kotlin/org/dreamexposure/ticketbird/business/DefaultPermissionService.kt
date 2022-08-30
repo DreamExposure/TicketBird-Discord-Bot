@@ -49,7 +49,6 @@ class DefaultPermissionService(
     )
 
     override fun getTicketGrantOverrides() = PermissionSet.of(
-        Permission.MENTION_EVERYONE,
         Permission.ATTACH_FILES,
         Permission.EMBED_LINKS,
         Permission.SEND_MESSAGES,
