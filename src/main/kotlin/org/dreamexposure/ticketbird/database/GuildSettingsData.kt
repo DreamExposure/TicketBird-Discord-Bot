@@ -13,6 +13,8 @@ data class GuildSettingsData(
     val devGuild: Boolean,
 
     val useProjects: Boolean,
+    val autoCloseHours: Int,
+    val autoDeleteHours: Int,
 
     val requiresRepair: Boolean,
 

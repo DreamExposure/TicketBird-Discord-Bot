@@ -38,6 +38,7 @@ class SetupCommand(
             "repair" -> repair(event, settings)
             "language" -> language(event, settings)
             "use-projects" -> useProjects(event, settings)
+            "timing" -> timing(event, settings)
             else -> throw IllegalStateException("Invalid subcommand specified")
         }
     }
@@ -150,5 +151,9 @@ class SetupCommand(
         return event.createFollowup(localeService.getString(settings.locale, "command.setup.use-projects.success.$useProjects"))
             .withEphemeral(ephemeral)
             .awaitSingle()
+    }
+
+    private suspend fun timing(event: ChatInputInteractionEvent, settings: GuildSettings): Message {
+        TODO("Not yet implemented")
     }
 }

@@ -5,6 +5,7 @@ import org.dreamexposure.ticketbird.database.GuildSettingsData
 import org.dreamexposure.ticketbird.extensions.handleLocaleDebt
 import org.dreamexposure.ticketbird.extensions.listFromDb
 import org.dreamexposure.ticketbird.extensions.toSnowflake
+import java.time.Duration
 import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -13,7 +14,11 @@ data class GuildSettings(
     var locale: Locale = Locale.ENGLISH,
     var patronGuild: Boolean = false,
     var devGuild: Boolean = false,
+
     var useProjects: Boolean = false,
+    val autoClose: Duration = Duration.ofDays(7),
+    val autoDelete: Duration = Duration.ofHours(24),
+
     var requiresRepair: Boolean = false,
 
     var awaitingCategory: Snowflake? = null,
@@ -31,6 +36,10 @@ data class GuildSettings(
         locale = data.lang.handleLocaleDebt(),
         patronGuild = data.patronGuild,
         useProjects = data.useProjects,
+        autoClose = Duration.ofHours(data.autoCloseHours.toLong()),
+        autoDelete = Duration.ofHours(data.autoDeleteHours.toLong()),
+
+
         requiresRepair = data.requiresRepair,
 
         awaitingCategory = data.awaitingCategory?.toSnowflake(),

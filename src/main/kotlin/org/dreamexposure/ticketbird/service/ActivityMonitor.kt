@@ -71,7 +71,7 @@ class ActivityMonitor(
                     // Loop closed tickets
                     for (closedTicketChannel in closedCategoryChannels) {
                         val ticket = ticketService.getTicket(guild.id, closedTicketChannel.id)
-                        if (ticket != null && Duration.between(Instant.now(), ticket.lastActivity).abs() > Duration.ofDays(1)) {
+                        if (ticket != null && Duration.between(Instant.now(), ticket.lastActivity).abs() > settings.autoDelete) {
                             // Ticket closed for over 24 hours, purge
                             ticketService.purgeTicket(settings.guildId, ticket.channel)
                         }
@@ -81,7 +81,7 @@ class ActivityMonitor(
                     for (openTicketChannel in awaitingCategoryChannels + respondedCategoryChannels) {
                         val ticket = ticketService.getTicket(guild.id, openTicketChannel.id)
 
-                        if (ticket != null && Duration.between(Instant.now(), ticket.lastActivity).abs() > Duration.ofDays(7)) {
+                        if (ticket != null && Duration.between(Instant.now(), ticket.lastActivity).abs() > settings.autoClose) {
                             // Inactive, auto-close
                             ticketService.closeTicket(settings.guildId, ticket.channel, inactive = true)
                         }
