@@ -109,8 +109,8 @@ jib {
 gitProperties {
     extProperty = "gitPropertiesExt"
 
-    val versionName = if (System.getenv("BUILD_NUMBER") != null) {
-        "$version.${System.getenv("BUILD_NUMBER")}"
+    val versionName = if (System.getenv("GITHUB_RUN_NUMBER") != null) {
+        "$version.${System.getenv("GITHUB_RUN_NUMBER")}"
     } else {
         "$version.d${System.currentTimeMillis().div(1000)}" //Seconds since epoch
     }
