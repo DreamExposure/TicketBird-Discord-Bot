@@ -39,6 +39,7 @@ class ActivityMonitor(
     private fun doTheThing() = mono {
         LOGGER.debug("Running ticket inactivity close task...")
 
+        //TODO: I should loop over tickets and get channels only when needed.
         client.guilds.collectList().awaitSingle().forEach { guild ->
             val settings = settingsService.getGuildSettings(guild.id)
             if (settings.requiresRepair) return@forEach // Skip processing this guild until they decide to run repair command
@@ -51,6 +52,8 @@ class ActivityMonitor(
             // Isolate errors to guild-level
             try {
                 if (settings.hasRequiredIdsSet()) {
+                    var updateStaticMessage = false
+
                     // Get closed tickets
                     val closedCategoryChannels = guild.getChannelById(settings.closeCategory!!)
                         .ofType(Category::class.java)
@@ -74,6 +77,7 @@ class ActivityMonitor(
                         if (ticket != null && Duration.between(Instant.now(), ticket.lastActivity).abs() > settings.autoDelete) {
                             // Ticket closed for over 24 hours, purge
                             ticketService.purgeTicket(settings.guildId, ticket.channel)
+                            updateStaticMessage = true
                         }
                     }
 
@@ -84,8 +88,11 @@ class ActivityMonitor(
                         if (ticket != null && Duration.between(Instant.now(), ticket.lastActivity).abs() > settings.autoClose) {
                             // Inactive, auto-close
                             ticketService.closeTicket(settings.guildId, ticket.channel, inactive = true)
+                            updateStaticMessage = true
                         }
                     }
+
+                    if (updateStaticMessage) staticMessageService.update(guild.id)
                 }
             } catch (ex: Exception) {
                 LOGGER.error(DEFAULT, "ActivityMonitor Failed to process guild | id: ${guild.id.asString()}", ex)

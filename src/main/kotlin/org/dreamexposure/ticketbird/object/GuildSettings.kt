@@ -16,8 +16,8 @@ data class GuildSettings(
     var devGuild: Boolean = false,
 
     var useProjects: Boolean = false,
-    val autoClose: Duration = Duration.ofDays(7),
-    val autoDelete: Duration = Duration.ofHours(24),
+    var autoClose: Duration = Duration.ofDays(7),
+    var autoDelete: Duration = Duration.ofHours(24),
 
     var requiresRepair: Boolean = false,
 

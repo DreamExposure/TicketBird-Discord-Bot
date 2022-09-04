@@ -8,8 +8,10 @@ import discord4j.core.`object`.entity.Message
 import discord4j.rest.util.Permission
 import kotlinx.coroutines.reactor.awaitSingle
 import org.dreamexposure.ticketbird.business.*
+import org.dreamexposure.ticketbird.extensions.getHumanReadableMinimized
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.springframework.stereotype.Component
+import java.time.Duration
 import java.util.*
 
 @Component
@@ -154,6 +156,40 @@ class SetupCommand(
     }
 
     private suspend fun timing(event: ChatInputInteractionEvent, settings: GuildSettings): Message {
-        TODO("Not yet implemented")
+        val action = event.options[0].getOption("action")
+            .flatMap(ApplicationCommandInteractionOption::getValue)
+            .map(ApplicationCommandInteractionOptionValue::asString)
+            .get()
+        val days = event.options[0].getOption("days")
+            .flatMap(ApplicationCommandInteractionOption::getValue)
+            .map(ApplicationCommandInteractionOptionValue::asLong)
+            .map(Duration::ofDays)
+            .orElse(Duration.ZERO)
+        val hours = event.options[0].getOption("hours")
+            .flatMap(ApplicationCommandInteractionOption::getValue)
+            .map(ApplicationCommandInteractionOptionValue::asLong)
+            .map(Duration::ofHours)
+            .orElse(Duration.ZERO)
+
+        // Cannot be zero
+        if (days + hours <= Duration.ZERO) {
+            return event.createFollowup(localeService.getString(settings.locale, "command.setup.timing.error.duration-zero"))
+                .withEphemeral(ephemeral)
+                .awaitSingle()
+        }
+
+        // Apply
+        when (action) {
+            "auto-close" -> settings.autoClose = days + hours
+            "auto-delete" -> settings.autoDelete = days + hours
+        }
+
+        settingsService.createOrUpdateGuildSettings(settings)
+
+        return event.createFollowup(localeService.getString(
+            settings.locale,
+            field = "command.setup.timing.success.$action",
+            values = arrayOf((days + hours).getHumanReadableMinimized())
+        )).withEphemeral(ephemeral).awaitSingle()
     }
 }

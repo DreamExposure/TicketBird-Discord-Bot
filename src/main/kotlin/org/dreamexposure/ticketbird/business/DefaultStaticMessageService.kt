@@ -71,6 +71,7 @@ class DefaultStaticMessageService(
     }
 
     override suspend fun update(guildId: Snowflake): Message? {
+
         val settings = settingsService.getGuildSettings(guildId)
 
         // Cannot run if support channel or static message not set
