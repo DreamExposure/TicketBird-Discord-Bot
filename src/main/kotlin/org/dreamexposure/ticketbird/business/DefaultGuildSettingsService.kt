@@ -43,6 +43,8 @@ class DefaultGuildSettingsService(
             devGuild = settings.devGuild,
             patronGuild = settings.patronGuild,
             useProjects = settings.useProjects,
+            autoCloseHours = settings.autoClose.toHours().toInt(),
+            autoDeleteHours = settings.autoDelete.toHours().toInt(),
             requiresRepair = settings.requiresRepair,
 
             awaitingCategory = settings.awaitingCategory?.asLong(),
@@ -67,6 +69,8 @@ class DefaultGuildSettingsService(
             devGuild = settings.devGuild,
             patronGuild = settings.patronGuild,
             useProjects = settings.useProjects,
+            autoCloseHours = settings.autoClose.toHours().toInt(),
+            autoDeleteHours = settings.autoDelete.toHours().toInt(),
             requiresRepair = settings.requiresRepair,
 
             awaitingCategory = settings.awaitingCategory?.asLong(),

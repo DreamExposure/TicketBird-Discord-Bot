@@ -51,6 +51,8 @@ class ActivityMonitor(
             // Isolate errors to guild-level
             try {
                 if (settings.hasRequiredIdsSet()) {
+                    var updateStaticMessage = false
+
                     // Get closed tickets
                     val closedCategoryChannels = guild.getChannelById(settings.closeCategory!!)
                         .ofType(Category::class.java)
@@ -70,22 +72,26 @@ class ActivityMonitor(
 
                     // Loop closed tickets
                     for (closedTicketChannel in closedCategoryChannels) {
-                        val ticket = ticketService.getTicket(guild.id, closedTicketChannel.id)
-                        if (ticket != null && Duration.between(Instant.now(), ticket.lastActivity).abs() > Duration.ofDays(1)) {
+                        val ticket = ticketService.getTicket(guild.id, closedTicketChannel.id) ?: return@forEach
+                        if (Duration.between(Instant.now(), ticket.lastActivity).abs() > settings.autoDelete) {
                             // Ticket closed for over 24 hours, purge
                             ticketService.purgeTicket(settings.guildId, ticket.channel)
+                            updateStaticMessage = true
                         }
                     }
 
                     // Loop open tickets
                     for (openTicketChannel in awaitingCategoryChannels + respondedCategoryChannels) {
-                        val ticket = ticketService.getTicket(guild.id, openTicketChannel.id)
+                        val ticket = ticketService.getTicket(guild.id, openTicketChannel.id) ?: return@forEach
 
-                        if (ticket != null && Duration.between(Instant.now(), ticket.lastActivity).abs() > Duration.ofDays(7)) {
+                        if (Duration.between(Instant.now(), ticket.lastActivity).abs() > settings.autoClose) {
                             // Inactive, auto-close
                             ticketService.closeTicket(settings.guildId, ticket.channel, inactive = true)
+                            updateStaticMessage = true
                         }
                     }
+
+                    if (updateStaticMessage) staticMessageService.update(guild.id)
                 }
             } catch (ex: Exception) {
                 LOGGER.error(DEFAULT, "ActivityMonitor Failed to process guild | id: ${guild.id.asString()}", ex)

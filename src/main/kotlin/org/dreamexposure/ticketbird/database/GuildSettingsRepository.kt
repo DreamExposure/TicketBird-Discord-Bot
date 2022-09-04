@@ -13,6 +13,8 @@ interface GuildSettingsRepository: R2dbcRepository<GuildSettingsData, Long> {
             patron_guild = :patronGuild,
             dev_guild = :devGuild,
             use_projects = :useProjects,
+            auto_close_hours = :autoCloseHours,
+            auto_delete_hours = :autoDeleteHours,
             requires_repair = :requiresRepair,
             awaiting_category = :awaitingCategory,
             responded_category = :respondedCategory,
@@ -30,6 +32,8 @@ interface GuildSettingsRepository: R2dbcRepository<GuildSettingsData, Long> {
         patronGuild: Boolean,
         devGuild: Boolean,
         useProjects: Boolean,
+        autoCloseHours: Int,
+        autoDeleteHours: Int,
         requiresRepair: Boolean,
 
         awaitingCategory: Long?,
