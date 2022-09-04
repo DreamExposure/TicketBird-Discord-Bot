@@ -39,7 +39,6 @@ class ActivityMonitor(
     private fun doTheThing() = mono {
         LOGGER.debug("Running ticket inactivity close task...")
 
-        //TODO: I should loop over tickets and get channels only when needed.
         client.guilds.collectList().awaitSingle().forEach { guild ->
             val settings = settingsService.getGuildSettings(guild.id)
             if (settings.requiresRepair) return@forEach // Skip processing this guild until they decide to run repair command
@@ -73,8 +72,8 @@ class ActivityMonitor(
 
                     // Loop closed tickets
                     for (closedTicketChannel in closedCategoryChannels) {
-                        val ticket = ticketService.getTicket(guild.id, closedTicketChannel.id)
-                        if (ticket != null && Duration.between(Instant.now(), ticket.lastActivity).abs() > settings.autoDelete) {
+                        val ticket = ticketService.getTicket(guild.id, closedTicketChannel.id) ?: return@forEach
+                        if (Duration.between(Instant.now(), ticket.lastActivity).abs() > settings.autoDelete) {
                             // Ticket closed for over 24 hours, purge
                             ticketService.purgeTicket(settings.guildId, ticket.channel)
                             updateStaticMessage = true
@@ -83,9 +82,9 @@ class ActivityMonitor(
 
                     // Loop open tickets
                     for (openTicketChannel in awaitingCategoryChannels + respondedCategoryChannels) {
-                        val ticket = ticketService.getTicket(guild.id, openTicketChannel.id)
+                        val ticket = ticketService.getTicket(guild.id, openTicketChannel.id) ?: return@forEach
 
-                        if (ticket != null && Duration.between(Instant.now(), ticket.lastActivity).abs() > settings.autoClose) {
+                        if (Duration.between(Instant.now(), ticket.lastActivity).abs() > settings.autoClose) {
                             // Inactive, auto-close
                             ticketService.closeTicket(settings.guildId, ticket.channel, inactive = true)
                             updateStaticMessage = true

@@ -56,16 +56,7 @@
           "name": "action",
           "description": "The action you want to change the timing of",
           "required": true,
-          "choices": [
-            {
-              "name": "Auto Close Ticket (default: 7 days)",
-              "value": "auto-close"
-            },
-            {
-              "name": "Auto Delete Closed Ticket (default: 24 hours)",
-              "value": "auto-delete"
-            }
-          ]
+          "autocomplete": true
         },
         {
           "type": 4,

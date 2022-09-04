@@ -47,7 +47,7 @@ class SetupCommand(
 
     private suspend fun init(event: ChatInputInteractionEvent, settings: GuildSettings): Message {
         // check if setup has already been done
-        if (settings.supportChannel != null) {
+        if (!settings.hasRequiredIdsSet() && !settings.requiresRepair) {
             return event.createFollowup(localeService.getString(settings.locale, "command.setup.init.already"))
                 .withEphemeral(ephemeral)
                 .awaitSingle()
@@ -182,6 +182,11 @@ class SetupCommand(
         when (action) {
             "auto-close" -> settings.autoClose = days + hours
             "auto-delete" -> settings.autoDelete = days + hours
+            else -> {
+                return event.createFollowup(
+                    localeService.getString(settings.locale, "command.setup.timing.error.action-not-found")
+                ).withEphemeral(ephemeral).awaitSingle()
+            }
         }
 
         settingsService.createOrUpdateGuildSettings(settings)
