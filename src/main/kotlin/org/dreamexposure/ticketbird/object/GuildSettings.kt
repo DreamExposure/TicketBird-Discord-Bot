@@ -30,6 +30,7 @@ data class GuildSettings(
 
     var nextId: Int = 1,
     val staff: MutableList<String> = CopyOnWriteArrayList(),
+    var staffRole: Snowflake? = null,
 ) {
     constructor(data: GuildSettingsData) : this(
         guildId = Snowflake.of(data.guildId),
@@ -50,7 +51,8 @@ data class GuildSettings(
         staticMessage = data.staticMessage?.toSnowflake(),
 
         nextId = data.nextId,
-        staff = data.staff.listFromDb()
+        staff = data.staff.listFromDb(),
+        staffRole = data.staffRole?.toSnowflake(),
     )
 
     fun hasRequiredIdsSet(): Boolean {

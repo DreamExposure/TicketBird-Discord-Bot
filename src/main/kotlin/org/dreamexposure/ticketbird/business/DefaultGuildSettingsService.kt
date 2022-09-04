@@ -55,7 +55,8 @@ class DefaultGuildSettingsService(
             staticMessage = settings.staticMessage?.asLong(),
 
             nextId = settings.nextId,
-            staff = settings.staff.asStringList()
+            staff = settings.staff.asStringList(),
+            staffRole = settings.staffRole?.asLong(),
         )).map(::GuildSettings).awaitSingle()
 
         settingsCache.put(settings.guildId.asLong(), saved)
@@ -81,7 +82,8 @@ class DefaultGuildSettingsService(
             staticMessage = settings.staticMessage?.asLong(),
 
             nextId = settings.nextId,
-            staff = settings.staff.asStringList()
+            staff = settings.staff.asStringList(),
+            staffRole = settings.staffRole?.asLong(),
         ).awaitSingleOrNull()
 
         settingsCache.put(settings.guildId.asLong(), settings)

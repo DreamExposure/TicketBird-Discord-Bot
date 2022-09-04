@@ -29,4 +29,5 @@ data class GuildSettingsData(
     val nextId: Int,
 
     val staff: String,
+    val staffRole: Long?,
 )

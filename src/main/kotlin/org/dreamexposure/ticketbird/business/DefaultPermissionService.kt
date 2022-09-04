@@ -7,6 +7,7 @@ import discord4j.core.`object`.entity.Member
 import discord4j.rest.util.Permission
 import discord4j.rest.util.PermissionSet
 import kotlinx.coroutines.reactor.awaitSingle
+import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.springframework.beans.factory.BeanFactory
 import org.springframework.beans.factory.getBean
 import org.springframework.stereotype.Component
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Component
 @Component
 class DefaultPermissionService(
     private val beanFactory: BeanFactory,
-): PermissionService {
+) : PermissionService {
     private val discordClient
         get() = beanFactory.getBean<GatewayDiscordClient>()
 
@@ -57,12 +58,15 @@ class DefaultPermissionService(
         Permission.USE_SLASH_COMMANDS
     )
 
-    override fun getTicketChannelOverwrites(guildId: Snowflake, creator: Snowflake, staff: List<Snowflake>): List<PermissionOverwrite> {
+    override fun getTicketChannelOverwrites(settings: GuildSettings, creator: Snowflake): List<PermissionOverwrite> {
         val overwrites = mutableListOf<PermissionOverwrite>()
 
         overwrites += PermissionOverwrite.forMember(creator, getTicketGrantOverrides(), PermissionSet.none())
-        overwrites += PermissionOverwrite.forRole(guildId, PermissionSet.none(), PermissionSet.all())
-        overwrites += staff.map { PermissionOverwrite.forMember(it, getTicketGrantOverrides(), PermissionSet.none()) }
+        overwrites += PermissionOverwrite.forRole(settings.guildId, PermissionSet.none(), PermissionSet.all())
+        overwrites += settings.staff
+            .map(Snowflake::of)
+            .map { PermissionOverwrite.forMember(it, getTicketGrantOverrides(), PermissionSet.none()) }
+        if (settings.staffRole != null) overwrites += PermissionOverwrite.forRole(settings.staffRole!!, getTicketGrantOverrides(), PermissionSet.none())
 
         return overwrites
     }

@@ -163,10 +163,9 @@ class DefaultTicketService(
         val guild = discordClient.getGuildById(guildId).awaitSingle()
 
         val name = if (prefix != null) "$prefix-ticket-$number" else "ticket-$number"
-        val staff = settings.staff.map(Snowflake::of)
 
         return guild.createTextChannel(name)
-            .withPermissionOverwrites(permissionService.getTicketChannelOverwrites(guildId, creator, staff))
+            .withPermissionOverwrites(permissionService.getTicketChannelOverwrites(settings, creator))
             .withParentId(settings.awaitingCategory!!)
             .withReason(localeService.getString(settings.locale, "env.channel.ticket.create-reason"))
             .awaitSingle()

@@ -23,7 +23,8 @@ interface GuildSettingsRepository: R2dbcRepository<GuildSettingsData, Long> {
             support_channel = :supportChannel,
             static_message = :staticMessage,
             next_id = :nextId,
-            staff = :staff
+            staff = :staff,
+            staff_role = :staffRole
         WHERE guild_id = :guildId
     """)
     fun updateByGuildId(
@@ -45,6 +46,7 @@ interface GuildSettingsRepository: R2dbcRepository<GuildSettingsData, Long> {
 
         nextId: Int,
         staff: String,
+        staffRole: Long?,
     ): Mono<Int>
 
     fun deleteByGuildId(guildId: Long): Mono<Void>
