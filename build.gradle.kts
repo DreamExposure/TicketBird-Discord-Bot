@@ -39,7 +39,7 @@ repositories {
 }
 //versions
 val d4jVersion = "3.2.3"
-val d4jStoresVersion = "3.2.1"
+val d4jStoresVersion = "3.2.2"
 
 val kotlinSrcDir: File = buildDir.resolve("src/main/kotlin")
 
@@ -110,7 +110,7 @@ gitProperties {
     extProperty = "gitPropertiesExt"
 
     val versionName = if (System.getenv("GITHUB_RUN_NUMBER") != null) {
-        "$version.${System.getenv("GITHUB_RUN_NUMBER")}"
+        "$version.b${System.getenv("GITHUB_RUN_NUMBER")}"
     } else {
         "$version.d${System.currentTimeMillis().div(1000)}" //Seconds since epoch
     }
