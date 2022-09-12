@@ -14,5 +14,9 @@ interface GuildSettingsService {
 
     suspend fun deleteGuildSettings(guildId: Snowflake)
 
-    suspend fun createOrUpdateGuildSettings(settings: GuildSettings): GuildSettings
+    suspend fun createOrUpdateGuildSettings(settings: GuildSettings): GuildSettings {
+        if (hasGuildSettings(settings.guildId)) updateGuildSettings(settings)
+        else return createGuildSettings(settings)
+        return settings
+    }
 }

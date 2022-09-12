@@ -1,8 +1,7 @@
 package org.dreamexposure.ticketbird.business
 
 import discord4j.common.util.Snowflake
-import kotlinx.coroutines.reactive.awaitFirstOrDefault
-import kotlinx.coroutines.reactive.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.cache.CacheRepository
 import org.dreamexposure.ticketbird.database.GuildSettingsData
@@ -18,9 +17,7 @@ class DefaultGuildSettingsService(
 ) : GuildSettingsService {
 
     override suspend fun hasGuildSettings(guildId: Snowflake): Boolean {
-        return settingsRepository.findByGuildId(guildId.asLong())
-            .map { true }
-            .awaitFirstOrDefault(false)
+        return settingsRepository.existsByGuildId(guildId.asLong()).awaitSingle()
     }
 
     override suspend fun getGuildSettings(guildId: Snowflake): GuildSettings {
@@ -92,12 +89,5 @@ class DefaultGuildSettingsService(
     override suspend fun deleteGuildSettings(guildId: Snowflake) {
         settingsRepository.deleteByGuildId(guildId.asLong()).awaitSingle()
         settingsCache.evict(guildId.asLong())
-    }
-
-    override suspend fun createOrUpdateGuildSettings(settings: GuildSettings): GuildSettings {
-        return if (hasGuildSettings(settings.guildId)) {
-            updateGuildSettings(settings)
-            settings
-        } else createGuildSettings(settings)
     }
 }

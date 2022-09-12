@@ -5,6 +5,8 @@ import org.springframework.data.r2dbc.repository.R2dbcRepository
 import reactor.core.publisher.Mono
 
 interface GuildSettingsRepository: R2dbcRepository<GuildSettingsData, Long> {
+    fun existsByGuildId(guildId: Long): Mono<Boolean>
+
     fun findByGuildId(guildId: Long): Mono<GuildSettingsData>
 
     @Query("""
