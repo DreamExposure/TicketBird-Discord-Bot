@@ -5,16 +5,17 @@ import org.gradle.api.tasks.wrapper.Wrapper.DistributionType.ALL
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.7.0"
-    java
+    // Kotlin
+    kotlin("jvm") version "1.7.10"
 
-    kotlin("plugin.spring") version "1.7.0"
+    // Spring
+    kotlin("plugin.spring") version "1.7.10"
+    id("org.springframework.boot") version "2.7.3"
+    id("io.spring.dependency-management") version "1.0.13.RELEASE"
 
-    id("com.google.cloud.tools.jib") version "3.2.1"
-    id("org.springframework.boot") version "2.7.2"
-    id("io.spring.dependency-management") version "1.0.12.RELEASE"
-
+    // Tooling
     id("com.gorylenko.gradle-git-properties") version "2.4.1"
+    id("com.google.cloud.tools.jib") version "3.3.0"
 }
 
 buildscript {
@@ -25,17 +26,9 @@ buildscript {
 
 repositories {
     mavenCentral()
-    mavenLocal()
-    maven {
-        url = uri("https://jitpack.io")
-    }
 
-    maven {
-        url = uri("https://repo.maven.apache.org/maven2/")
-    }
-    maven {
-        url = uri("https://oss.sonatype.org/content/repositories/snapshots")
-    }
+    maven("https://repo.maven.apache.org/maven2/")
+    maven("https://oss.sonatype.org/content/repositories/snapshots")
 }
 //versions
 val d4jVersion = "3.2.3"
@@ -174,10 +167,6 @@ tasks {
 
     withType<Test> {
         useJUnitPlatform()
-    }
-
-    bootJar {
-        duplicatesStrategy = DuplicatesStrategy.INCLUDE
     }
 
     wrapper {
