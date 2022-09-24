@@ -6,7 +6,7 @@ import discord4j.core.`object`.entity.channel.TextChannel
 import discord4j.core.spec.EmbedCreateSpec
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
-import org.dreamexposure.ticketbird.business.cache.CacheRepository
+import org.dreamexposure.ticketbird.TicketCache
 import org.dreamexposure.ticketbird.database.TicketData
 import org.dreamexposure.ticketbird.database.TicketRepository
 import org.dreamexposure.ticketbird.extensions.embedDescriptionSafe
@@ -21,7 +21,7 @@ import java.time.Instant
 @Component
 class DefaultTicketService(
     private val ticketRepository: TicketRepository,
-    private val ticketCache: CacheRepository<Long, Array<Ticket>>,
+    private val ticketCache: TicketCache,
     private val beanFactory: BeanFactory,
     private val settingsService: GuildSettingsService,
     private val localeService: LocaleService,

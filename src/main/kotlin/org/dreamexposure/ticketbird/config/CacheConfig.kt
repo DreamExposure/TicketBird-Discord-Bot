@@ -1,12 +1,12 @@
 package org.dreamexposure.ticketbird.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.dreamexposure.ticketbird.GuildSettingsCache
+import org.dreamexposure.ticketbird.ProjectCache
+import org.dreamexposure.ticketbird.TicketCache
+import org.dreamexposure.ticketbird.TicketCreateStateCache
 import org.dreamexposure.ticketbird.business.cache.JdkCacheRepository
 import org.dreamexposure.ticketbird.business.cache.RedisCacheRepository
-import org.dreamexposure.ticketbird.`object`.GuildSettings
-import org.dreamexposure.ticketbird.`object`.Project
-import org.dreamexposure.ticketbird.`object`.Ticket
-import org.dreamexposure.ticketbird.`object`.TicketCreateState
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
@@ -56,37 +56,37 @@ class CacheConfig(
     @Bean
     @Primary
     @ConditionalOnProperty("bot.cache.redis", havingValue = "true")
-    fun guildSettingsRedisCache(cacheManager: RedisCacheManager, objectMapper: ObjectMapper) =
-        RedisCacheRepository<Long, GuildSettings>(cacheManager, objectMapper, settingsCacheName)
+    fun guildSettingsRedisCache(cacheManager: RedisCacheManager, objectMapper: ObjectMapper): GuildSettingsCache =
+        RedisCacheRepository(cacheManager, objectMapper, settingsCacheName)
 
     @Bean
     @Primary
     @ConditionalOnProperty("bot.cache.redis", havingValue = "true")
-    fun ticketRedisCache(cacheManager: RedisCacheManager, objectMapper: ObjectMapper) =
-        RedisCacheRepository<Long, Array<Ticket>>(cacheManager, objectMapper, ticketCacheName)
+    fun ticketRedisCache(cacheManager: RedisCacheManager, objectMapper: ObjectMapper): TicketCache =
+        RedisCacheRepository(cacheManager, objectMapper, ticketCacheName)
 
     @Bean
     @Primary
     @ConditionalOnProperty("bot.cache.redis", havingValue = "true")
-    fun projectRedisCache(cacheManager: RedisCacheManager, objectMapper: ObjectMapper) =
-        RedisCacheRepository<Long, Array<Project>>(cacheManager, objectMapper, projectCacheName)
+    fun projectRedisCache(cacheManager: RedisCacheManager, objectMapper: ObjectMapper): ProjectCache =
+        RedisCacheRepository(cacheManager, objectMapper, projectCacheName)
 
     @Bean
     @Primary
     @ConditionalOnProperty("bot.cache.redis", havingValue = "true")
-    fun ticketCreateStateRedisCache(cacheManager: RedisCacheManager, objectMapper: ObjectMapper) =
-        RedisCacheRepository<String, TicketCreateState>(cacheManager, objectMapper, ticketCreateStateCacheName)
+    fun ticketCreateStateRedisCache(cacheManager: RedisCacheManager, objectMapper: ObjectMapper): TicketCreateStateCache =
+        RedisCacheRepository(cacheManager, objectMapper, ticketCreateStateCacheName)
 
     // In-memory fallback caching
     @Bean
-    fun guidSettingsFallbackCache() = JdkCacheRepository<Long, GuildSettings>(Duration.ofMinutes(settingsTtl))
+    fun guidSettingsFallbackCache(): GuildSettingsCache = JdkCacheRepository(Duration.ofMinutes(settingsTtl))
 
     @Bean
-    fun ticketFallbackCache() = JdkCacheRepository<Long, Array<Ticket>>(Duration.ofMinutes(ticketTtl))
+    fun ticketFallbackCache(): TicketCache = JdkCacheRepository(Duration.ofMinutes(ticketTtl))
 
     @Bean
-    fun projectFallbackCache() = JdkCacheRepository<Long, Array<Project>>(Duration.ofMinutes(projectTtl))
+    fun projectFallbackCache(): ProjectCache = JdkCacheRepository(Duration.ofMinutes(projectTtl))
 
     @Bean
-    fun ticketCreateStateCache() = JdkCacheRepository<String, TicketCreateState>(Duration.ofMinutes(ticketCreateStateTtl))
+    fun ticketCreateStateFallbackCache(): TicketCreateStateCache = JdkCacheRepository(Duration.ofMinutes(ticketCreateStateTtl))
 }

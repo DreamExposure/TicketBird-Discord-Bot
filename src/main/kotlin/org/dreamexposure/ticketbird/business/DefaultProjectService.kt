@@ -3,7 +3,7 @@ package org.dreamexposure.ticketbird.business
 import discord4j.common.util.Snowflake
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
-import org.dreamexposure.ticketbird.business.cache.CacheRepository
+import org.dreamexposure.ticketbird.ProjectCache
 import org.dreamexposure.ticketbird.database.ProjectData
 import org.dreamexposure.ticketbird.database.ProjectRepository
 import org.dreamexposure.ticketbird.`object`.Project
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component
 @Component
 class DefaultProjectService(
     private val projectRepository: ProjectRepository,
-    private val projectCache: CacheRepository<Long, Array<Project>>
+    private val projectCache: ProjectCache,
 ) : ProjectService {
     override suspend fun getProject(guildId: Snowflake, name: String): Project? {
         return getAllProjects(guildId).firstOrNull { it.name == name }
