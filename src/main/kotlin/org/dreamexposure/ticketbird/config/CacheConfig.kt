@@ -59,18 +59,17 @@ class CacheConfig(
     fun guildSettingsRedisCache(cacheManager: RedisCacheManager, objectMapper: ObjectMapper) =
         RedisCacheRepository<Long, GuildSettings>(cacheManager, objectMapper, settingsCacheName)
 
-    //FIXME: Try using an Array<V>
     @Bean
     @Primary
     @ConditionalOnProperty("bot.cache.redis", havingValue = "true")
     fun ticketRedisCache(cacheManager: RedisCacheManager, objectMapper: ObjectMapper) =
-        RedisCacheRepository<Long, List<Ticket>>(cacheManager, objectMapper, ticketCacheName)
+        RedisCacheRepository<Long, Array<Ticket>>(cacheManager, objectMapper, ticketCacheName)
 
     @Bean
     @Primary
     @ConditionalOnProperty("bot.cache.redis", havingValue = "true")
     fun projectRedisCache(cacheManager: RedisCacheManager, objectMapper: ObjectMapper) =
-        RedisCacheRepository<Long, List<Project>>(cacheManager, objectMapper, projectCacheName)
+        RedisCacheRepository<Long, Array<Project>>(cacheManager, objectMapper, projectCacheName)
 
     @Bean
     @Primary
@@ -83,10 +82,10 @@ class CacheConfig(
     fun guidSettingsFallbackCache() = JdkCacheRepository<Long, GuildSettings>(Duration.ofMinutes(settingsTtl))
 
     @Bean
-    fun ticketFallbackCache() = JdkCacheRepository<Long, List<Ticket>>(Duration.ofMinutes(ticketTtl))
+    fun ticketFallbackCache() = JdkCacheRepository<Long, Array<Ticket>>(Duration.ofMinutes(ticketTtl))
 
     @Bean
-    fun projectFallbackCache() = JdkCacheRepository<Long, List<Project>>(Duration.ofMinutes(projectTtl))
+    fun projectFallbackCache() = JdkCacheRepository<Long, Array<Project>>(Duration.ofMinutes(projectTtl))
 
     @Bean
     fun ticketCreateStateCache() = JdkCacheRepository<String, TicketCreateState>(Duration.ofMinutes(ticketCreateStateTtl))

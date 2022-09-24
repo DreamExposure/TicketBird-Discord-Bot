@@ -17,7 +17,7 @@ class DefaultGuildSettingsService(
 ) : GuildSettingsService {
 
     override suspend fun hasGuildSettings(guildId: Snowflake): Boolean {
-        return settingsRepository.existsByGuildId(guildId.asLong()).awaitSingle()
+        return settingsRepository.findByGuildId(guildId.asLong()).hasElement().awaitSingle()
     }
 
     override suspend fun getGuildSettings(guildId: Snowflake): GuildSettings {
