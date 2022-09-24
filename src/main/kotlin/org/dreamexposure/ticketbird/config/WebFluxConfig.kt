@@ -28,15 +28,9 @@ import io.lettuce.core.RedisURI
 import io.lettuce.core.cluster.RedisClusterClient
 import kotlinx.coroutines.reactor.mono
 import org.dreamexposure.ticketbird.TicketBird
-import org.dreamexposure.ticketbird.business.cache.JdkCacheRepository
 import org.dreamexposure.ticketbird.listeners.EventListener
 import org.dreamexposure.ticketbird.mapper.SnowflakeMapper
-import org.dreamexposure.ticketbird.`object`.GuildSettings
-import org.dreamexposure.ticketbird.`object`.Project
-import org.dreamexposure.ticketbird.`object`.Ticket
-import org.dreamexposure.ticketbird.`object`.TicketCreateState
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.web.server.ConfigurableWebServerFactory
 import org.springframework.boot.web.server.ErrorPage
 import org.springframework.boot.web.server.WebServerFactoryCustomizer
@@ -46,9 +40,6 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
 import org.springframework.core.io.ClassPathResource
-import org.springframework.data.redis.cache.RedisCacheConfiguration
-import org.springframework.data.redis.cache.RedisCacheManager
-import org.springframework.data.redis.connection.RedisConnectionFactory
 import org.springframework.http.HttpStatus
 import org.springframework.web.reactive.config.CorsRegistry
 import org.springframework.web.reactive.config.EnableWebFlux
@@ -63,7 +54,6 @@ import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver
 import org.thymeleaf.spring5.view.reactive.ThymeleafReactiveViewResolver
 import org.thymeleaf.templatemode.TemplateMode
 import reactor.kotlin.core.publisher.toFlux
-import java.time.Duration
 
 
 @Configuration
@@ -211,43 +201,4 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, 
         Intent.DIRECT_MESSAGES,
         Intent.DIRECT_MESSAGE_REACTIONS
     )
-
-    // Cache
-    @Bean
-    @ConditionalOnProperty("bot.cache.redis", havingValue = "true")
-    fun redisCache(
-        connection: RedisConnectionFactory,
-        @Value("\${bot.cache.prefix}") prefix: String,
-        @Value("\${bot.cache.ttl-minutes.settings:60}") settings: Long,
-        @Value("\${bot.cache.ttl-minutes.ticket:60}") ticket: Long,
-        @Value("\${bot.cache.ttl-minutes.project:120}") project: Long,
-        @Value("\${bot.cache.ttl-minutes.ticket-create-state:15}") ticketCreateState: Long,
-    ): RedisCacheManager {
-        return RedisCacheManager.builder(connection)
-            .withCacheConfiguration("$prefix.settingsCache",
-                RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(settings))
-            ).withCacheConfiguration("$prefix.ticketCache",
-                RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(ticket))
-            ).withCacheConfiguration("$prefix.projectCache",
-                RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(project))
-            ).withCacheConfiguration("$prefix.ticketCreateStateCache",
-                RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(ticketCreateState)))
-            .build()
-    }
-
-    @Bean
-    fun guidSettingsFallbackCache(@Value("\${bot.cache.ttl-minutes.settings:60}") minutes: Long) =
-        JdkCacheRepository<Long, GuildSettings>(Duration.ofMinutes(minutes))
-
-    @Bean
-    fun ticketFallbackCache(@Value("\${bot.cache.ttl-minutes.ticket:60}") minutes: Long) =
-        JdkCacheRepository<Long, List<Ticket>>(Duration.ofMinutes(minutes))
-
-    @Bean
-    fun projectFallbackCache(@Value("\${bot.cache.ttl-minutes.project:120}") minutes: Long) =
-        JdkCacheRepository<Long, List<Project>>(Duration.ofMinutes(minutes))
-
-    @Bean
-    fun ticketCreateStateCache(@Value("\${bot.cache.ttl-minutes.ticket-create-state:15}") minutes: Long) =
-        JdkCacheRepository<String, TicketCreateState>(Duration.ofMinutes(minutes))
 }

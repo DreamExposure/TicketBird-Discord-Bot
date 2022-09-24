@@ -2,16 +2,16 @@ package org.dreamexposure.ticketbird.interaction
 
 import discord4j.core.event.domain.interaction.SelectMenuInteractionEvent
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import org.dreamexposure.ticketbird.TicketCreateStateCache
 import org.dreamexposure.ticketbird.business.ComponentService
 import org.dreamexposure.ticketbird.business.LocaleService
-import org.dreamexposure.ticketbird.business.cache.CacheRepository
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.`object`.TicketCreateState
 import org.springframework.stereotype.Component
 
 @Component
 class SelectProjectDropdown(
-    private val ticketCreateStateCache: CacheRepository<String, TicketCreateState>,
+    private val ticketCreateStateCache: TicketCreateStateCache,
     private val componentService: ComponentService,
     private val localeService: LocaleService,
 ): InteractionHandler<SelectMenuInteractionEvent> {

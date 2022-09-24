@@ -3,7 +3,7 @@ package org.dreamexposure.ticketbird.business
 import discord4j.common.util.Snowflake
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
-import org.dreamexposure.ticketbird.business.cache.CacheRepository
+import org.dreamexposure.ticketbird.GuildSettingsCache
 import org.dreamexposure.ticketbird.database.GuildSettingsData
 import org.dreamexposure.ticketbird.database.GuildSettingsRepository
 import org.dreamexposure.ticketbird.extensions.asStringList
@@ -13,11 +13,11 @@ import org.springframework.stereotype.Component
 @Component
 class DefaultGuildSettingsService(
     private val settingsRepository: GuildSettingsRepository,
-    private val settingsCache: CacheRepository<Long, GuildSettings>
+    private val settingsCache: GuildSettingsCache
 ) : GuildSettingsService {
 
     override suspend fun hasGuildSettings(guildId: Snowflake): Boolean {
-        return settingsRepository.existsByGuildId(guildId.asLong()).awaitSingle()
+        return settingsRepository.findByGuildId(guildId.asLong()).hasElement().awaitSingle()
     }
 
     override suspend fun getGuildSettings(guildId: Snowflake): GuildSettings {

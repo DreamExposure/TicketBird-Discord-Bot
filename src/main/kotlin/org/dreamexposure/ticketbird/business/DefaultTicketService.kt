@@ -6,7 +6,7 @@ import discord4j.core.`object`.entity.channel.TextChannel
 import discord4j.core.spec.EmbedCreateSpec
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
-import org.dreamexposure.ticketbird.business.cache.CacheRepository
+import org.dreamexposure.ticketbird.TicketCache
 import org.dreamexposure.ticketbird.database.TicketData
 import org.dreamexposure.ticketbird.database.TicketRepository
 import org.dreamexposure.ticketbird.extensions.embedDescriptionSafe
@@ -21,7 +21,7 @@ import java.time.Instant
 @Component
 class DefaultTicketService(
     private val ticketRepository: TicketRepository,
-    private val ticketCache: CacheRepository<Long, List<Ticket>>,
+    private val ticketCache: TicketCache,
     private val beanFactory: BeanFactory,
     private val settingsService: GuildSettingsService,
     private val localeService: LocaleService,
@@ -41,7 +41,7 @@ class DefaultTicketService(
     }
 
     override suspend fun getAllTickets(guildId: Snowflake): List<Ticket> {
-        var tickets = ticketCache.get(guildId.asLong())
+        var tickets = ticketCache.get(guildId.asLong())?.toList()
         if (tickets != null) return tickets
 
         tickets = ticketRepository.findByGuildId(guildId.asLong())
@@ -49,7 +49,7 @@ class DefaultTicketService(
             .collectList()
             .awaitSingle()
 
-        ticketCache.put(guildId.asLong(), tickets)
+        ticketCache.put(guildId.asLong(), tickets.toTypedArray())
         return tickets
     }
 
@@ -85,7 +85,7 @@ class DefaultTicketService(
         if (cached != null) {
             val newList = cached.toMutableList()
             newList.removeIf { it.number == ticket.number }
-            ticketCache.put(ticket.guildId.asLong(), newList + ticket)
+            ticketCache.put(ticket.guildId.asLong(), (newList + ticket).toTypedArray())
         }
     }
 
@@ -96,7 +96,7 @@ class DefaultTicketService(
         if (cached != null) {
             val newList = cached.toMutableList()
             newList.removeIf { it.number == number }
-            ticketCache.put(guildId.asLong(), newList)
+            ticketCache.put(guildId.asLong(), newList.toTypedArray())
         }
     }
 
