@@ -6,12 +6,12 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     // Kotlin
-    kotlin("jvm") version "1.7.10"
+    kotlin("jvm") version "1.7.20"
 
     // Spring
-    kotlin("plugin.spring") version "1.7.10"
-    id("org.springframework.boot") version "2.7.3"
-    id("io.spring.dependency-management") version "1.0.13.RELEASE"
+    kotlin("plugin.spring") version "1.7.20"
+    id("org.springframework.boot") version "2.7.4"
+    id("io.spring.dependency-management") version "1.0.14.RELEASE"
 
     // Tooling
     id("com.gorylenko.gradle-git-properties") version "2.4.1"
