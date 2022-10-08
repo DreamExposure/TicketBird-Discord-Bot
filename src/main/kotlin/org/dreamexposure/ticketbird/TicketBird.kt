@@ -68,9 +68,7 @@ class TicketBird {
 
             //Start spring
             try {
-                SpringApplicationBuilder(TicketBird::class.java)
-                    .profiles(BotSettings.PROFILE.get())
-                    .run(*args)
+                SpringApplicationBuilder(TicketBird::class.java).run(*args)
             } catch (e: Exception) {
                 e.printStackTrace()
                 LOGGER.error(DEFAULT, "Spring error!", e)
