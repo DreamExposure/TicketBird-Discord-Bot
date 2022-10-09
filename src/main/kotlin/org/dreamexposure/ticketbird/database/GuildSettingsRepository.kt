@@ -5,6 +5,8 @@ import org.springframework.data.r2dbc.repository.R2dbcRepository
 import reactor.core.publisher.Mono
 
 interface GuildSettingsRepository: R2dbcRepository<GuildSettingsData, Long> {
+    fun existsByGuildId(guildId: Long): Mono<Boolean>
+
     fun findByGuildId(guildId: Long): Mono<GuildSettingsData>
 
     @Query("""
@@ -13,6 +15,9 @@ interface GuildSettingsRepository: R2dbcRepository<GuildSettingsData, Long> {
             patron_guild = :patronGuild,
             dev_guild = :devGuild,
             use_projects = :useProjects,
+            auto_close_hours = :autoCloseHours,
+            auto_delete_hours = :autoDeleteHours,
+            requires_repair = :requiresRepair,
             awaiting_category = :awaitingCategory,
             responded_category = :respondedCategory,
             hold_category = :holdCategory,
@@ -20,7 +25,8 @@ interface GuildSettingsRepository: R2dbcRepository<GuildSettingsData, Long> {
             support_channel = :supportChannel,
             static_message = :staticMessage,
             next_id = :nextId,
-            staff = :staff
+            staff = :staff,
+            staff_role = :staffRole
         WHERE guild_id = :guildId
     """)
     fun updateByGuildId(
@@ -29,6 +35,9 @@ interface GuildSettingsRepository: R2dbcRepository<GuildSettingsData, Long> {
         patronGuild: Boolean,
         devGuild: Boolean,
         useProjects: Boolean,
+        autoCloseHours: Int,
+        autoDeleteHours: Int,
+        requiresRepair: Boolean,
 
         awaitingCategory: Long?,
         respondedCategory: Long?,
@@ -39,6 +48,7 @@ interface GuildSettingsRepository: R2dbcRepository<GuildSettingsData, Long> {
 
         nextId: Int,
         staff: String,
+        staffRole: Long?,
     ): Mono<Int>
 
     fun deleteByGuildId(guildId: Long): Mono<Void>

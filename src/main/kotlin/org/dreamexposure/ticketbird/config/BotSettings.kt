@@ -10,9 +10,7 @@ enum class BotSettings {
     SHARD_INDEX,
 
     DEBUG_WEBHOOK,
-    STATUS_WEBHOOK,
-
-    PROFILE;
+    STATUS_WEBHOOK;
 
     private var value: String? = null
 

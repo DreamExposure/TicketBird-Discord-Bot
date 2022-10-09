@@ -3,7 +3,7 @@ package org.dreamexposure.ticketbird.business
 import discord4j.common.util.Snowflake
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
-import org.dreamexposure.ticketbird.business.cache.CacheRepository
+import org.dreamexposure.ticketbird.ProjectCache
 import org.dreamexposure.ticketbird.database.ProjectData
 import org.dreamexposure.ticketbird.database.ProjectRepository
 import org.dreamexposure.ticketbird.`object`.Project
@@ -12,14 +12,14 @@ import org.springframework.stereotype.Component
 @Component
 class DefaultProjectService(
     private val projectRepository: ProjectRepository,
-    private val projectCache: CacheRepository<Long, List<Project>>
+    private val projectCache: ProjectCache,
 ) : ProjectService {
     override suspend fun getProject(guildId: Snowflake, name: String): Project? {
         return getAllProjects(guildId).firstOrNull { it.name == name }
     }
 
     override suspend fun getAllProjects(guildId: Snowflake): List<Project> {
-        var projects = projectCache.get(guildId.asLong())
+        var projects = projectCache.get(guildId.asLong())?.toList()
         if (projects != null) return projects
 
         projects = projectRepository.findByGuildId(guildId.asLong())
@@ -27,7 +27,7 @@ class DefaultProjectService(
             .collectList()
             .awaitSingle()
 
-        projectCache.put(guildId.asLong(), projects)
+        projectCache.put(guildId.asLong(), projects.toTypedArray())
         return projects
     }
 
@@ -56,7 +56,7 @@ class DefaultProjectService(
         if (cached != null) {
             val newList = cached.toMutableList()
             newList.removeIf { it.id == project.id }
-            projectCache.put(project.guildId.asLong(), newList + project)
+            projectCache.put(project.guildId.asLong(), (newList + project).toTypedArray())
         }
     }
 
@@ -67,7 +67,7 @@ class DefaultProjectService(
         if (cached != null) {
             val newList = cached.toMutableList()
             newList.removeIf { it.name == name }
-            projectCache.put(guildId.asLong(), newList)
+            projectCache.put(guildId.asLong(), newList.toTypedArray())
         }
     }
 
@@ -78,7 +78,7 @@ class DefaultProjectService(
         if (cached != null) {
             val newList = cached.toMutableList()
             newList.removeIf { it.id == id }
-            projectCache.put(guildId.asLong(), newList)
+            projectCache.put(guildId.asLong(), newList.toTypedArray())
         }
     }
 

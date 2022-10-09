@@ -13,6 +13,10 @@ data class GuildSettingsData(
     val devGuild: Boolean,
 
     val useProjects: Boolean,
+    val autoCloseHours: Int,
+    val autoDeleteHours: Int,
+
+    val requiresRepair: Boolean,
 
     val awaitingCategory: Long?,
     val respondedCategory: Long?,
@@ -25,4 +29,5 @@ data class GuildSettingsData(
     val nextId: Int,
 
     val staff: String,
+    val staffRole: Long?,
 )

@@ -5,6 +5,18 @@
   "dm_permission": false,
   "options": [
     {
+      "name": "role",
+      "description": "Set a role to use as TicketBird staff",
+      "type": 1,
+      "options": [
+        {
+          "name": "role",
+          "description": "The role to set. Leave out or set to @everyone to remove role.",
+          "type": 8
+        }
+      ]
+    },
+    {
       "name": "add",
       "description": "Adds a TicketBird staff member",
       "type": 1,

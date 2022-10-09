@@ -27,8 +27,11 @@ class MessageListener(
         // Make sure member object is present, and they are not a bot
         if (event.member.isEmpty || event.member.get().isBot) return
 
-        val authorId = event.member.get().id
         val settings = settingsService.getGuildSettings(event.guildId.get())
+
+        val authorId = event.member.get().id
+        val authorRoleIds = event.member.get().roleIds
+        val isAuthorStaff = authorRoleIds.contains(settings.staffRole) || settings.staff.contains(authorId.asString())
 
         // Check if in support channel, if so, delete, update static message, so they can click button
         if (event.message.channelId == settings.supportChannel) {
@@ -58,12 +61,7 @@ class MessageListener(
             }
             catId == settings.holdCategory -> {
                 // on hold move to correct category and send un-hold message + update static msg
-                val categoryTo = if (settings.staff.contains(authorId.asString())) {
-                    settings.respondedCategory!! // staff responded
-                } else {
-                    settings.awaitingCategory!! // non-staff responded
-                }
-
+                val categoryTo = if (isAuthorStaff) settings.respondedCategory!! else settings.awaitingCategory!!
 
                 ticketService.moveTicket(settings.guildId, channel.id, categoryTo, withActivity = true)
                 channel.createMessage(
@@ -71,11 +69,11 @@ class MessageListener(
                 ).awaitSingleOrNull()
                 staticMessageService.update(settings.guildId)
             }
-            catId == settings.awaitingCategory && settings.staff.contains(authorId.asString()) -> {
+            catId == settings.awaitingCategory && isAuthorStaff -> {
                 // in awaiting + staff response, move to responded
                 ticketService.moveTicket(settings.guildId, channel.id, settings.respondedCategory!!, withActivity = true)
             }
-            catId == settings.respondedCategory && !settings.staff.contains(authorId.asString()) -> {
+            catId == settings.respondedCategory && !isAuthorStaff -> {
                 // in responded + user response, move to awaiting
                 ticketService.moveTicket(settings.guildId, channel.id, settings.awaitingCategory!!, withActivity = true)
             }

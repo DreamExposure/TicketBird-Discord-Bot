@@ -5,16 +5,17 @@ import org.gradle.api.tasks.wrapper.Wrapper.DistributionType.ALL
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.7.0"
-    java
+    // Kotlin
+    kotlin("jvm") version "1.7.20"
 
-    kotlin("plugin.spring") version "1.7.0"
+    // Spring
+    kotlin("plugin.spring") version "1.7.20"
+    id("org.springframework.boot") version "2.7.4"
+    id("io.spring.dependency-management") version "1.0.14.RELEASE"
 
-    id("com.google.cloud.tools.jib") version "3.2.1"
-    id("org.springframework.boot") version "2.7.2"
-    id("io.spring.dependency-management") version "1.0.12.RELEASE"
-
+    // Tooling
     id("com.gorylenko.gradle-git-properties") version "2.4.1"
+    id("com.google.cloud.tools.jib") version "3.3.0"
 }
 
 buildscript {
@@ -25,21 +26,13 @@ buildscript {
 
 repositories {
     mavenCentral()
-    mavenLocal()
-    maven {
-        url = uri("https://jitpack.io")
-    }
 
-    maven {
-        url = uri("https://repo.maven.apache.org/maven2/")
-    }
-    maven {
-        url = uri("https://oss.sonatype.org/content/repositories/snapshots")
-    }
+    maven("https://repo.maven.apache.org/maven2/")
+    maven("https://oss.sonatype.org/content/repositories/snapshots")
 }
 //versions
 val d4jVersion = "3.2.3"
-val d4jStoresVersion = "3.2.1"
+val d4jStoresVersion = "3.2.2"
 
 val kotlinSrcDir: File = buildDir.resolve("src/main/kotlin")
 
@@ -93,7 +86,7 @@ dependencies {
 }
 
 group = "org.dreamexposure"
-version = "2.0.0.hf1"
+version = "2.0.1-SNAPSHOT"
 description = "TicketBird"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
@@ -109,8 +102,8 @@ jib {
 gitProperties {
     extProperty = "gitPropertiesExt"
 
-    val versionName = if (System.getenv("BUILD_NUMBER") != null) {
-        "$version.${System.getenv("BUILD_NUMBER")}"
+    val versionName = if (System.getenv("GITHUB_RUN_NUMBER") != null) {
+        "$version.b${System.getenv("GITHUB_RUN_NUMBER")}"
     } else {
         "$version.d${System.currentTimeMillis().div(1000)}" //Seconds since epoch
     }
@@ -174,10 +167,6 @@ tasks {
 
     withType<Test> {
         useJUnitPlatform()
-    }
-
-    bootJar {
-        duplicatesStrategy = DuplicatesStrategy.INCLUDE
     }
 
     wrapper {

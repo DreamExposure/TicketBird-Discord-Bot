@@ -1,4 +1,4 @@
-package org.dreamexposure.ticketbird.interaction.button
+package org.dreamexposure.ticketbird.interaction
 
 import discord4j.core.event.domain.interaction.ButtonInteractionEvent
 import kotlinx.coroutines.reactor.awaitSingle
@@ -10,40 +10,39 @@ import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.springframework.stereotype.Component
 
 @Component
-class HoldTicketBird(
+class CloseTicketButton(
     private val ticketService: TicketService,
     private val staticMessageService: StaticMessageService,
     private val localeService: LocaleService,
-): ButtonHandler {
-    override val id = "hold-ticket"
+): InteractionHandler<ButtonInteractionEvent> {
+    override val ids = arrayOf("close-ticket")
     override suspend fun handle(event: ButtonInteractionEvent, settings: GuildSettings) {
-        event.deferReply()
-                .withEphemeral(true)
-                .awaitSingleOrNull()
+    event.deferReply()
+            .withEphemeral(true)
+            .awaitSingleOrNull()
 
         val ticket = ticketService.getTicket(settings.guildId, event.interaction.channelId)
 
         // Handle if not in a ticket channel
-        @Suppress("FoldInitializerAndIfToElvis") // Using == null for readability
         if (ticket == null) {
-            event.createFollowup(localeService.getString(settings.locale, "command.hold.not-ticket"))
+            event.createFollowup(localeService.getString(settings.locale, "command.close.not-ticket"))
                 .withEphemeral(true)
                 .awaitSingle()
             return
         }
-        // Handle if ticket is already on hold
-        if (ticket.category == settings.holdCategory) {
-            event.createFollowup(localeService.getString(settings.locale, "command.hold.already-held"))
+        // Handle if ticket is already closed
+        if (ticket.category == settings.closeCategory) {
+            event.createFollowup(localeService.getString(settings.locale, "command.close.already-closed"))
                 .withEphemeral(true)
                 .awaitSingle()
             return
         }
 
-        // We can place the ticket on hold now
-        ticketService.holdTicket(settings.guildId, event.interaction.channelId)
+        // We can close the ticket now
+        ticketService.closeTicket(settings.guildId, event.interaction.channelId)
         staticMessageService.update(settings.guildId)
 
-        event.createFollowup(localeService.getString(settings.locale, "command.hold.success"))
+        event.createFollowup(localeService.getString(settings.locale, "command.close.success"))
             .withEphemeral(true)
             .awaitSingle()
     }

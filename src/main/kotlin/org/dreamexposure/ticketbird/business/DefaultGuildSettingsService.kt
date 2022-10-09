@@ -1,10 +1,9 @@
 package org.dreamexposure.ticketbird.business
 
 import discord4j.common.util.Snowflake
-import kotlinx.coroutines.reactive.awaitFirstOrDefault
-import kotlinx.coroutines.reactive.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
-import org.dreamexposure.ticketbird.business.cache.CacheRepository
+import org.dreamexposure.ticketbird.GuildSettingsCache
 import org.dreamexposure.ticketbird.database.GuildSettingsData
 import org.dreamexposure.ticketbird.database.GuildSettingsRepository
 import org.dreamexposure.ticketbird.extensions.asStringList
@@ -14,13 +13,11 @@ import org.springframework.stereotype.Component
 @Component
 class DefaultGuildSettingsService(
     private val settingsRepository: GuildSettingsRepository,
-    private val settingsCache: CacheRepository<Long, GuildSettings>
+    private val settingsCache: GuildSettingsCache
 ) : GuildSettingsService {
 
     override suspend fun hasGuildSettings(guildId: Snowflake): Boolean {
-        return settingsRepository.findByGuildId(guildId.asLong())
-            .map { true }
-            .awaitFirstOrDefault(false)
+        return settingsRepository.findByGuildId(guildId.asLong()).hasElement().awaitSingle()
     }
 
     override suspend fun getGuildSettings(guildId: Snowflake): GuildSettings {
@@ -43,6 +40,9 @@ class DefaultGuildSettingsService(
             devGuild = settings.devGuild,
             patronGuild = settings.patronGuild,
             useProjects = settings.useProjects,
+            autoCloseHours = settings.autoClose.toHours().toInt(),
+            autoDeleteHours = settings.autoDelete.toHours().toInt(),
+            requiresRepair = settings.requiresRepair,
 
             awaitingCategory = settings.awaitingCategory?.asLong(),
             respondedCategory = settings.respondedCategory?.asLong(),
@@ -52,7 +52,8 @@ class DefaultGuildSettingsService(
             staticMessage = settings.staticMessage?.asLong(),
 
             nextId = settings.nextId,
-            staff = settings.staff.asStringList()
+            staff = settings.staff.asStringList(),
+            staffRole = settings.staffRole?.asLong(),
         )).map(::GuildSettings).awaitSingle()
 
         settingsCache.put(settings.guildId.asLong(), saved)
@@ -66,6 +67,9 @@ class DefaultGuildSettingsService(
             devGuild = settings.devGuild,
             patronGuild = settings.patronGuild,
             useProjects = settings.useProjects,
+            autoCloseHours = settings.autoClose.toHours().toInt(),
+            autoDeleteHours = settings.autoDelete.toHours().toInt(),
+            requiresRepair = settings.requiresRepair,
 
             awaitingCategory = settings.awaitingCategory?.asLong(),
             respondedCategory = settings.respondedCategory?.asLong(),
@@ -75,7 +79,8 @@ class DefaultGuildSettingsService(
             staticMessage = settings.staticMessage?.asLong(),
 
             nextId = settings.nextId,
-            staff = settings.staff.asStringList()
+            staff = settings.staff.asStringList(),
+            staffRole = settings.staffRole?.asLong(),
         ).awaitSingleOrNull()
 
         settingsCache.put(settings.guildId.asLong(), settings)
@@ -84,12 +89,5 @@ class DefaultGuildSettingsService(
     override suspend fun deleteGuildSettings(guildId: Snowflake) {
         settingsRepository.deleteByGuildId(guildId.asLong()).awaitSingle()
         settingsCache.evict(guildId.asLong())
-    }
-
-    override suspend fun createOrUpdateGuildSettings(settings: GuildSettings): GuildSettings {
-        return if (hasGuildSettings(settings.guildId)) {
-            updateGuildSettings(settings)
-            settings
-        } else createGuildSettings(settings)
     }
 }

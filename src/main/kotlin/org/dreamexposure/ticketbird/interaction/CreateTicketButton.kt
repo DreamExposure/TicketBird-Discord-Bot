@@ -1,4 +1,4 @@
-package org.dreamexposure.ticketbird.interaction.button
+package org.dreamexposure.ticketbird.interaction
 
 import discord4j.core.event.domain.interaction.ButtonInteractionEvent
 import kotlinx.coroutines.reactor.awaitSingleOrNull
@@ -11,10 +11,17 @@ import org.springframework.stereotype.Component
 class CreateTicketButton(
     private val componentService: ComponentService,
     private val localeService: LocaleService,
-): ButtonHandler {
-    override val id = "create-ticket"
+): InteractionHandler<ButtonInteractionEvent> {
+    override val ids = arrayOf("create-ticket")
 
     override suspend fun handle(event: ButtonInteractionEvent, settings: GuildSettings) {
+        if (settings.requiresRepair) {
+            event.reply(localeService.getString(settings.locale, "generic.repair-required"))
+                .withEphemeral(true)
+                .awaitSingleOrNull()
+            return
+        }
+
         if (settings.useProjects) {
             // Guild is set up to use projects, send an ephemeral select menu to let them select the project
             event.reply(localeService.getString(settings.locale, "dropdown.select-project.prompt"))
