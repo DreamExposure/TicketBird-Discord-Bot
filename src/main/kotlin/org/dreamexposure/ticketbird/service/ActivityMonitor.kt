@@ -3,6 +3,8 @@ package org.dreamexposure.ticketbird.service
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.`object`.entity.channel.Category
 import discord4j.core.`object`.entity.channel.TextChannel
+import discord4j.rest.http.client.ClientException
+import io.netty.handler.codec.http.HttpResponseStatus
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.mono
 import org.dreamexposure.ticketbird.business.EnvironmentService
@@ -84,10 +86,17 @@ class ActivityMonitor(
                     for (openTicketChannel in awaitingCategoryChannels + respondedCategoryChannels) {
                         val ticket = ticketService.getTicket(guild.id, openTicketChannel.id) ?: return@forEach
 
-                        if (Duration.between(Instant.now(), ticket.lastActivity).abs() > settings.autoClose) {
-                            // Inactive, auto-close
-                            ticketService.closeTicket(settings.guildId, ticket.channel, inactive = true)
-                            updateStaticMessage = true
+                        try {
+                            if (Duration.between(Instant.now(), ticket.lastActivity).abs() > settings.autoClose) {
+                                // Inactive, auto-close
+                                ticketService.closeTicket(settings.guildId, ticket.channel, inactive = true)
+                                updateStaticMessage = true
+                            }
+                        } catch (ex: ClientException) {
+                            if (ex.status == HttpResponseStatus.FORBIDDEN) {
+                                // Missing permissions to channel, delete record of ticket as bot can no longer manage it
+                                ticketService.deleteTicket(guild.id, ticket.number)
+                            } else throw ex // Rethrow
                         }
                     }
 
