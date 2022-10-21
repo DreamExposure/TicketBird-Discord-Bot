@@ -3,6 +3,7 @@ package org.dreamexposure.ticketbird.command
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import discord4j.core.`object`.command.ApplicationCommandInteractionOption
 import discord4j.core.`object`.command.ApplicationCommandInteractionOptionValue
+import discord4j.core.`object`.entity.Member
 import discord4j.core.`object`.entity.Message
 import discord4j.core.`object`.entity.Role
 import discord4j.core.spec.EmbedCreateSpec
@@ -10,6 +11,7 @@ import discord4j.rest.util.AllowedMentions
 import kotlinx.coroutines.reactor.awaitSingle
 import org.dreamexposure.ticketbird.business.GuildSettingsService
 import org.dreamexposure.ticketbird.business.LocaleService
+import org.dreamexposure.ticketbird.business.PermissionService
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.utils.GlobalVars
 import org.springframework.stereotype.Component
@@ -19,11 +21,20 @@ import java.time.Instant
 class StaffCommand(
     private val settingsService: GuildSettingsService,
     private val localeService: LocaleService,
+    private val permissionService: PermissionService,
 ): SlashCommand {
     override val name = "staff"
     override val ephemeral = true
 
     override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings): Message {
+        // Check permission server-side just in case
+        val memberPermissions = event.interaction.member.map(Member::getBasePermissions).get().awaitSingle()
+        if (!permissionService.hasRequiredElevatedPermissions(memberPermissions)) {
+            return event.createFollowup(localeService.getString(settings.locale, "command.setup.missing-perms"))
+                .withEphemeral(ephemeral)
+                .awaitSingle()
+        }
+
         return when (event.options[0].name) {
             "role" -> role(event, settings)
             "add" -> add(event, settings)
