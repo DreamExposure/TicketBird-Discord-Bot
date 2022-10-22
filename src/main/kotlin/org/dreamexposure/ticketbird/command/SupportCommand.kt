@@ -3,14 +3,19 @@ package org.dreamexposure.ticketbird.command
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import discord4j.core.`object`.command.ApplicationCommandInteractionOption
 import discord4j.core.`object`.command.ApplicationCommandInteractionOptionValue
+import discord4j.core.`object`.entity.Message
 import kotlinx.coroutines.reactor.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.ComponentService
 import org.dreamexposure.ticketbird.business.LocaleService
 import org.dreamexposure.ticketbird.business.ProjectService
 import org.dreamexposure.ticketbird.business.TicketService
 import org.dreamexposure.ticketbird.business.cache.CacheRepository
+import org.dreamexposure.ticketbird.extensions.asSeconds
+import org.dreamexposure.ticketbird.extensions.discord4j.deleteFollowupDelayed
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.`object`.TicketCreateState
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 
 @Component
@@ -20,6 +25,8 @@ class SupportCommand(
     private val localeService: LocaleService,
     private val componentService: ComponentService,
     private val ticketCreateStateCache: CacheRepository<String, TicketCreateState>,
+    @Value("\${bot.timing.message-delete.ticket-flow.seconds:60}")
+    private val messageDeleteSeconds: Long,
 ) : SlashCommand {
     override val name = "support"
     override val ephemeral = true
@@ -57,7 +64,9 @@ class SupportCommand(
             event.createFollowup(localeService.getString(settings.locale, "dropdown.select-project.prompt"))
                 .withComponents(*componentService.getProjectSelectComponents(settings, withCreate = true))
                 .withEphemeral(ephemeral)
-                .awaitSingle()
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .awaitSingleOrNull()
             return
         }
 
@@ -71,7 +80,9 @@ class SupportCommand(
             event.createFollowup(localeService.getString(settings.locale, "command.support.topic.not-found"))
                 .withComponents(*componentService.getProjectSelectComponents(settings, withCreate = true))
                 .withEphemeral(ephemeral)
-                .awaitSingle()
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .awaitSingleOrNull()
             return
         }
 
@@ -88,6 +99,9 @@ class SupportCommand(
             settings.locale,
             "generic.success.ticket-open",
             ticket.channel.asString()
-        )).withEphemeral(ephemeral).awaitSingle()
+        )).withEphemeral(ephemeral)
+            .map(Message::getId)
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .awaitSingleOrNull()
     }
 }

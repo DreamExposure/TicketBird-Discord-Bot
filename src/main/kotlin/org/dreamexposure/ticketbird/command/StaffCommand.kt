@@ -4,15 +4,20 @@ import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import discord4j.core.`object`.command.ApplicationCommandInteractionOption
 import discord4j.core.`object`.command.ApplicationCommandInteractionOptionValue
 import discord4j.core.`object`.entity.Member
+import discord4j.core.`object`.entity.Message
 import discord4j.core.`object`.entity.Role
 import discord4j.core.spec.EmbedCreateSpec
 import discord4j.rest.util.AllowedMentions
 import kotlinx.coroutines.reactor.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.GuildSettingsService
 import org.dreamexposure.ticketbird.business.LocaleService
 import org.dreamexposure.ticketbird.business.PermissionService
+import org.dreamexposure.ticketbird.extensions.asSeconds
+import org.dreamexposure.ticketbird.extensions.discord4j.deleteFollowupDelayed
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.utils.GlobalVars
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.time.Instant
 
@@ -21,6 +26,8 @@ class StaffCommand(
     private val settingsService: GuildSettingsService,
     private val localeService: LocaleService,
     private val permissionService: PermissionService,
+    @Value("\${bot.timing.message-delete.generic.seconds:30}")
+    private val messageDeleteSeconds: Long,
 ): SlashCommand {
     override val name = "staff"
     override val ephemeral = true
@@ -31,7 +38,9 @@ class StaffCommand(
         if (!permissionService.hasRequiredElevatedPermissions(memberPermissions)) {
             event.createFollowup(localeService.getString(settings.locale, "command.setup.missing-perms"))
                 .withEphemeral(ephemeral)
-                .awaitSingle()
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .awaitSingleOrNull()
             return
         }
 
@@ -57,7 +66,9 @@ class StaffCommand(
             .withEmbeds(getListEmbed(event, settings))
             .withAllowedMentions(AllowedMentions.suppressAll())
             .withEphemeral(ephemeral)
-            .awaitSingle()
+            .map(Message::getId)
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .awaitSingleOrNull()
     }
 
     private suspend fun add(event: ChatInputInteractionEvent, settings: GuildSettings) {
@@ -71,7 +82,9 @@ class StaffCommand(
                 .withEmbeds(getListEmbed(event, settings))
                 .withAllowedMentions(AllowedMentions.suppressAll())
                 .withEphemeral(ephemeral)
-                .awaitSingle()
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .awaitSingleOrNull()
             return
         }
 
@@ -82,7 +95,9 @@ class StaffCommand(
             .withEmbeds(getListEmbed(event, settings))
             .withAllowedMentions(AllowedMentions.suppressAll())
             .withEphemeral(ephemeral)
-            .awaitSingle()
+            .map(Message::getId)
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .awaitSingleOrNull()
     }
 
     private suspend fun remove(event: ChatInputInteractionEvent, settings: GuildSettings) {
@@ -96,7 +111,9 @@ class StaffCommand(
                 .withEmbeds(getListEmbed(event, settings))
                 .withAllowedMentions(AllowedMentions.suppressAll())
                 .withEphemeral(ephemeral)
-                .awaitSingle()
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .awaitSingleOrNull()
             return
         }
 
@@ -107,7 +124,9 @@ class StaffCommand(
             .withEmbeds(getListEmbed(event, settings))
             .withAllowedMentions(AllowedMentions.suppressAll())
             .withEphemeral(ephemeral)
-            .awaitSingle()
+            .map(Message::getId)
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .awaitSingleOrNull()
     }
 
     private suspend fun list(event: ChatInputInteractionEvent, settings: GuildSettings) {
@@ -115,7 +134,9 @@ class StaffCommand(
             .withEmbeds(getListEmbed(event, settings))
             .withAllowedMentions(AllowedMentions.suppressAll())
             .withEphemeral(ephemeral)
-            .awaitSingle()
+            .map(Message::getId)
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .awaitSingleOrNull()
     }
 
     private suspend fun getListEmbed(event: ChatInputInteractionEvent, settings: GuildSettings): EmbedCreateSpec {

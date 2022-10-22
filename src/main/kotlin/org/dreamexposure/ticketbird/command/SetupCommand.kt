@@ -4,11 +4,16 @@ import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import discord4j.core.`object`.command.ApplicationCommandInteractionOption
 import discord4j.core.`object`.command.ApplicationCommandInteractionOptionValue
 import discord4j.core.`object`.entity.Member
+import discord4j.core.`object`.entity.Message
 import discord4j.rest.util.Permission
 import kotlinx.coroutines.reactor.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.*
+import org.dreamexposure.ticketbird.extensions.asSeconds
+import org.dreamexposure.ticketbird.extensions.discord4j.deleteFollowupDelayed
 import org.dreamexposure.ticketbird.extensions.getHumanReadableMinimized
 import org.dreamexposure.ticketbird.`object`.GuildSettings
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.time.Duration
 import java.util.*
@@ -21,6 +26,8 @@ class SetupCommand(
     private val componentService: ComponentService,
     private val environmentService: EnvironmentService,
     private val localeService: LocaleService,
+    @Value("\${bot.timing.message-delete.generic.seconds:30}")
+    private val messageDeleteSeconds: Long,
 ) : SlashCommand {
     override val name = "setup"
     override val ephemeral = true
@@ -31,7 +38,9 @@ class SetupCommand(
         if (!permissionService.hasRequiredElevatedPermissions(memberPermissions)) {
             event.createFollowup(localeService.getString(settings.locale, "command.setup.missing-perms"))
                 .withEphemeral(ephemeral)
-                .awaitSingle()
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .awaitSingleOrNull()
             return
         }
 
@@ -50,7 +59,9 @@ class SetupCommand(
         if (!settings.hasRequiredIdsSet() && !settings.requiresRepair) {
             event.createFollowup(localeService.getString(settings.locale, "command.setup.init.already"))
                 .withEphemeral(ephemeral)
-                .awaitSingle()
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .awaitSingleOrNull()
             return
         }
 
@@ -89,15 +100,19 @@ class SetupCommand(
 
         event.createFollowup(localeService.getString(settings.locale, "command.setup.init.success"))
             .withEphemeral(ephemeral)
-            .awaitSingle()
+            .map(Message::getId)
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .awaitSingleOrNull()
     }
 
     private suspend fun repair(event: ChatInputInteractionEvent, settings: GuildSettings) {
-        // Check if setup has already been done
+        // Check if setup has never been done
         if (!settings.requiresRepair && settings.hasRequiredIdsSet()) {
             event.createFollowup(localeService.getString(settings.locale, "command.setup.repair.never-init"))
                 .withEphemeral(ephemeral)
-                .awaitSingle()
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .awaitSingleOrNull()
             return
         }
 
@@ -118,7 +133,9 @@ class SetupCommand(
             // Everything exists, return
             event.createFollowup(localeService.getString(settings.locale, "command.setup.repair.no-issue-detected"))
                 .withEphemeral(ephemeral)
-                .awaitSingle()
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .awaitSingleOrNull()
             return
         }
 
@@ -128,7 +145,9 @@ class SetupCommand(
         //  Respond with success
         event.createFollowup(localeService.getString(settings.locale, "command.setup.repair.success"))
             .withEphemeral(ephemeral)
-            .awaitSingle()
+            .map(Message::getId)
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .awaitSingleOrNull()
     }
 
     private suspend fun language(event: ChatInputInteractionEvent, settings: GuildSettings) {
@@ -143,7 +162,9 @@ class SetupCommand(
 
         event.createFollowup(localeService.getString(settings.locale, "command.setup.language.success"))
             .withEphemeral(ephemeral)
-            .awaitSingle()
+            .map(Message::getId)
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .awaitSingleOrNull()
     }
 
     private suspend fun useProjects(event: ChatInputInteractionEvent, settings: GuildSettings) {
@@ -157,7 +178,9 @@ class SetupCommand(
 
         event.createFollowup(localeService.getString(settings.locale, "command.setup.use-projects.success.$useProjects"))
             .withEphemeral(ephemeral)
-            .awaitSingle()
+            .map(Message::getId)
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .awaitSingleOrNull()
     }
 
     private suspend fun timing(event: ChatInputInteractionEvent, settings: GuildSettings) {
@@ -180,7 +203,9 @@ class SetupCommand(
         if (days + hours <= Duration.ZERO) {
             event.createFollowup(localeService.getString(settings.locale, "command.setup.timing.error.duration-zero"))
                 .withEphemeral(ephemeral)
-                .awaitSingle()
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .awaitSingleOrNull()
             return
         }
 
@@ -191,7 +216,10 @@ class SetupCommand(
             else -> {
                 event.createFollowup(
                     localeService.getString(settings.locale, "command.setup.timing.error.action-not-found")
-                ).withEphemeral(ephemeral).awaitSingle()
+                ).withEphemeral(ephemeral)
+                    .map(Message::getId)
+                    .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                    .awaitSingleOrNull()
                 return
             }
         }
@@ -202,6 +230,9 @@ class SetupCommand(
             settings.locale,
             field = "command.setup.timing.success.$action",
             values = arrayOf((days + hours).getHumanReadableMinimized())
-        )).withEphemeral(ephemeral).awaitSingle()
+        )).withEphemeral(ephemeral)
+            .map(Message::getId)
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .awaitSingleOrNull()
     }
 }

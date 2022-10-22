@@ -4,14 +4,19 @@ import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import discord4j.core.`object`.command.ApplicationCommandInteractionOption
 import discord4j.core.`object`.command.ApplicationCommandInteractionOptionValue
 import discord4j.core.`object`.entity.Member
+import discord4j.core.`object`.entity.Message
 import discord4j.core.spec.EmbedCreateSpec
 import kotlinx.coroutines.reactor.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.LocaleService
 import org.dreamexposure.ticketbird.business.PermissionService
 import org.dreamexposure.ticketbird.business.ProjectService
+import org.dreamexposure.ticketbird.extensions.asSeconds
+import org.dreamexposure.ticketbird.extensions.discord4j.deleteFollowupDelayed
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.`object`.Project
 import org.dreamexposure.ticketbird.utils.GlobalVars
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.time.Instant
 
@@ -20,6 +25,8 @@ class ProjectCommand(
     private val projectService: ProjectService,
     private val permissionService: PermissionService,
     private val localeService: LocaleService,
+    @Value("\${bot.timing.message-delete.generic.seconds:30}")
+    private val messageDeleteSeconds: Long,
 ): SlashCommand {
     override val name = "project"
     override val ephemeral = true
@@ -30,7 +37,9 @@ class ProjectCommand(
         if (!permissionService.hasRequiredElevatedPermissions(memberPermissions)) {
             event.createFollowup(localeService.getString(settings.locale, "command.project.missing-perms"))
                 .withEphemeral(ephemeral)
-                .awaitSingle()
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .awaitSingleOrNull()
             return
         }
 
@@ -61,7 +70,9 @@ class ProjectCommand(
             event.createFollowup(localeService.getString(settings.locale, "command.project.add.exists"))
                 .withEmbeds(listEmbed(settings))
                 .withEphemeral(ephemeral)
-                .awaitSingle()
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .awaitSingleOrNull()
             return
         }
 
@@ -70,7 +81,9 @@ class ProjectCommand(
             event.createFollowup(localeService.getString(settings.locale, "command.project.add.limit-reached"))
                 .withEmbeds(listEmbed(settings))
                 .withEphemeral(ephemeral)
-                .awaitSingle()
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .awaitSingleOrNull()
             return
         }
 
@@ -79,7 +92,9 @@ class ProjectCommand(
         event.createFollowup(localeService.getString(settings.locale, "command.project.add.success"))
             .withEmbeds(listEmbed(settings))
             .withEphemeral(ephemeral)
-            .awaitSingle()
+            .map(Message::getId)
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .awaitSingleOrNull()
     }
 
     private suspend fun remove(event: ChatInputInteractionEvent, settings: GuildSettings) {
@@ -93,7 +108,9 @@ class ProjectCommand(
             event.createFollowup(localeService.getString(settings.locale, "command.project.remove.not-found"))
                 .withEmbeds(listEmbed(settings))
                 .withEphemeral(ephemeral)
-                .awaitSingle()
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .awaitSingleOrNull()
             return
         }
 
@@ -102,7 +119,9 @@ class ProjectCommand(
         event.createFollowup(localeService.getString(settings.locale, "command.project.remove.success"))
             .withEmbeds(listEmbed(settings))
             .withEphemeral(ephemeral)
-            .awaitSingle()
+            .map(Message::getId)
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .awaitSingleOrNull()
         return
     }
 
@@ -110,7 +129,9 @@ class ProjectCommand(
         event.createFollowup()
             .withEmbeds(listEmbed(settings))
             .withEphemeral(ephemeral)
-            .awaitSingle()
+            .map(Message::getId)
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .awaitSingleOrNull()
     }
 
     private suspend fun listEmbed(settings: GuildSettings): EmbedCreateSpec {
