@@ -1,12 +1,15 @@
 package org.dreamexposure.ticketbird.interaction
 
 import discord4j.core.event.domain.interaction.ButtonInteractionEvent
-import kotlinx.coroutines.reactor.awaitSingle
+import discord4j.core.`object`.entity.Message
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.LocaleService
 import org.dreamexposure.ticketbird.business.StaticMessageService
 import org.dreamexposure.ticketbird.business.TicketService
+import org.dreamexposure.ticketbird.extensions.asSeconds
+import org.dreamexposure.ticketbird.extensions.discord4j.deleteFollowupDelayed
 import org.dreamexposure.ticketbird.`object`.GuildSettings
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 
 @Component
@@ -14,6 +17,8 @@ class CloseTicketButton(
     private val ticketService: TicketService,
     private val staticMessageService: StaticMessageService,
     private val localeService: LocaleService,
+    @Value("\${bot.timing.message-delete.generic.seconds:30}")
+    private val messageDeleteSeconds: Long,
 ): InteractionHandler<ButtonInteractionEvent> {
     override val ids = arrayOf("close-ticket")
     override suspend fun handle(event: ButtonInteractionEvent, settings: GuildSettings) {
@@ -27,14 +32,18 @@ class CloseTicketButton(
         if (ticket == null) {
             event.createFollowup(localeService.getString(settings.locale, "command.close.not-ticket"))
                 .withEphemeral(true)
-                .awaitSingle()
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .awaitSingleOrNull()
             return
         }
         // Handle if ticket is already closed
         if (ticket.category == settings.closeCategory) {
             event.createFollowup(localeService.getString(settings.locale, "command.close.already-closed"))
                 .withEphemeral(true)
-                .awaitSingle()
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .awaitSingleOrNull()
             return
         }
 
@@ -44,6 +53,8 @@ class CloseTicketButton(
 
         event.createFollowup(localeService.getString(settings.locale, "command.close.success"))
             .withEphemeral(true)
-            .awaitSingle()
+            .map(Message::getId)
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .awaitSingleOrNull()
     }
 }

@@ -7,9 +7,13 @@ import discord4j.core.`object`.entity.Member
 import discord4j.core.`object`.entity.Message
 import discord4j.rest.util.Permission
 import kotlinx.coroutines.reactor.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.*
+import org.dreamexposure.ticketbird.extensions.asSeconds
+import org.dreamexposure.ticketbird.extensions.discord4j.deleteFollowupDelayed
 import org.dreamexposure.ticketbird.extensions.getHumanReadableMinimized
 import org.dreamexposure.ticketbird.`object`.GuildSettings
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.time.Duration
 import java.util.*
@@ -22,20 +26,25 @@ class SetupCommand(
     private val componentService: ComponentService,
     private val environmentService: EnvironmentService,
     private val localeService: LocaleService,
+    @Value("\${bot.timing.message-delete.generic.seconds:30}")
+    private val messageDeleteSeconds: Long,
 ) : SlashCommand {
     override val name = "setup"
     override val ephemeral = true
 
-    override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings): Message {
+    override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings) {
         // Check permission server-side just in case
         val memberPermissions = event.interaction.member.map(Member::getBasePermissions).get().awaitSingle()
         if (!permissionService.hasRequiredElevatedPermissions(memberPermissions)) {
-            return event.createFollowup(localeService.getString(settings.locale, "command.setup.missing-perms"))
+            event.createFollowup(localeService.getString(settings.locale, "command.setup.missing-perms"))
                 .withEphemeral(ephemeral)
-                .awaitSingle()
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .awaitSingleOrNull()
+            return
         }
 
-        return when (event.options[0].name) {
+        when (event.options[0].name) {
             "init" -> init(event, settings)
             "repair" -> repair(event, settings)
             "language" -> language(event, settings)
@@ -45,23 +54,27 @@ class SetupCommand(
         }
     }
 
-    private suspend fun init(event: ChatInputInteractionEvent, settings: GuildSettings): Message {
+    private suspend fun init(event: ChatInputInteractionEvent, settings: GuildSettings) {
         // check if setup has already been done
         if (!settings.hasRequiredIdsSet() && !settings.requiresRepair) {
-            return event.createFollowup(localeService.getString(settings.locale, "command.setup.init.already"))
+            event.createFollowup(localeService.getString(settings.locale, "command.setup.init.already"))
                 .withEphemeral(ephemeral)
-                .awaitSingle()
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .awaitSingleOrNull()
+            return
         }
 
         // check if bot is missing required permissions in order to operate
         val missingPerms = permissionService.checkingMissingBasePermissionsBot(settings.guildId).map(Permission::name)
         if (missingPerms.isNotEmpty()) {
-            return event.createFollowup(localeService.getString(
+            event.createFollowup(localeService.getString(
                 settings.locale,
                 "command.setup.bot-missing-perms",
                 missingPerms.joinToString("\n")
             )).withEphemeral(ephemeral)
                 .awaitSingle()
+            return
         }
 
         // Begin setup
@@ -85,48 +98,59 @@ class SetupCommand(
 
         settingsService.createOrUpdateGuildSettings(settings)
 
-        return event.createFollowup(localeService.getString(settings.locale, "command.setup.init.success"))
+        event.createFollowup(localeService.getString(settings.locale, "command.setup.init.success"))
             .withEphemeral(ephemeral)
-            .awaitSingle()
+            .map(Message::getId)
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .awaitSingleOrNull()
     }
 
-    private suspend fun repair(event: ChatInputInteractionEvent, settings: GuildSettings): Message {
-        // Check if setup has already been done
+    private suspend fun repair(event: ChatInputInteractionEvent, settings: GuildSettings) {
+        // Check if setup has never been done
         if (!settings.requiresRepair && settings.hasRequiredIdsSet()) {
-            return event.createFollowup(localeService.getString(settings.locale, "command.setup.repair.never-init"))
+            event.createFollowup(localeService.getString(settings.locale, "command.setup.repair.never-init"))
                 .withEphemeral(ephemeral)
-                .awaitSingle()
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .awaitSingleOrNull()
+            return
         }
 
         // Check if bot has correct base permissions in order to set up
         val missingPerms = permissionService.checkingMissingBasePermissionsBot(settings.guildId).map(Permission::name)
         if (missingPerms.isNotEmpty()) {
-            return event.createFollowup(localeService.getString(
+            event.createFollowup(localeService.getString(
                 settings.locale,
                 "command.setup.bot-missing-perms",
                 missingPerms.joinToString("\n")
             )).withEphemeral(ephemeral)
                 .awaitSingle()
+            return
         }
 
         // Validate that all required discord entities exist
         if (environmentService.validateAllEntitiesExist(settings.guildId)) {
             // Everything exists, return
-            return event.createFollowup(localeService.getString(settings.locale, "command.setup.repair.no-issue-detected"))
+            event.createFollowup(localeService.getString(settings.locale, "command.setup.repair.no-issue-detected"))
                 .withEphemeral(ephemeral)
-                .awaitSingle()
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .awaitSingleOrNull()
+            return
         }
 
         environmentService.recreateMissingEntities(settings.guildId)
         staticMessageService.update(settings.guildId)
 
         //  Respond with success
-        return event.createFollowup(localeService.getString(settings.locale, "command.setup.repair.success"))
+        event.createFollowup(localeService.getString(settings.locale, "command.setup.repair.success"))
             .withEphemeral(ephemeral)
-            .awaitSingle()
+            .map(Message::getId)
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .awaitSingleOrNull()
     }
 
-    private suspend fun language(event: ChatInputInteractionEvent, settings: GuildSettings): Message {
+    private suspend fun language(event: ChatInputInteractionEvent, settings: GuildSettings) {
         val newLocale = event.options[0].getOption("language")
             .flatMap(ApplicationCommandInteractionOption::getValue)
             .map(ApplicationCommandInteractionOptionValue::asString)
@@ -136,12 +160,14 @@ class SetupCommand(
         settings.locale = newLocale
         settingsService.createOrUpdateGuildSettings(settings)
 
-        return event.createFollowup(localeService.getString(settings.locale, "command.setup.language.success"))
+        event.createFollowup(localeService.getString(settings.locale, "command.setup.language.success"))
             .withEphemeral(ephemeral)
-            .awaitSingle()
+            .map(Message::getId)
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .awaitSingleOrNull()
     }
 
-    private suspend fun useProjects(event: ChatInputInteractionEvent, settings: GuildSettings): Message {
+    private suspend fun useProjects(event: ChatInputInteractionEvent, settings: GuildSettings) {
         val useProjects = event.options[0].getOption("use")
             .flatMap(ApplicationCommandInteractionOption::getValue)
             .map(ApplicationCommandInteractionOptionValue::asBoolean)
@@ -150,12 +176,14 @@ class SetupCommand(
         settings.useProjects = useProjects
         settingsService.createOrUpdateGuildSettings(settings)
 
-        return event.createFollowup(localeService.getString(settings.locale, "command.setup.use-projects.success.$useProjects"))
+        event.createFollowup(localeService.getString(settings.locale, "command.setup.use-projects.success.$useProjects"))
             .withEphemeral(ephemeral)
-            .awaitSingle()
+            .map(Message::getId)
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .awaitSingleOrNull()
     }
 
-    private suspend fun timing(event: ChatInputInteractionEvent, settings: GuildSettings): Message {
+    private suspend fun timing(event: ChatInputInteractionEvent, settings: GuildSettings) {
         val action = event.options[0].getOption("action")
             .flatMap(ApplicationCommandInteractionOption::getValue)
             .map(ApplicationCommandInteractionOptionValue::asString)
@@ -173,9 +201,12 @@ class SetupCommand(
 
         // Cannot be zero
         if (days + hours <= Duration.ZERO) {
-            return event.createFollowup(localeService.getString(settings.locale, "command.setup.timing.error.duration-zero"))
+            event.createFollowup(localeService.getString(settings.locale, "command.setup.timing.error.duration-zero"))
                 .withEphemeral(ephemeral)
-                .awaitSingle()
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .awaitSingleOrNull()
+            return
         }
 
         // Apply
@@ -183,18 +214,25 @@ class SetupCommand(
             "auto-close" -> settings.autoClose = days + hours
             "auto-delete" -> settings.autoDelete = days + hours
             else -> {
-                return event.createFollowup(
+                event.createFollowup(
                     localeService.getString(settings.locale, "command.setup.timing.error.action-not-found")
-                ).withEphemeral(ephemeral).awaitSingle()
+                ).withEphemeral(ephemeral)
+                    .map(Message::getId)
+                    .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                    .awaitSingleOrNull()
+                return
             }
         }
 
         settingsService.createOrUpdateGuildSettings(settings)
 
-        return event.createFollowup(localeService.getString(
+        event.createFollowup(localeService.getString(
             settings.locale,
             field = "command.setup.timing.success.$action",
             values = arrayOf((days + hours).getHumanReadableMinimized())
-        )).withEphemeral(ephemeral).awaitSingle()
+        )).withEphemeral(ephemeral)
+            .map(Message::getId)
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .awaitSingleOrNull()
     }
 }

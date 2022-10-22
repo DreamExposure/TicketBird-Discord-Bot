@@ -5,13 +5,17 @@ import discord4j.core.`object`.command.ApplicationCommandInteractionOption
 import discord4j.core.`object`.command.ApplicationCommandInteractionOptionValue
 import discord4j.core.`object`.entity.Message
 import kotlinx.coroutines.reactor.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.ComponentService
 import org.dreamexposure.ticketbird.business.LocaleService
 import org.dreamexposure.ticketbird.business.ProjectService
 import org.dreamexposure.ticketbird.business.TicketService
 import org.dreamexposure.ticketbird.business.cache.CacheRepository
+import org.dreamexposure.ticketbird.extensions.asSeconds
+import org.dreamexposure.ticketbird.extensions.discord4j.deleteFollowupDelayed
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.`object`.TicketCreateState
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 
 @Component
@@ -21,11 +25,13 @@ class SupportCommand(
     private val localeService: LocaleService,
     private val componentService: ComponentService,
     private val ticketCreateStateCache: CacheRepository<String, TicketCreateState>,
+    @Value("\${bot.timing.message-delete.ticket-flow.seconds:60}")
+    private val messageDeleteSeconds: Long,
 ) : SlashCommand {
     override val name = "support"
     override val ephemeral = true
 
-    override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings): Message {
+    override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings) {
         val info = event.getOption("info")
             .flatMap(ApplicationCommandInteractionOption::getValue)
             .map(ApplicationCommandInteractionOptionValue::asString)
@@ -38,25 +44,30 @@ class SupportCommand(
         // Check if ticket bird is even functional
         if (!settings.hasRequiredIdsSet() && !settings.requiresRepair) {
             // TicketBird never init
-            return event.createFollowup(localeService.getString(settings.locale, "generic.not-init"))
+            event.createFollowup(localeService.getString(settings.locale, "generic.not-init"))
                 .withEphemeral(true)
                 .awaitSingle()
+            return
         }
         if (settings.requiresRepair) {
             // TicketBird broken, needs repair
-            return event.createFollowup(localeService.getString(settings.locale, "generic.repair-required"))
+            event.createFollowup(localeService.getString(settings.locale, "generic.repair-required"))
                 .withEphemeral(true)
                 .awaitSingle()
+            return
         }
 
         // Check if project required but missing; if so; cache info, give them project dropdown
         if (settings.useProjects && topic.isNullOrBlank()) {
             ticketCreateStateCache.put("${settings.guildId}.${event.interaction.user.id.asLong()}", TicketCreateState(ticketInfo = info))
 
-            return event.createFollowup(localeService.getString(settings.locale, "dropdown.select-project.prompt"))
+            event.createFollowup(localeService.getString(settings.locale, "dropdown.select-project.prompt"))
                 .withComponents(*componentService.getProjectSelectComponents(settings, withCreate = true))
                 .withEphemeral(ephemeral)
-                .awaitSingle()
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .awaitSingleOrNull()
+            return
         }
 
         // Only get projects if using project, otherwise no reason to do the fetch
@@ -66,10 +77,13 @@ class SupportCommand(
         if (settings.useProjects && project == null) {
             ticketCreateStateCache.put("${settings.guildId}.${event.interaction.user.id.asLong()}", TicketCreateState(ticketInfo = info))
 
-            return event.createFollowup(localeService.getString(settings.locale, "command.support.topic.not-found"))
+            event.createFollowup(localeService.getString(settings.locale, "command.support.topic.not-found"))
                 .withComponents(*componentService.getProjectSelectComponents(settings, withCreate = true))
                 .withEphemeral(ephemeral)
-                .awaitSingle()
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .awaitSingleOrNull()
+            return
         }
 
         // Create ticket
@@ -81,10 +95,13 @@ class SupportCommand(
         )
 
         // Respond
-        return event.createFollowup(localeService.getString(
+        event.createFollowup(localeService.getString(
             settings.locale,
             "generic.success.ticket-open",
             ticket.channel.asString()
-        )).withEphemeral(ephemeral).awaitSingle()
+        )).withEphemeral(ephemeral)
+            .map(Message::getId)
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .awaitSingleOrNull()
     }
 }

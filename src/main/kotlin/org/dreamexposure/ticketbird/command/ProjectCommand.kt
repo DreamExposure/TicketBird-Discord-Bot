@@ -7,12 +7,16 @@ import discord4j.core.`object`.entity.Member
 import discord4j.core.`object`.entity.Message
 import discord4j.core.spec.EmbedCreateSpec
 import kotlinx.coroutines.reactor.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.LocaleService
 import org.dreamexposure.ticketbird.business.PermissionService
 import org.dreamexposure.ticketbird.business.ProjectService
+import org.dreamexposure.ticketbird.extensions.asSeconds
+import org.dreamexposure.ticketbird.extensions.discord4j.deleteFollowupDelayed
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.`object`.Project
 import org.dreamexposure.ticketbird.utils.GlobalVars
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.time.Instant
 
@@ -21,20 +25,25 @@ class ProjectCommand(
     private val projectService: ProjectService,
     private val permissionService: PermissionService,
     private val localeService: LocaleService,
+    @Value("\${bot.timing.message-delete.generic.seconds:30}")
+    private val messageDeleteSeconds: Long,
 ): SlashCommand {
     override val name = "project"
     override val ephemeral = true
 
-    override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings): Message {
+    override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings) {
         // Check permission server-side just in case
         val memberPermissions = event.interaction.member.map(Member::getBasePermissions).get().awaitSingle()
         if (!permissionService.hasRequiredElevatedPermissions(memberPermissions)) {
-            return event.createFollowup(localeService.getString(settings.locale, "command.project.missing-perms"))
+            event.createFollowup(localeService.getString(settings.locale, "command.project.missing-perms"))
                 .withEphemeral(ephemeral)
-                .awaitSingle()
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .awaitSingleOrNull()
+            return
         }
 
-        return when (event.options[0].name) {
+        when (event.options[0].name) {
             "add" -> add(event, settings)
             "remove" -> remove(event, settings)
             "list" -> list(event, settings)
@@ -42,7 +51,7 @@ class ProjectCommand(
         }
     }
 
-    private suspend fun add(event: ChatInputInteractionEvent, settings: GuildSettings): Message {
+    private suspend fun add(event: ChatInputInteractionEvent, settings: GuildSettings) {
         val name = event.options[0].getOption("name")
             .flatMap(ApplicationCommandInteractionOption::getValue)
             .map(ApplicationCommandInteractionOptionValue::asString)
@@ -58,29 +67,37 @@ class ProjectCommand(
 
         // Check if project with same name exists
         if (projectService.getProject(settings.guildId, name) != null) {
-            return event.createFollowup(localeService.getString(settings.locale, "command.project.add.exists"))
+            event.createFollowup(localeService.getString(settings.locale, "command.project.add.exists"))
                 .withEmbeds(listEmbed(settings))
                 .withEphemeral(ephemeral)
-                .awaitSingle()
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .awaitSingleOrNull()
+            return
         }
 
         // Check if max amount of projects has been created
         if (projectService.getAllProjects(settings.guildId).size >= 25) {
-            return event.createFollowup(localeService.getString(settings.locale, "command.project.add.limit-reached"))
+            event.createFollowup(localeService.getString(settings.locale, "command.project.add.limit-reached"))
                 .withEmbeds(listEmbed(settings))
                 .withEphemeral(ephemeral)
-                .awaitSingle()
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .awaitSingleOrNull()
+            return
         }
 
         projectService.createProject(Project(guildId = settings.guildId, name = name, prefix = prefix))
 
-        return event.createFollowup(localeService.getString(settings.locale, "command.project.add.success"))
+        event.createFollowup(localeService.getString(settings.locale, "command.project.add.success"))
             .withEmbeds(listEmbed(settings))
             .withEphemeral(ephemeral)
-            .awaitSingle()
+            .map(Message::getId)
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .awaitSingleOrNull()
     }
 
-    private suspend fun remove(event: ChatInputInteractionEvent, settings: GuildSettings): Message {
+    private suspend fun remove(event: ChatInputInteractionEvent, settings: GuildSettings) {
         val name = event.options[0].getOption("name")
             .flatMap(ApplicationCommandInteractionOption::getValue)
             .map(ApplicationCommandInteractionOptionValue::asString)
@@ -88,25 +105,33 @@ class ProjectCommand(
 
 
         if (projectService.getProject(settings.guildId, name) == null) {
-            return event.createFollowup(localeService.getString(settings.locale, "command.project.remove.not-found"))
+            event.createFollowup(localeService.getString(settings.locale, "command.project.remove.not-found"))
                 .withEmbeds(listEmbed(settings))
                 .withEphemeral(ephemeral)
-                .awaitSingle()
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .awaitSingleOrNull()
+            return
         }
 
         projectService.deleteProject(settings.guildId, name)
 
-        return event.createFollowup(localeService.getString(settings.locale, "command.project.remove.success"))
+        event.createFollowup(localeService.getString(settings.locale, "command.project.remove.success"))
             .withEmbeds(listEmbed(settings))
             .withEphemeral(ephemeral)
-            .awaitSingle()
+            .map(Message::getId)
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .awaitSingleOrNull()
+        return
     }
 
-    private suspend fun list(event: ChatInputInteractionEvent, settings: GuildSettings): Message {
-        return event.createFollowup()
+    private suspend fun list(event: ChatInputInteractionEvent, settings: GuildSettings) {
+        event.createFollowup()
             .withEmbeds(listEmbed(settings))
             .withEphemeral(ephemeral)
-            .awaitSingle()
+            .map(Message::getId)
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .awaitSingleOrNull()
     }
 
     private suspend fun listEmbed(settings: GuildSettings): EmbedCreateSpec {

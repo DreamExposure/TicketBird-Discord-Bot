@@ -1,7 +1,6 @@
 package org.dreamexposure.ticketbird.command
 
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
-import discord4j.core.`object`.entity.Message
 import discord4j.core.spec.EmbedCreateSpec
 import kotlinx.coroutines.reactor.awaitSingle
 import org.dreamexposure.ticketbird.GitProperty.TICKETBIRD_VERSION
@@ -28,7 +27,7 @@ class TicketBirdCommand(
     override val name = "ticketbird"
     override val ephemeral = false
 
-    override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings): Message {
+    override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings) {
         val guilds = event.client.guilds.count().awaitSingle()
 
         val builder = EmbedCreateSpec.builder()
@@ -66,7 +65,7 @@ class TicketBirdCommand(
             )
         }
 
-        return event.createFollowup()
+        event.createFollowup()
             .withEmbeds(builder.build())
             .withEphemeral(ephemeral)
             .awaitSingle()
