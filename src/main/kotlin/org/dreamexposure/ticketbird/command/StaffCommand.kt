@@ -4,7 +4,6 @@ import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import discord4j.core.`object`.command.ApplicationCommandInteractionOption
 import discord4j.core.`object`.command.ApplicationCommandInteractionOptionValue
 import discord4j.core.`object`.entity.Member
-import discord4j.core.`object`.entity.Message
 import discord4j.core.`object`.entity.Role
 import discord4j.core.spec.EmbedCreateSpec
 import discord4j.rest.util.AllowedMentions
@@ -26,16 +25,17 @@ class StaffCommand(
     override val name = "staff"
     override val ephemeral = true
 
-    override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings): Message {
+    override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings) {
         // Check permission server-side just in case
         val memberPermissions = event.interaction.member.map(Member::getBasePermissions).get().awaitSingle()
         if (!permissionService.hasRequiredElevatedPermissions(memberPermissions)) {
-            return event.createFollowup(localeService.getString(settings.locale, "command.setup.missing-perms"))
+            event.createFollowup(localeService.getString(settings.locale, "command.setup.missing-perms"))
                 .withEphemeral(ephemeral)
                 .awaitSingle()
+            return
         }
 
-        return when (event.options[0].name) {
+        when (event.options[0].name) {
             "role" -> role(event, settings)
             "add" -> add(event, settings)
             "remove" -> remove(event, settings)
@@ -44,7 +44,7 @@ class StaffCommand(
         }
     }
 
-    private suspend fun role(event: ChatInputInteractionEvent, settings: GuildSettings): Message {
+    private suspend fun role(event: ChatInputInteractionEvent, settings: GuildSettings) {
         val roleId = event.options[0].getOption("role")
             .flatMap(ApplicationCommandInteractionOption::getValue)
             .map(ApplicationCommandInteractionOptionValue::asSnowflake)
@@ -53,63 +53,65 @@ class StaffCommand(
         if (roleId == settings.guildId || roleId.asLong() == 0L) settings.staffRole = null else settings.staffRole = roleId
         settingsService.createOrUpdateGuildSettings(settings)
 
-        return event.createFollowup(localeService.getString(settings.locale, "command.staff.role.success"))
+        event.createFollowup(localeService.getString(settings.locale, "command.staff.role.success"))
             .withEmbeds(getListEmbed(event, settings))
             .withAllowedMentions(AllowedMentions.suppressAll())
             .withEphemeral(ephemeral)
             .awaitSingle()
     }
 
-    private suspend fun add(event: ChatInputInteractionEvent, settings: GuildSettings): Message {
+    private suspend fun add(event: ChatInputInteractionEvent, settings: GuildSettings) {
         val toAddId = event.options[0].getOption("user")
             .flatMap(ApplicationCommandInteractionOption::getValue)
             .map(ApplicationCommandInteractionOptionValue::asSnowflake)
             .get()
 
         if (settings.staff.contains(toAddId.asString())) {
-            return event.createFollowup(localeService.getString(settings.locale, "command.staff.add.already"))
+            event.createFollowup(localeService.getString(settings.locale, "command.staff.add.already"))
                 .withEmbeds(getListEmbed(event, settings))
                 .withAllowedMentions(AllowedMentions.suppressAll())
                 .withEphemeral(ephemeral)
                 .awaitSingle()
+            return
         }
 
         settings.staff.add(toAddId.asString())
         settingsService.createOrUpdateGuildSettings(settings)
 
-        return event.createFollowup(localeService.getString(settings.locale, "command.staff.add.success", toAddId.asString()))
+        event.createFollowup(localeService.getString(settings.locale, "command.staff.add.success", toAddId.asString()))
             .withEmbeds(getListEmbed(event, settings))
             .withAllowedMentions(AllowedMentions.suppressAll())
             .withEphemeral(ephemeral)
             .awaitSingle()
     }
 
-    private suspend fun remove(event: ChatInputInteractionEvent, settings: GuildSettings): Message {
+    private suspend fun remove(event: ChatInputInteractionEvent, settings: GuildSettings) {
         val toRemoveId = event.options[0].getOption("user")
             .flatMap(ApplicationCommandInteractionOption::getValue)
             .map(ApplicationCommandInteractionOptionValue::asSnowflake)
             .get()
 
         if (!settings.staff.contains(toRemoveId.asString())) {
-            return event.createFollowup(localeService.getString(settings.locale, "command.staff.remove.not"))
+            event.createFollowup(localeService.getString(settings.locale, "command.staff.remove.not"))
                 .withEmbeds(getListEmbed(event, settings))
                 .withAllowedMentions(AllowedMentions.suppressAll())
                 .withEphemeral(ephemeral)
                 .awaitSingle()
+            return
         }
 
         settings.staff.remove(toRemoveId.asString())
         settingsService.createOrUpdateGuildSettings(settings)
 
-        return event.createFollowup(localeService.getString(settings.locale, "command.staff.remove.success", toRemoveId.asString()))
+        event.createFollowup(localeService.getString(settings.locale, "command.staff.remove.success", toRemoveId.asString()))
             .withEmbeds(getListEmbed(event, settings))
             .withAllowedMentions(AllowedMentions.suppressAll())
             .withEphemeral(ephemeral)
             .awaitSingle()
     }
 
-    private suspend fun list(event: ChatInputInteractionEvent, settings: GuildSettings): Message {
-        return event.createFollowup()
+    private suspend fun list(event: ChatInputInteractionEvent, settings: GuildSettings) {
+        event.createFollowup()
             .withEmbeds(getListEmbed(event, settings))
             .withAllowedMentions(AllowedMentions.suppressAll())
             .withEphemeral(ephemeral)

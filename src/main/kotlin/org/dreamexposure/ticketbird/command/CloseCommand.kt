@@ -1,7 +1,6 @@
 package org.dreamexposure.ticketbird.command
 
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
-import discord4j.core.`object`.entity.Message
 import kotlinx.coroutines.reactor.awaitSingle
 import org.dreamexposure.ticketbird.business.LocaleService
 import org.dreamexposure.ticketbird.business.StaticMessageService
@@ -18,28 +17,30 @@ class CloseCommand(
     override val name = "close"
     override val ephemeral = true
 
-    override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings): Message {
+    override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings) {
         val ticket = ticketService.getTicket(settings.guildId, event.interaction.channelId)
 
         // Handle if not in a ticket channel
         @Suppress("FoldInitializerAndIfToElvis") // Using == null for readability
         if (ticket == null) {
-            return event.createFollowup(localeService.getString(settings.locale, "command.close.not-ticket"))
+            event.createFollowup(localeService.getString(settings.locale, "command.close.not-ticket"))
                 .withEphemeral(ephemeral)
                 .awaitSingle()
+            return
         }
         // Handle if ticket is already closed
         if (ticket.category == settings.closeCategory) {
-            return event.createFollowup(localeService.getString(settings.locale, "command.close.already-closed"))
+            event.createFollowup(localeService.getString(settings.locale, "command.close.already-closed"))
                 .withEphemeral(ephemeral)
                 .awaitSingle()
+            return
         }
 
         // We can close the ticket now
         ticketService.closeTicket(settings.guildId, event.interaction.channelId)
         staticMessageService.update(settings.guildId)
 
-        return event.createFollowup(localeService.getString(settings.locale, "command.close.success"))
+        event.createFollowup(localeService.getString(settings.locale, "command.close.success"))
             .withEphemeral(ephemeral)
             .awaitSingle()
     }
