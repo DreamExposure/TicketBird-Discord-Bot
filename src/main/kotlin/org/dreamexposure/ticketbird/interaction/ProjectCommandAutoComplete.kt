@@ -12,12 +12,13 @@ import org.springframework.stereotype.Component
 class ProjectCommandAutoComplete(
     private val projectService: ProjectService,
 ) : InteractionHandler<ChatInputAutoCompleteEvent> {
-    override val ids = arrayOf("project.name", "support.topic")
+    override val ids = arrayOf("project.name", "support.topic", "topic.topic")
 
     override suspend fun handle(event: ChatInputAutoCompleteEvent, settings: GuildSettings) {
         when ("${event.commandName}.${event.focusedOption.name}") {
             "project.name" -> projectName(event)
-            "support.topic" -> supportTopic(event, settings)
+            "support.topic",
+            "topic.topic" -> checkUsingFirst(event, settings)
             else -> event.respondWithSuggestions(listOf()).awaitSingleOrNull()
         }
     }
@@ -46,7 +47,7 @@ class ProjectCommandAutoComplete(
             .awaitSingleOrNull()
     }
 
-    private suspend fun supportTopic(event: ChatInputAutoCompleteEvent, settings: GuildSettings) {
+    private suspend fun checkUsingFirst(event: ChatInputAutoCompleteEvent, settings: GuildSettings) {
         // If not using projects, no need to waste their time
         if (settings.useProjects) return projectName(event)
         else event.respondWithSuggestions(listOf()).awaitSingleOrNull()
