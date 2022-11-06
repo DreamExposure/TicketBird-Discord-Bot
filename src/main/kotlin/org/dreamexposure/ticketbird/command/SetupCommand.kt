@@ -56,11 +56,19 @@ class SetupCommand(
 
     private suspend fun init(event: ChatInputInteractionEvent, settings: GuildSettings) {
         // check if setup has already been done
-        if (!settings.hasRequiredIdsSet() && !settings.requiresRepair) {
+        if (settings.hasRequiredIdsSet() && !settings.requiresRepair) {
             event.createFollowup(localeService.getString(settings.locale, "command.setup.init.already"))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
                 .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .awaitSingleOrNull()
+            return
+        }
+
+        // need repair?
+        if (settings.requiresRepair) {
+            event.createFollowup(localeService.getString(settings.locale, "generic.repair-required"))
+                .withEphemeral(ephemeral)
                 .awaitSingleOrNull()
             return
         }
