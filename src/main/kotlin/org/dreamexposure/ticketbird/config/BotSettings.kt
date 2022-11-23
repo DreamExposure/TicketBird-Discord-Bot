@@ -3,14 +3,8 @@ package org.dreamexposure.ticketbird.config
 import java.util.*
 
 enum class BotSettings {
-    USE_WEBHOOKS,
-    ALL_ERRORS_WEBHOOK,
-
     SHARD_COUNT,
-    SHARD_INDEX,
-
-    DEBUG_WEBHOOK,
-    STATUS_WEBHOOK;
+    SHARD_INDEX;
 
     private var value: String? = null
 

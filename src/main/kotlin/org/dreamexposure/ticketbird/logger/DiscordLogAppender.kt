@@ -7,25 +7,32 @@ import club.minnced.discord.webhook.send.WebhookEmbed
 import club.minnced.discord.webhook.send.WebhookEmbedBuilder
 import org.dreamexposure.ticketbird.GitProperty
 import org.dreamexposure.ticketbird.TicketBird
-import org.dreamexposure.ticketbird.config.BotSettings
 import org.dreamexposure.ticketbird.extensions.embedDescriptionSafe
 import org.dreamexposure.ticketbird.extensions.embedFieldSafe
 import org.dreamexposure.ticketbird.utils.GlobalVars
 import org.dreamexposure.ticketbird.utils.GlobalVars.DEFAULT
 import org.dreamexposure.ticketbird.utils.GlobalVars.STATUS
 import org.slf4j.event.Level
+import java.io.FileReader
 import java.time.Instant
+import java.util.*
 
 class DiscordWebhookAppender : AppenderBase<ILoggingEvent>() {
     private val defaultHook: WebhookClient?
     private val statusHook: WebhookClient?
+    private val useWebhooks: Boolean
     private val allErrorsWebhook: Boolean
 
     init {
-        if (BotSettings.USE_WEBHOOKS.get().equals("true", true)) {
-            defaultHook = WebhookClient.withUrl(BotSettings.DEBUG_WEBHOOK.get())
-            statusHook = WebhookClient.withUrl(BotSettings.STATUS_WEBHOOK.get())
-            allErrorsWebhook = BotSettings.ALL_ERRORS_WEBHOOK.get().toBoolean()
+        val appProps = Properties()
+        appProps.load(FileReader("application.properties"))
+
+        useWebhooks = appProps.getProperty("bot.logging.webhooks.use", "false").toBoolean()
+
+        if (useWebhooks) {
+            defaultHook = WebhookClient.withUrl(appProps.getProperty("bot.secret.debug-webhook"))
+            statusHook = WebhookClient.withUrl(appProps.getProperty("bot.secret.status-webhook"))
+            allErrorsWebhook = appProps.getProperty("bot.logging.webhooks.all-errors", "false").toBoolean()
         } else {
             defaultHook = null
             statusHook = null
@@ -34,20 +41,22 @@ class DiscordWebhookAppender : AppenderBase<ILoggingEvent>() {
     }
 
     override fun append(eventObject: ILoggingEvent) {
-        if (BotSettings.USE_WEBHOOKS.get().toBoolean()) {
-            when {
-                eventObject.level.equals(Level.ERROR) && allErrorsWebhook -> {
-                    executeDefault(eventObject)
-                    return
-                }
-                eventObject.marker.equals(STATUS) -> {
-                    executeStatus(eventObject)
-                    return
-                }
-                eventObject.marker.equals(DEFAULT) -> {
-                    executeDefault(eventObject)
-                    return
-                }
+        if (!useWebhooks) return
+
+        when {
+            eventObject.level.equals(Level.ERROR) && allErrorsWebhook -> {
+                executeDefault(eventObject)
+                return
+            }
+
+            eventObject.marker.equals(STATUS) -> {
+                executeStatus(eventObject)
+                return
+            }
+
+            eventObject.marker.equals(DEFAULT) -> {
+                executeDefault(eventObject)
+                return
             }
         }
     }
@@ -67,13 +76,7 @@ class DiscordWebhookAppender : AppenderBase<ILoggingEvent>() {
 
         if (event.throwableProxy != null) {
             content.addField(WebhookEmbed.EmbedField(false, "Error Message", event.throwableProxy.message.embedFieldSafe()))
-            content.addField(
-                WebhookEmbed.EmbedField(
-                    false,
-                    "Stacktrace",
-                    "Stacktrace can be found in exceptions log file"
-                )
-            )
+            content.addField(WebhookEmbed.EmbedField(false, "Stacktrace", "Stacktrace can be found in exceptions log file"))
         }
 
         this.statusHook?.send(content.build())
@@ -94,13 +97,7 @@ class DiscordWebhookAppender : AppenderBase<ILoggingEvent>() {
 
         if (event.throwableProxy != null) {
             content.addField(WebhookEmbed.EmbedField(false, "Error Message", event.throwableProxy.message.embedFieldSafe()))
-            content.addField(
-                WebhookEmbed.EmbedField(
-                    false,
-                    "Stacktrace",
-                    "Stacktrace can be found in exceptions log file"
-                )
-            )
+            content.addField(WebhookEmbed.EmbedField(false, "Stacktrace", "Stacktrace can be found in exceptions log file"))
         }
 
         this.defaultHook?.send(content.build())
