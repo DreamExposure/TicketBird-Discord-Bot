@@ -7,6 +7,8 @@ import org.slf4j.MarkerFactory
 object GlobalVars {
     var iconUrl: String? = null
     val embedColor = Color.of(252, 113, 20)
+    val errorColor: Color  = Color.of(248, 38, 48)
+    val warnColor: Color = Color.of(232, 150, 0)
 
     val DEFAULT: Marker = MarkerFactory.getMarker("DISCAL_WEBHOOK_DEFAULT")
 

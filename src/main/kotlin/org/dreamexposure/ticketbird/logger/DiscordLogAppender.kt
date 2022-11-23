@@ -6,7 +6,6 @@ import club.minnced.discord.webhook.WebhookClient
 import club.minnced.discord.webhook.send.WebhookEmbed
 import club.minnced.discord.webhook.send.WebhookEmbedBuilder
 import org.dreamexposure.ticketbird.GitProperty
-import org.dreamexposure.ticketbird.TicketBird
 import org.dreamexposure.ticketbird.extensions.embedDescriptionSafe
 import org.dreamexposure.ticketbird.extensions.embedFieldSafe
 import org.dreamexposure.ticketbird.utils.GlobalVars
@@ -22,12 +21,14 @@ class DiscordWebhookAppender : AppenderBase<ILoggingEvent>() {
     private val statusHook: WebhookClient?
     private val useWebhooks: Boolean
     private val allErrorsWebhook: Boolean
+    private val appName: String
 
     init {
         val appProps = Properties()
         appProps.load(FileReader("application.properties"))
 
         useWebhooks = appProps.getProperty("bot.logging.webhooks.use", "false").toBoolean()
+        appName = appProps.getProperty("spring.application.name", "TicketBird")
 
         if (useWebhooks) {
             defaultHook = WebhookClient.withUrl(appProps.getProperty("bot.secret.debug-webhook"))
@@ -64,13 +65,13 @@ class DiscordWebhookAppender : AppenderBase<ILoggingEvent>() {
     private fun executeStatus(event: ILoggingEvent) {
         val content = WebhookEmbedBuilder()
             .setTitle(WebhookEmbed.EmbedTitle("Status", null))
-            .addField(WebhookEmbed.EmbedField(true, "Shard Index", "${TicketBird.getShardIndex()}"))
+            .addField(WebhookEmbed.EmbedField(true, "Application", appName))
             .addField(WebhookEmbed.EmbedField(true, "Time", "<t:${event.timeStamp / 1000}:f>"))
             .addField(WebhookEmbed.EmbedField(false, "Logger", event.loggerName.embedFieldSafe()))
             .addField(WebhookEmbed.EmbedField(true, "Level", event.level.levelStr))
             .addField(WebhookEmbed.EmbedField(true, "Thread", event.threadName.embedFieldSafe()))
             .setDescription(event.formattedMessage.embedDescriptionSafe())
-            .setColor(GlobalVars.embedColor.rgb)
+            .setColor(getEmbedColor(event))
             .setFooter(WebhookEmbed.EmbedFooter("v${GitProperty.TICKETBIRD_VERSION.value}", null))
             .setTimestamp(Instant.now())
 
@@ -85,13 +86,13 @@ class DiscordWebhookAppender : AppenderBase<ILoggingEvent>() {
     private fun executeDefault(event: ILoggingEvent) {
         val content = WebhookEmbedBuilder()
             .setTitle(WebhookEmbed.EmbedTitle(event.level.levelStr, null))
-            .addField(WebhookEmbed.EmbedField(true, "Shard Index", "${TicketBird.getShardIndex()}"))
+            .addField(WebhookEmbed.EmbedField(true, "Application", appName))
             .addField(WebhookEmbed.EmbedField(true, "Time", "<t:${event.timeStamp / 1000}:f>"))
             .addField(WebhookEmbed.EmbedField(false, "Logger", event.loggerName.embedFieldSafe()))
             .addField(WebhookEmbed.EmbedField(true, "Level", event.level.levelStr))
             .addField(WebhookEmbed.EmbedField(true, "Thread", event.threadName.embedFieldSafe()))
             .setDescription(event.formattedMessage.embedDescriptionSafe())
-            .setColor(GlobalVars.embedColor.rgb)
+            .setColor(getEmbedColor(event))
             .setFooter(WebhookEmbed.EmbedFooter("v${GitProperty.TICKETBIRD_VERSION.value}", null))
             .setTimestamp(Instant.now())
 
@@ -103,5 +104,9 @@ class DiscordWebhookAppender : AppenderBase<ILoggingEvent>() {
         this.defaultHook?.send(content.build())
     }
 
-
+    private fun getEmbedColor(event: ILoggingEvent): Int {
+        return if (event.level.equals(Level.ERROR) || event.throwableProxy != null) GlobalVars.errorColor.rgb
+        else if (event.level.equals(Level.WARN)) GlobalVars.warnColor.rgb
+        else GlobalVars.embedColor.rgb
+    }
 }
