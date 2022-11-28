@@ -4,20 +4,20 @@ import discord4j.core.event.domain.interaction.ButtonInteractionEvent
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.ComponentService
 import org.dreamexposure.ticketbird.business.LocaleService
+import org.dreamexposure.ticketbird.config.Config
 import org.dreamexposure.ticketbird.extensions.asSeconds
 import org.dreamexposure.ticketbird.extensions.discord4j.deleteReplyDelayed
 import org.dreamexposure.ticketbird.`object`.GuildSettings
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 
 @Component
 class CreateTicketButton(
     private val componentService: ComponentService,
     private val localeService: LocaleService,
-    @Value("\${bot.timing.message-delete.open-ticket-flow.seconds:60}")
-    private val messageDeleteSeconds: Long,
 ): InteractionHandler<ButtonInteractionEvent> {
     override val ids = arrayOf("create-ticket")
+
+    private val messageDeleteSeconds = Config.TIMING_MESSAGE_DELETE_TICKET_FLOW_SECONDS.getLong().asSeconds()
 
     override suspend fun handle(event: ButtonInteractionEvent, settings: GuildSettings) {
         if (settings.requiresRepair) {
@@ -32,7 +32,7 @@ class CreateTicketButton(
             event.reply(localeService.getString(settings.locale, "dropdown.select-project.prompt"))
                 .withComponents(*componentService.getProjectSelectComponents(settings))
                 .withEphemeral(true)
-                .flatMap { event.deleteReplyDelayed(messageDeleteSeconds.asSeconds()) }
+                .flatMap { event.deleteReplyDelayed(messageDeleteSeconds) }
                 .awaitSingleOrNull()
         } else {
             // Guild is not using projects, send to modal

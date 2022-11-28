@@ -11,12 +11,12 @@ import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.LocaleService
 import org.dreamexposure.ticketbird.business.PermissionService
 import org.dreamexposure.ticketbird.business.ProjectService
+import org.dreamexposure.ticketbird.config.Config
 import org.dreamexposure.ticketbird.extensions.asSeconds
 import org.dreamexposure.ticketbird.extensions.discord4j.deleteFollowupDelayed
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.`object`.Project
 import org.dreamexposure.ticketbird.utils.GlobalVars
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.time.Instant
 
@@ -25,11 +25,11 @@ class ProjectCommand(
     private val projectService: ProjectService,
     private val permissionService: PermissionService,
     private val localeService: LocaleService,
-    @Value("\${bot.timing.message-delete.generic.seconds:30}")
-    private val messageDeleteSeconds: Long,
 ): SlashCommand {
     override val name = "project"
     override val ephemeral = true
+
+    private val messageDeleteSeconds = Config.TIMING_MESSAGE_DELETE_GENERIC_SECONDS.getLong().asSeconds()
 
     override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings) {
         // Check permission server-side just in case
@@ -38,7 +38,7 @@ class ProjectCommand(
             event.createFollowup(localeService.getString(settings.locale, "command.project.missing-perms"))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -71,7 +71,7 @@ class ProjectCommand(
                 .withEmbeds(listEmbed(settings))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -82,7 +82,7 @@ class ProjectCommand(
                 .withEmbeds(listEmbed(settings))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -93,7 +93,7 @@ class ProjectCommand(
             .withEmbeds(listEmbed(settings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 
@@ -109,7 +109,7 @@ class ProjectCommand(
                 .withEmbeds(listEmbed(settings))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -120,7 +120,7 @@ class ProjectCommand(
             .withEmbeds(listEmbed(settings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()
         return
     }
@@ -130,7 +130,7 @@ class ProjectCommand(
             .withEmbeds(listEmbed(settings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 

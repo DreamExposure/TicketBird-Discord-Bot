@@ -7,7 +7,7 @@ import org.dreamexposure.ticketbird.TicketCache
 import org.dreamexposure.ticketbird.TicketCreateStateCache
 import org.dreamexposure.ticketbird.business.cache.JdkCacheRepository
 import org.dreamexposure.ticketbird.business.cache.RedisCacheRepository
-import org.springframework.beans.factory.annotation.Value
+import org.dreamexposure.ticketbird.extensions.asMinutes
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -15,26 +15,20 @@ import org.springframework.context.annotation.Primary
 import org.springframework.data.redis.cache.RedisCacheConfiguration
 import org.springframework.data.redis.cache.RedisCacheManager
 import org.springframework.data.redis.connection.RedisConnectionFactory
-import java.time.Duration
 
 @Configuration
-class CacheConfig(
-    @Value("\${bot.cache.prefix}")
-    private val prefix: String,
-    @Value("\${bot.cache.ttl-minutes.settings:60}")
-    private val settingsTtl: Long,
-    @Value("\${bot.cache.ttl-minutes.ticket:60}")
-    private val ticketTtl: Long,
-    @Value("\${bot.cache.ttl-minutes.project:120}")
-    private val projectTtl: Long,
-    @Value("\${bot.cache.ttl-minutes.ticket-create-state:15}")
-    private val ticketCreateStateTtl: Long,
-) {
+class CacheConfig {
     // Cache name constants
+    private val prefix = Config.CACHE_PREFIX.getString()
     private val settingsCacheName = "$prefix.settingsCache"
     private val ticketCacheName = "$prefix.ticketCache"
     private val projectCacheName = "$prefix.projectCache"
     private val ticketCreateStateCacheName = "$prefix.ticketCreateStateCache"
+
+    private val settingsTtl = Config.CACHE_TTL_SETTINGS_MINUTES.getLong().asMinutes()
+    private val ticketTtl = Config.CACHE_TTL_TICKET_MINUTES.getLong().asMinutes()
+    private val projectTtl = Config.CACHE_TTL_PROJECT_MINUTES.getLong().asMinutes()
+    private val ticketCreateStateTtl = Config.CACHE_TTL_TICKET_CREATE_STATE_MINUTES.getLong().asMinutes()
 
 
     // Redis caching
@@ -43,13 +37,13 @@ class CacheConfig(
     fun redisCache(connection: RedisConnectionFactory): RedisCacheManager {
         return RedisCacheManager.builder(connection)
             .withCacheConfiguration(settingsCacheName,
-                RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(settingsTtl))
+                RedisCacheConfiguration.defaultCacheConfig().entryTtl(settingsTtl)
             ).withCacheConfiguration(ticketCacheName,
-                RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(ticketTtl))
+                RedisCacheConfiguration.defaultCacheConfig().entryTtl(ticketTtl)
             ).withCacheConfiguration(projectCacheName,
-                RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(projectTtl))
+                RedisCacheConfiguration.defaultCacheConfig().entryTtl(projectTtl)
             ).withCacheConfiguration(ticketCreateStateCacheName,
-                RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(ticketCreateStateTtl)))
+                RedisCacheConfiguration.defaultCacheConfig().entryTtl(ticketCreateStateTtl))
             .build()
     }
 
@@ -79,14 +73,14 @@ class CacheConfig(
 
     // In-memory fallback caching
     @Bean
-    fun guidSettingsFallbackCache(): GuildSettingsCache = JdkCacheRepository(Duration.ofMinutes(settingsTtl))
+    fun guidSettingsFallbackCache(): GuildSettingsCache = JdkCacheRepository(settingsTtl)
 
     @Bean
-    fun ticketFallbackCache(): TicketCache = JdkCacheRepository(Duration.ofMinutes(ticketTtl))
+    fun ticketFallbackCache(): TicketCache = JdkCacheRepository(ticketTtl)
 
     @Bean
-    fun projectFallbackCache(): ProjectCache = JdkCacheRepository(Duration.ofMinutes(projectTtl))
+    fun projectFallbackCache(): ProjectCache = JdkCacheRepository(projectTtl)
 
     @Bean
-    fun ticketCreateStateFallbackCache(): TicketCreateStateCache = JdkCacheRepository(Duration.ofMinutes(ticketCreateStateTtl))
+    fun ticketCreateStateFallbackCache(): TicketCreateStateCache = JdkCacheRepository(ticketCreateStateTtl)
 }

@@ -7,21 +7,15 @@ import org.dreamexposure.ticketbird.GitProperty.TICKETBIRD_VERSION
 import org.dreamexposure.ticketbird.GitProperty.TICKETBIRD_VERSION_D4J
 import org.dreamexposure.ticketbird.TicketBird
 import org.dreamexposure.ticketbird.business.LocaleService
+import org.dreamexposure.ticketbird.config.Config
 import org.dreamexposure.ticketbird.extensions.getHumanReadable
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.utils.GlobalVars
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.time.Instant
 
 @Component
 class TicketBirdCommand(
-    @Value("\${bot.url.base}")
-    private val baseUrl: String,
-    @Value("\${bot.url.support}")
-    private val supportUrl: String,
-    @Value("\${bot.url.invite}")
-    private val inviteUrl: String,
     private val localeService: LocaleService,
 ): SlashCommand {
     override val name = "ticketbird"
@@ -47,9 +41,9 @@ class TicketBirdCommand(
                 localeService.getString(
                     settings.locale,
                     "embed.info.field.links.value",
-                    "${baseUrl}/commands",
-                    supportUrl,
-                    inviteUrl,
+                    "${Config.URL_BASE.getString()}/commands",
+                    Config.URL_SUPPORT.getString(),
+                    Config.URL_INVITE.getString(),
                     "https://www.patreon.com/Novafox"
                 ),
                 false

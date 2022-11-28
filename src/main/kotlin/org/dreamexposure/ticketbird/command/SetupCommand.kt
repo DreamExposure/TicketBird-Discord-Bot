@@ -9,11 +9,11 @@ import discord4j.rest.util.Permission
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.*
+import org.dreamexposure.ticketbird.config.Config
 import org.dreamexposure.ticketbird.extensions.asSeconds
 import org.dreamexposure.ticketbird.extensions.discord4j.deleteFollowupDelayed
 import org.dreamexposure.ticketbird.extensions.getHumanReadableMinimized
 import org.dreamexposure.ticketbird.`object`.GuildSettings
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.time.Duration
 import java.util.*
@@ -26,11 +26,11 @@ class SetupCommand(
     private val componentService: ComponentService,
     private val environmentService: EnvironmentService,
     private val localeService: LocaleService,
-    @Value("\${bot.timing.message-delete.generic.seconds:30}")
-    private val messageDeleteSeconds: Long,
 ) : SlashCommand {
     override val name = "setup"
     override val ephemeral = true
+
+    private val messageDeleteSeconds = Config.TIMING_MESSAGE_DELETE_GENERIC_SECONDS.getLong().asSeconds()
 
     override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings) {
         // Check permission server-side just in case
@@ -39,7 +39,7 @@ class SetupCommand(
             event.createFollowup(localeService.getString(settings.locale, "command.setup.missing-perms"))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -60,7 +60,7 @@ class SetupCommand(
             event.createFollowup(localeService.getString(settings.locale, "command.setup.init.already"))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -109,7 +109,7 @@ class SetupCommand(
         event.createFollowup(localeService.getString(settings.locale, "command.setup.init.success"))
             .withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 
@@ -119,7 +119,7 @@ class SetupCommand(
             event.createFollowup(localeService.getString(settings.locale, "command.setup.repair.never-init"))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -142,7 +142,7 @@ class SetupCommand(
             event.createFollowup(localeService.getString(settings.locale, "command.setup.repair.no-issue-detected"))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -154,7 +154,7 @@ class SetupCommand(
         event.createFollowup(localeService.getString(settings.locale, "command.setup.repair.success"))
             .withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 
@@ -171,7 +171,7 @@ class SetupCommand(
         event.createFollowup(localeService.getString(settings.locale, "command.setup.language.success"))
             .withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 
@@ -187,7 +187,7 @@ class SetupCommand(
         event.createFollowup(localeService.getString(settings.locale, "command.setup.use-projects.success.$useProjects"))
             .withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 
@@ -212,7 +212,7 @@ class SetupCommand(
             event.createFollowup(localeService.getString(settings.locale, "command.setup.timing.error.duration-zero"))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -226,7 +226,7 @@ class SetupCommand(
                     localeService.getString(settings.locale, "command.setup.timing.error.action-not-found")
                 ).withEphemeral(ephemeral)
                     .map(Message::getId)
-                    .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                    .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                     .awaitSingleOrNull()
                 return
             }
@@ -240,7 +240,7 @@ class SetupCommand(
             values = arrayOf((days + hours).getHumanReadableMinimized())
         )).withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 }

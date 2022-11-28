@@ -30,7 +30,6 @@ import kotlinx.coroutines.reactor.mono
 import org.dreamexposure.ticketbird.TicketBird
 import org.dreamexposure.ticketbird.listeners.EventListener
 import org.dreamexposure.ticketbird.mapper.SnowflakeMapper
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
@@ -50,12 +49,11 @@ class DiscordConfig {
 
     @Bean
     fun discordGatewayClient(
-        @Value("\${bot.secret.token}") token: String,
         listeners: List<EventListener<*>>,
         stores: StoreService,
         strategy: ShardingStrategy,
     ): GatewayDiscordClient {
-        return DiscordClientBuilder.create(token)
+        return DiscordClientBuilder.create(Config.SECRET_BOT_TOKEN.getString())
             .build().gateway()
             .setEnabledIntents(getIntents())
             .setSharding(strategy)
@@ -79,19 +77,19 @@ class DiscordConfig {
     }
 
     @Bean
-    fun discordStores(
-        @Value("\${bot.cache.redis:false}") useRedis: Boolean,
-        @Value("\${spring.redis.host:null}") redisHost: String?,
-        @Value("\${spring.redis.port:null}") redisPort: String?,
-        @Value("\${spring.redis.password:null}") redisPassword: CharSequence?,
-        @Value("\${redis.cluster:false}") redisCluster: Boolean,
-    ): StoreService {
+    fun discordStores(): StoreService {
+        val useRedis = Config.CACHE_USE_REDIS.getBoolean()
+        val redisHost = Config.REDIS_HOST.getString()
+        val redisPort = Config.REDIS_PORT.getInt()
+        val redisPassword = Config.REDIS_PASSWORD.getString().toCharArray()
+        val isRedisCluster = Config.CACHE_REDIS_IS_CLUSTER.getBoolean()
+
         return if (useRedis) {
             val uriBuilder = RedisURI.Builder
-                .redis(redisHost, redisPort!!.toInt())
-            if (redisPassword != null) uriBuilder.withPassword(redisPassword)
+                .redis(redisHost, redisPort)
+            if (redisPassword.isNotEmpty()) uriBuilder.withPassword(redisPassword)
 
-            val rss = if (redisCluster) {
+            val rss = if (isRedisCluster) {
                 RedisClusterStoreService.Builder()
                     .redisClient(RedisClusterClient.create(uriBuilder.build()))
                     .build()

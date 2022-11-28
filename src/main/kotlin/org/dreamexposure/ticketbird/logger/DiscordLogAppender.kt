@@ -6,34 +6,28 @@ import club.minnced.discord.webhook.WebhookClient
 import club.minnced.discord.webhook.send.WebhookEmbed
 import club.minnced.discord.webhook.send.WebhookEmbedBuilder
 import org.dreamexposure.ticketbird.GitProperty
+import org.dreamexposure.ticketbird.config.Config
 import org.dreamexposure.ticketbird.extensions.embedDescriptionSafe
 import org.dreamexposure.ticketbird.extensions.embedFieldSafe
 import org.dreamexposure.ticketbird.utils.GlobalVars
 import org.dreamexposure.ticketbird.utils.GlobalVars.DEFAULT
 import org.dreamexposure.ticketbird.utils.GlobalVars.STATUS
 import org.slf4j.event.Level
-import java.io.FileReader
 import java.time.Instant
-import java.util.*
 
 class DiscordWebhookAppender : AppenderBase<ILoggingEvent>() {
     private val defaultHook: WebhookClient?
     private val statusHook: WebhookClient?
-    private val useWebhooks: Boolean
+    private val useWebhooks: Boolean = Config.LOGGING_WEBHOOKS_USE.getBoolean()
     private val allErrorsWebhook: Boolean
-    private val appName: String
+    private val appName: String = Config.APP_NAME.getString()
 
     init {
-        val appProps = Properties()
-        appProps.load(FileReader("application.properties"))
-
-        useWebhooks = appProps.getProperty("bot.logging.webhooks.use", "false").toBoolean()
-        appName = appProps.getProperty("spring.application.name", "TicketBird")
 
         if (useWebhooks) {
-            defaultHook = WebhookClient.withUrl(appProps.getProperty("bot.secret.debug-webhook"))
-            statusHook = WebhookClient.withUrl(appProps.getProperty("bot.secret.status-webhook"))
-            allErrorsWebhook = appProps.getProperty("bot.logging.webhooks.all-errors", "false").toBoolean()
+            defaultHook = WebhookClient.withUrl(Config.SECRET_WEBHOOK_DEBUG.getString())
+            statusHook = WebhookClient.withUrl(Config.SECRET_WEBHOOK_STATUS.getString())
+            allErrorsWebhook = Config.LOGGING_WEBHOOKS_ALL_ERRORS.getBoolean()
         } else {
             defaultHook = null
             statusHook = null

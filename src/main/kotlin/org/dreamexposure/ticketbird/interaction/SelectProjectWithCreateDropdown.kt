@@ -7,10 +7,10 @@ import org.dreamexposure.ticketbird.TicketCreateStateCache
 import org.dreamexposure.ticketbird.business.LocaleService
 import org.dreamexposure.ticketbird.business.ProjectService
 import org.dreamexposure.ticketbird.business.TicketService
+import org.dreamexposure.ticketbird.config.Config
 import org.dreamexposure.ticketbird.extensions.asSeconds
 import org.dreamexposure.ticketbird.extensions.discord4j.deleteFollowupDelayed
 import org.dreamexposure.ticketbird.`object`.GuildSettings
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 
 @Component
@@ -19,10 +19,10 @@ class SelectProjectWithCreateDropdown(
     private val ticketService: TicketService,
     private val projectService: ProjectService,
     private val localeService: LocaleService,
-    @Value("\${bot.timing.message-delete.open-ticket-flow.seconds:60}")
-    private val messageDeleteSeconds: Long,
 ) : InteractionHandler<SelectMenuInteractionEvent> {
     override val ids = arrayOf("select-project-with-create")
+
+    private val messageDeleteSeconds = Config.TIMING_MESSAGE_DELETE_TICKET_FLOW_SECONDS.getLong().asSeconds()
 
     override suspend fun handle(event: SelectMenuInteractionEvent, settings: GuildSettings) {
         val selected = event.values[0]
@@ -42,7 +42,7 @@ class SelectProjectWithCreateDropdown(
         event.createFollowup(localeService.getString(settings.locale, "generic.success.ticket-open", ticket.channel.asString()))
             .withEphemeral(true)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 }

@@ -9,10 +9,10 @@ import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.LocaleService
 import org.dreamexposure.ticketbird.business.ProjectService
 import org.dreamexposure.ticketbird.business.TicketService
+import org.dreamexposure.ticketbird.config.Config
 import org.dreamexposure.ticketbird.extensions.asSeconds
 import org.dreamexposure.ticketbird.extensions.discord4j.deleteFollowupDelayed
 import org.dreamexposure.ticketbird.`object`.GuildSettings
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 
 @Component
@@ -20,11 +20,11 @@ class TopicCommand(
     private val ticketService: TicketService,
     private val projectService: ProjectService,
     private val localeService: LocaleService,
-    @Value("\${bot.timing.message-delete.generic.seconds:30}")
-    private val messageDeleteSeconds: Long,
 ): SlashCommand {
     override val name = "topic"
     override val ephemeral = true
+
+    private val messageDeleteSeconds = Config.TIMING_MESSAGE_DELETE_GENERIC_SECONDS.getLong().asSeconds()
 
     override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings) {
         val topic = event.getOption("topic")
@@ -38,7 +38,7 @@ class TopicCommand(
             event.createFollowup(localeService.getString(settings.locale, "command.topic.not-ticket"))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -49,7 +49,7 @@ class TopicCommand(
             event.createFollowup(localeService.getString(settings.locale, "command.topic.not-found"))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -66,7 +66,7 @@ class TopicCommand(
         event.createFollowup(localeService.getString(settings.locale, "command.topic.success", project.name))
             .withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 }

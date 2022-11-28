@@ -11,11 +11,11 @@ import org.dreamexposure.ticketbird.business.LocaleService
 import org.dreamexposure.ticketbird.business.ProjectService
 import org.dreamexposure.ticketbird.business.TicketService
 import org.dreamexposure.ticketbird.business.cache.CacheRepository
+import org.dreamexposure.ticketbird.config.Config
 import org.dreamexposure.ticketbird.extensions.asSeconds
 import org.dreamexposure.ticketbird.extensions.discord4j.deleteFollowupDelayed
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.`object`.TicketCreateState
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 
 @Component
@@ -25,11 +25,11 @@ class SupportCommand(
     private val localeService: LocaleService,
     private val componentService: ComponentService,
     private val ticketCreateStateCache: CacheRepository<String, TicketCreateState>,
-    @Value("\${bot.timing.message-delete.ticket-flow.seconds:60}")
-    private val messageDeleteSeconds: Long,
 ) : SlashCommand {
     override val name = "support"
     override val ephemeral = true
+
+    private val messageDeleteSeconds = Config.TIMING_MESSAGE_DELETE_TICKET_FLOW_SECONDS.getLong().asSeconds()
 
     override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings) {
         val info = event.getOption("info")
@@ -65,7 +65,7 @@ class SupportCommand(
                 .withComponents(*componentService.getProjectSelectComponents(settings, withCreate = true))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -81,7 +81,7 @@ class SupportCommand(
                 .withComponents(*componentService.getProjectSelectComponents(settings, withCreate = true))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -101,7 +101,7 @@ class SupportCommand(
             ticket.channel.asString()
         )).withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds.asSeconds()) }
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 }
