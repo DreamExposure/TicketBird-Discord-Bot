@@ -36,13 +36,10 @@ enum class Config(private val key: String, private var value: Any? = null) {
 
 
     // Everything else
+    SHARD_COUNT("bot.sharding.count"),
+    SHARD_INDEX("bot.sharding.index"),
     LOGGING_WEBHOOKS_USE("bot.logging.webhooks.use", false),
-    LOGGING_WEBHOOKS_ALL_ERRORS("bot.logging.webhooks.all-errors", false),
-
-    // Legacy
-    SHARD_COUNT("SHARD_COUNT"),
-    SHARD_INDEX("SHARD_INDEX");
-
+    LOGGING_WEBHOOKS_ALL_ERRORS("bot.logging.webhooks.all-errors", false);
 
     companion object {
         fun init() {

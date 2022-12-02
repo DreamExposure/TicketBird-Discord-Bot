@@ -2,7 +2,7 @@ package org.dreamexposure.ticketbird
 
 import org.dreamexposure.ticketbird.config.Config
 import org.dreamexposure.ticketbird.logger.LOGGER
-import org.dreamexposure.ticketbird.utils.GlobalVars.DEFAULT
+import org.dreamexposure.ticketbird.utils.GlobalVars
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.session.SessionAutoConfiguration
 import org.springframework.boot.builder.SpringApplicationBuilder
@@ -14,6 +14,19 @@ import java.time.Duration
 @SpringBootApplication(exclude = [SessionAutoConfiguration::class])
 class TicketBird {
     companion object {
+        @JvmStatic
+        fun main(args: Array<String>) {
+            Config.init()
+
+            //Start spring
+            try {
+                SpringApplicationBuilder(TicketBird::class.java).run(*args)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                LOGGER.error(GlobalVars.DEFAULT, "Spring error!", e)
+            }
+        }
+
         fun getShardIndex(): Int {
             /*
             This sucks. So k8s doesn't expose the pod ordinal for a pod in a stateful set
@@ -55,19 +68,6 @@ class TicketBird {
 
             val rawDuration = System.currentTimeMillis() - mxBean.startTime
             return Duration.ofMillis(rawDuration)
-        }
-
-        @JvmStatic
-        fun main(args: Array<String>) {
-            Config.init()
-
-            //Start spring
-            try {
-                SpringApplicationBuilder(TicketBird::class.java).run(*args)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                LOGGER.error(DEFAULT, "Spring error!", e)
-            }
         }
     }
 }
