@@ -14,6 +14,10 @@ class DefaultProjectService(
     private val projectRepository: ProjectRepository,
     private val projectCache: ProjectCache,
 ) : ProjectService {
+
+    override suspend fun getProject(guildId: Snowflake, id: Long): Project? {
+        return getAllProjects(guildId).firstOrNull {it.id == id }
+    }
     override suspend fun getProject(guildId: Snowflake, name: String): Project? {
         return getAllProjects(guildId).firstOrNull { it.name == name }
     }
@@ -36,6 +40,8 @@ class DefaultProjectService(
             guildId = project.guildId.asLong(),
             projectName = project.name,
             projectPrefix = project.prefix,
+            staffUsers = project.staffUsers.joinToString(","),
+            staffRoles = project.staffRoles.joinToString(","),
         )).map(::Project).awaitSingle()
 
         val cached = projectCache.get(project.guildId.asLong())
@@ -50,6 +56,8 @@ class DefaultProjectService(
             guildId = project.guildId.asLong(),
             name = project.name,
             prefix = project.prefix,
+            staffUsers = project.staffUsers.joinToString(","),
+            staffRoles = project.staffRoles.joinToString(","),
         ).awaitSingleOrNull()
 
         val cached = projectCache.get(project.guildId.asLong())

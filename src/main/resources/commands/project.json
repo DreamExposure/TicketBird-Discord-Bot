@@ -43,6 +43,20 @@
       "type": 1,
       "name": "list",
       "description": "Lists all projects"
+    },
+    {
+      "type": 1,
+      "name": "view",
+      "description": "View info about a specific project",
+      "options": [
+        {
+          "type": 3,
+          "name": "name",
+          "description": "The project to view",
+          "required": true,
+          "autocomplete": true
+        }
+      ]
     }
   ]
 }

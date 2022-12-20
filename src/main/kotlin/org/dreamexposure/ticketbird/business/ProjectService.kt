@@ -4,6 +4,8 @@ import discord4j.common.util.Snowflake
 import org.dreamexposure.ticketbird.`object`.Project
 
 interface ProjectService {
+
+    suspend fun getProject(guildId: Snowflake, id: Long): Project?
     suspend fun getProject(guildId: Snowflake, name: String): Project?
 
     suspend fun getAllProjects(guildId: Snowflake): List<Project>

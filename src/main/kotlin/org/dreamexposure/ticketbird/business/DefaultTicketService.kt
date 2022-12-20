@@ -158,14 +158,14 @@ class DefaultTicketService(
         channel.edit().withParentIdOrNull(toCategory).awaitSingleOrNull()
     }
 
-    override suspend fun createTicketChannel(guildId: Snowflake, creator: Snowflake, prefix: String?, number: Int): TextChannel {
+    override suspend fun createTicketChannel(guildId: Snowflake, creator: Snowflake, project: Project?, number: Int): TextChannel {
         val settings = settingsService.getGuildSettings(guildId)
         val guild = discordClient.getGuildById(guildId).awaitSingle()
 
-        val name = if (prefix != null) "$prefix-ticket-$number" else "ticket-$number"
+        val name = if (project != null) "${project.prefix}-ticket-$number" else "ticket-$number"
 
         return guild.createTextChannel(name)
-            .withPermissionOverwrites(permissionService.getTicketChannelOverwrites(settings, creator))
+            .withPermissionOverwrites(permissionService.getTicketChannelOverwrites(settings, creator, project))
             .withParentId(settings.awaitingCategory!!)
             .withReason(localeService.getString(settings.locale, "env.channel.ticket.create-reason"))
             .awaitSingle()
@@ -190,7 +190,7 @@ class DefaultTicketService(
         if (!info.isNullOrBlank()) embedBuilder.description(info.embedDescriptionSafe())
 
         // Create ticket channel + message
-        val channel = createTicketChannel(guildId, creatorId, project?.prefix, ticketNumber)
+        val channel = createTicketChannel(guildId, creatorId, project, ticketNumber)
 
         channel.createMessage()
             .withContent(localeService.getString(settings.locale, "ticket.open.message", creatorId.asString()))
