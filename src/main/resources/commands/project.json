@@ -14,14 +14,16 @@
           "name": "name",
           "description": "The name of the new project.",
           "required": true,
-          "max_length": 100
+          "max_length": 100,
+          "min_length": 1
         },
         {
           "type": 3,
           "name": "prefix",
-          "description": "A prefix to help identify tickets for this project. 16 characters max, alphanumeric allowed.",
+          "description": "A prefix to help identify tickets for this project. 16 characters max, alphanumeric allowed",
           "required": true,
-          "max_length": 16
+          "max_length": 16,
+          "min_length": 1
         }
       ]
     },
@@ -55,6 +57,42 @@
           "description": "The project to view",
           "required": true,
           "autocomplete": true
+        }
+      ]
+    },
+    {
+      "type": 1,
+      "name": "edit",
+      "description": "Edit a project",
+      "options": [
+        {
+          "type": 3,
+          "name": "project",
+          "description": "The project to edit",
+          "required": true,
+          "autocomplete": true
+        },
+        {
+          "type": 3,
+          "name": "prefix",
+          "description": "The new prefix for the project. 16 characters max, alphanumeric allowed",
+          "max_length": 16,
+          "min_length": 1
+        },
+        {
+          "type": 6,
+          "name": "staff-user",
+          "description": "A user to add or remove as staff on this project"
+        },
+        {
+          "type": 8,
+          "name": "staff-role",
+          "description": "A role to add or remove as staff on this project"
+        },
+        {
+          "type": 5,
+          "name": "remove-all-staff",
+          "description": "Whether to remove all existing staff from this project (default: false)"
         }
       ]
     }

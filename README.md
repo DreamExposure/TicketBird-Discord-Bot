@@ -3,7 +3,8 @@
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/DreamExposure/TicketBird-Discord-Bot/Java%20CI?label=Build&style=flat-square)
 [![Website](https://img.shields.io/website?down_color=red&down_message=offline&label=Status&style=flat-square&up_message=online&url=https%3A%2F%2Fticketbird.dreamexposure.org)](https://ticketbird.dreamexposure.org)
 
-TicketBird is a simple help desk and ticket managing Discord bot allowing you to run a simple help desk system within your Discord server.
+TicketBird is a simple help desk and ticket managing Discord bot allowing you to run a simple help desk system within your Discord server. 
+Perfect for modmail, community management, and more, TicketBird is capable of all your ticketing needs!
 
 # 🔗 Quick Links
 - [Invite](https://discord.com/oauth2/authorize?client_id=456140067220750336&permissions=395405945880&scope=bot+applications.commands)
@@ -12,11 +13,14 @@ TicketBird is a simple help desk and ticket managing Discord bot allowing you to
 
 # 💎 Core Features
 - Simple setup (just use one command to get everything initiated)
+- Easy to repair. Accidentally delete a channel? No worries, TicketBird is always watching for changes and ready to repair itself via a single command!
 - Easy for users to understand and use without a single command (but can also open tickets with a command)
 - Allow users to pick from up to 25 topics (called projects), if desired
 - Won't disrupt your community. TicketBird will not affect anything beyond the channels it manages for tickets.
 - Auto-close tickets after 7 days of inactivity, and auto-delete tickets after being closed for 24 hours (fully configurable)
 - Place tickets on hold until you can get to them; so they don't auto-close
+- Set staff per project/topic using the `/project edit` command.
+  - This allows you to define a user or role as staff for only a specific ticket type, allowing further customization similar to traditional RBAC.
 
 ## ⌨️ Commands
 | Command             | Description                                                             | Permissions |
@@ -37,14 +41,14 @@ TicketBird is a simple help desk and ticket managing Discord bot allowing you to
 | /project add        | Adds a new "project" or ticket category/topic to aid with sorting       | Admin-only  |
 | /project remove     | Removes an existing project                                             | Admin-only  |
 | /project list       | Lists all existing projects/topics                                      | Admin-only  |
+| /project view       | View full details about a specific project/topic                        | Admin-only  |
+| /project edit       | Edit various settings for a project/topic - Like changing the prefix!   | Admin-only  |
 
 # 🗓️ Planned & Work In Progress
 This bot is a hobby project for me, please note that while these features are planned, there's no solid timeline.
 - Website rewrite (It's old and ugly)
-- Staff per project
 - Customizable messages
 - Toggle to ping staff when new ticket is opened
-- Change inactivity/auto-close 
 - And so much more!
 
 # 🧰 Tech stack
@@ -60,14 +64,15 @@ This bot is a hobby project for me, please note that while these features are pl
 TicketBird is an open source, GPL-3 project. We always welcome and appreciate contributions.
 
 ## 💻 Development & Local Testing
-For development, you should have the Java 17 JDK and Docker installed (and running)
+For development, you need JDK 17+ and Docker installed.
 
 1. Fork this repository and open it in your favorite editor (IntelliJ recommended for Kotlin)
 2. Write your code and add applicable tests
-3. Build with `./gradlew clean build jibDockerBuild` (this will also build a docker image for testing)
-4. Place config in `./docker/bot-config/application.properties` and start with `docker compose up -d`
-    - You can connect to the debugger at port `5005`
-5. Create a pull request and describe your changes! <3
+3. Compile and build the docker image with `./gradlew clean build jibDockerBuild`
+4. Place config in `./docker/bot-config/application.properties`
+5. Start the bot and dependencies for testing with `docker compose up -d`
+   - You can connect to the Java debugger at port `5005`
+6. Create a pull request and describe your changes! <3
 
 # 🌐 Localization (translations)
 Please only submit localizations if you speak and/or write the language you are translating to.
