@@ -32,6 +32,8 @@ class SetupCommand(
 
     private val messageDeleteSeconds = Config.TIMING_MESSAGE_DELETE_GENERIC_SECONDS.getLong().asSeconds()
 
+    // TODO: I really should add a way to view all current guild-level settings
+
     override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings) {
         // Check permission server-side just in case
         val memberPermissions = event.interaction.member.map(Member::getBasePermissions).get().awaitSingle()
@@ -50,6 +52,7 @@ class SetupCommand(
             "language" -> language(event, settings)
             "use-projects" -> useProjects(event, settings)
             "timing" -> timing(event, settings)
+            "ping" -> ping(event, settings)
             else -> throw IllegalStateException("Invalid subcommand specified")
         }
     }
@@ -239,6 +242,28 @@ class SetupCommand(
             field = "command.setup.timing.success.$action",
             values = arrayOf((days + hours).getHumanReadableMinimized())
         )).withEphemeral(ephemeral)
+            .map(Message::getId)
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+            .awaitSingleOrNull()
+    }
+
+    private suspend fun ping(event: ChatInputInteractionEvent, settings: GuildSettings) {
+        val pingOption = event.options[0].getOption("ping")
+            .flatMap(ApplicationCommandInteractionOption::getValue)
+            .map(ApplicationCommandInteractionOptionValue::asLong)
+            .map(Long::toInt)
+            .map(GuildSettings.PingOption::valueOf)
+            .get()
+
+        settings.pingOption = pingOption
+        settingsService.createOrUpdateGuildSettings(settings)
+
+        event.createFollowup(localeService.getString(
+            settings.locale,
+            "command.setup.ping.success",
+            localeService.getString(settings.locale, pingOption.localeEntry)
+        ))
+            .withEphemeral(ephemeral)
             .map(Message::getId)
             .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()

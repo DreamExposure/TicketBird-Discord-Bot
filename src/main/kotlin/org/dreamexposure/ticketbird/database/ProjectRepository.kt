@@ -17,7 +17,8 @@ interface ProjectRepository: R2dbcRepository<ProjectData, Long> {
         SET project_prefix = :prefix,
             project_name = :name,
             staff_users = :staffUsers,
-            staff_roles = :staffRoles
+            staff_roles = :staffRoles,
+            ping_override = :pingOverride
         WHERE guild_id = :guildId
             AND id = :id
     """)
@@ -28,5 +29,6 @@ interface ProjectRepository: R2dbcRepository<ProjectData, Long> {
         name: String,
         staffUsers: String?,
         staffRoles: String?,
+        pingOverride: Int,
     ): Mono<Int>
 }

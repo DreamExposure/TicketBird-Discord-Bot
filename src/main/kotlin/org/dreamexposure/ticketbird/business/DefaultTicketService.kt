@@ -192,6 +192,9 @@ class DefaultTicketService(
         // Create ticket channel + message
         val channel = createTicketChannel(guildId, creatorId, project, ticketNumber)
 
+
+
+        // TODO: Handle ping options
         channel.createMessage()
             .withContent(localeService.getString(settings.locale, "ticket.open.message", creatorId.asString()))
             .withEmbeds(embedBuilder.build())

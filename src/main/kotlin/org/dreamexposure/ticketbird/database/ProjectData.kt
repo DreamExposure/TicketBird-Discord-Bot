@@ -12,4 +12,5 @@ data class ProjectData(
     val projectPrefix: String,
     val staffUsers: String?,
     val staffRoles: String?,
+    val pingOverride: Int,
 )

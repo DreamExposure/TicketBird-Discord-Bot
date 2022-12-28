@@ -27,7 +27,7 @@ class ProjectCommand(
     private val projectService: ProjectService,
     private val permissionService: PermissionService,
     private val localeService: LocaleService,
-): SlashCommand {
+) : SlashCommand {
     override val name = "project"
     override val ephemeral = true
 
@@ -153,38 +153,44 @@ class ProjectCommand(
 
     private suspend fun edit(event: ChatInputInteractionEvent, settings: GuildSettings) {
         val name = event.options[0].getOption("project")
-                .flatMap(ApplicationCommandInteractionOption::getValue)
-                .map(ApplicationCommandInteractionOptionValue::asString)
-                .get()
+            .flatMap(ApplicationCommandInteractionOption::getValue)
+            .map(ApplicationCommandInteractionOptionValue::asString)
+            .get()
         val project = projectService.getProject(settings.guildId, name)
 
         val prefix = event.options[0].getOption("prefix")
-                .flatMap(ApplicationCommandInteractionOption::getValue)
-                .map(ApplicationCommandInteractionOptionValue::asString)
-                .map { it.replace(Regex("\\W"), "") } // Keep only alphanumeric chars
-                .map { it.substring(0, 16.coerceAtMost(it.length)) }
-                .orElse(project?.prefix)
+            .flatMap(ApplicationCommandInteractionOption::getValue)
+            .map(ApplicationCommandInteractionOptionValue::asString)
+            .map { it.replace(Regex("\\W"), "") } // Keep only alphanumeric chars
+            .map { it.substring(0, 16.coerceAtMost(it.length)) }
+            .orElse(project?.prefix)
+        val pingOverride = event.options[0].getOption("ping-override")
+            .flatMap(ApplicationCommandInteractionOption::getValue)
+            .map(ApplicationCommandInteractionOptionValue::asLong)
+            .map(Long::toInt)
+            .map(Project.PingOverride::valueOf)
+            .orElse(project?.pingOverride)
         val staffUser = event.options[0].getOption("staff-user")
-                .flatMap(ApplicationCommandInteractionOption::getValue)
-                .map(ApplicationCommandInteractionOptionValue::asSnowflake)
-                .orElse(null)
+            .flatMap(ApplicationCommandInteractionOption::getValue)
+            .map(ApplicationCommandInteractionOptionValue::asSnowflake)
+            .orElse(null)
         val staffRole = event.options[0].getOption("staff-role")
-                .flatMap(ApplicationCommandInteractionOption::getValue)
-                .map(ApplicationCommandInteractionOptionValue::asSnowflake)
-                .orElse(null)
+            .flatMap(ApplicationCommandInteractionOption::getValue)
+            .map(ApplicationCommandInteractionOptionValue::asSnowflake)
+            .orElse(null)
         val removeAllStaff = event.options[0].getOption("remove-all-staff")
-                .flatMap(ApplicationCommandInteractionOption::getValue)
-                .map(ApplicationCommandInteractionOptionValue::asBoolean)
-                .orElse(false)
+            .flatMap(ApplicationCommandInteractionOption::getValue)
+            .map(ApplicationCommandInteractionOptionValue::asBoolean)
+            .orElse(false)
 
         // Check if project doesn't exist and short circuit.
         if (project == null) {
             event.createFollowup(localeService.getString(settings.locale, "command.project.edit.not-found"))
-                    .withEmbeds(listEmbed(settings))
-                    .withEphemeral(ephemeral)
-                    .map(Message::getId)
-                    .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
-                    .awaitSingleOrNull()
+                .withEmbeds(listEmbed(settings))
+                .withEphemeral(ephemeral)
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+                .awaitSingleOrNull()
             return
         }
 
@@ -205,17 +211,19 @@ class ProjectCommand(
             if (staffRoles.contains(staffRole)) staffRoles.remove(staffRole)
             else staffRoles.add(staffRole)
         }
+        // TODO: Add ping override
         projectService.updateProject(project.copy(
-                prefix = prefix,
-                staffUsers = staffUsers,
-                staffRoles = staffRoles
+            prefix = prefix,
+            staffUsers = staffUsers,
+            staffRoles = staffRoles,
+            pingOverride = pingOverride,
         ))
 
         // Return with project view embed
         event.createFollowup(localeService.getString(settings.locale, "command.project.edit.success"))
-                .withEmbeds(viewEmbed(settings, project))
-                .withEphemeral(ephemeral)
-                .awaitSingleOrNull()
+            .withEmbeds(viewEmbed(settings, project))
+            .withEphemeral(ephemeral)
+            .awaitSingleOrNull()
     }
 
     private suspend fun list(event: ChatInputInteractionEvent, settings: GuildSettings) {
@@ -291,6 +299,10 @@ class ProjectCommand(
                 localeService.getString(settings.locale, "embed.project-view.field.example"),
                 "${project.prefix}-ticket-${settings.nextId}",
                 true,
+            ).addField(
+                localeService.getString(settings.locale, "embed.project-view.field.ping-override"),
+                localeService.getString(settings.locale, project.pingOverride.localeEntry),
+                false
             )
             .footer(localeService.getString(settings.locale, "embed.project-view.footer"), null)
 
@@ -306,7 +318,7 @@ class ProjectCommand(
             builder.addField(
                 localeService.getString(settings.locale, "embed.project-view.field.staff-users"),
                 localeService.getString(settings.locale, "embed.project-view.field.staff-users.none"),
-                false
+                true
             )
         }
 
@@ -322,7 +334,7 @@ class ProjectCommand(
             builder.addField(
                 localeService.getString(settings.locale, "embed.project-view.field.staff-roles"),
                 localeService.getString(settings.locale, "embed.project-view.field.staff-roles.none"),
-                false
+                true
             )
         }
 

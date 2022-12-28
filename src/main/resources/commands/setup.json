@@ -73,6 +73,33 @@
           "max_value": 999
         }
       ]
+    },
+    {
+      "type": 1,
+      "name": "ping",
+      "description": "Modify the global ping settings when a ticket is opened. May be overridden on the project-level",
+      "options": [
+        {
+          "type": 4,
+          "name": "setting",
+          "description": "The ping setting to use globally",
+          "required": true,
+          "choices": [
+            {
+              "name": "Ping author only (default)",
+              "value": 1
+            },
+            {
+              "name": "Ping author and project staff",
+              "value": 2
+            },
+            {
+              "name": "Ping author and all staff",
+              "value": 3
+            }
+          ]
+        }
+      ]
     }
   ]
 }

@@ -42,6 +42,7 @@ class DefaultProjectService(
             projectPrefix = project.prefix,
             staffUsers = project.staffUsers.joinToString(","),
             staffRoles = project.staffRoles.joinToString(","),
+            pingOverride = project.pingOverride.value,
         )).map(::Project).awaitSingle()
 
         val cached = projectCache.get(project.guildId.asLong())
@@ -58,6 +59,7 @@ class DefaultProjectService(
             prefix = project.prefix,
             staffUsers = project.staffUsers.joinToString(","),
             staffRoles = project.staffRoles.joinToString(","),
+            pingOverride = project.pingOverride.value,
         ).awaitSingleOrNull()
 
         val cached = projectCache.get(project.guildId.asLong())

@@ -30,4 +30,5 @@ data class GuildSettingsData(
 
     val staff: String,
     val staffRole: Long?,
+    val pingOption: Int,
 )

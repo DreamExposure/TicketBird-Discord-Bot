@@ -80,6 +80,29 @@
           "min_length": 1
         },
         {
+          "type": 4,
+          "name": "ping-override",
+          "description": "Override global ping settings for this project",
+          "choices": [
+            {
+              "name": "No override - Use global ping setting (default)",
+              "value": 1
+            },
+            {
+              "name": "Ping author only",
+              "value": 2
+            },
+            {
+              "name": "Ping author and project staff",
+              "value": 3
+            },
+            {
+              "name": "Ping author and all staff",
+              "value": 4
+            }
+          ]
+        },
+        {
           "type": 6,
           "name": "staff-user",
           "description": "A user to add or remove as staff on this project"
