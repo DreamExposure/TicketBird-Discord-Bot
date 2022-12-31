@@ -28,7 +28,7 @@ interface TicketService {
 
     suspend fun moveTicket(guildId: Snowflake, channelId: Snowflake, toCategory: Snowflake, withActivity: Boolean = true)
 
-    suspend fun createTicketChannel(guildId: Snowflake, creator: Snowflake, prefix: String? = null, number: Int): TextChannel
+    suspend fun createTicketChannel(guildId: Snowflake, creator: Snowflake, project: Project?, number: Int): TextChannel
 
     suspend fun createNewTicketFull(guildId: Snowflake, creatorId: Snowflake, project: Project? = null, info: String?): Ticket
 }
