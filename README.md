@@ -19,8 +19,10 @@ Perfect for modmail, community management, and more, TicketBird is capable of al
 - Won't disrupt your community. TicketBird will not affect anything beyond the channels it manages for tickets.
 - Auto-close tickets after 7 days of inactivity, and auto-delete tickets after being closed for 24 hours (fully configurable)
 - Place tickets on hold until you can get to them; so they don't auto-close
-- Set staff per project/topic using the `/project edit` command.
+- Set staff per project/topic using the `/project edit` command
   - This allows you to define a user or role as staff for only a specific ticket type, allowing further customization similar to traditional RBAC.
+- Ping specific staff members and roles when a new ticket is opened
+  - Can be overridden on a project-level basis
 
 ## ⌨️ Commands
 | Command             | Description                                                                               | Permissions |
@@ -50,7 +52,6 @@ Perfect for modmail, community management, and more, TicketBird is capable of al
 This bot is a hobby project for me, please note that while these features are planned, there's no solid timeline.
 - Website rewrite (It's old and ugly)
 - Customizable messages
-- Toggle to ping staff when new ticket is opened
 - And so much more!
 
 # 🧰 Tech stack
