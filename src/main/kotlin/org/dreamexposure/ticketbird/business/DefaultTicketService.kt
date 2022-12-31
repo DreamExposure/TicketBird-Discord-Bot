@@ -10,6 +10,7 @@ import org.dreamexposure.ticketbird.TicketCache
 import org.dreamexposure.ticketbird.database.TicketData
 import org.dreamexposure.ticketbird.database.TicketRepository
 import org.dreamexposure.ticketbird.extensions.embedDescriptionSafe
+import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.`object`.Project
 import org.dreamexposure.ticketbird.`object`.Ticket
 import org.dreamexposure.ticketbird.utils.GlobalVars
@@ -192,11 +193,45 @@ class DefaultTicketService(
         // Create ticket channel + message
         val channel = createTicketChannel(guildId, creatorId, project, ticketNumber)
 
+        // Handle ping options
+        var calculatedPingOption = when (project?.pingOverride ?: Project.PingOverride.NONE) {
+            Project.PingOverride.AUTHOR_ONLY -> GuildSettings.PingOption.AUTHOR_ONLY
+            Project.PingOverride.AUTHOR_AND_PROJECT_STAFF -> GuildSettings.PingOption.AUTHOR_AND_PROJECT_STAFF
+            Project.PingOverride.AUTHOR_AND_ALL_STAFF -> GuildSettings.PingOption.AUTHOR_AND_ALL_STAFF
+            Project.PingOverride.NONE -> settings.pingOption // Default to global setting
+        }
 
+        // Change ping setting if project is null or if there's no project staff
+        if (calculatedPingOption == GuildSettings.PingOption.AUTHOR_AND_PROJECT_STAFF && (project == null || (project.staffRoles.isEmpty() && project.staffUsers.isEmpty())))
+            calculatedPingOption = GuildSettings.PingOption.AUTHOR_ONLY // No project, can't be project
 
-        // TODO: Handle ping options
+        // Get computed message
+        val message = if (calculatedPingOption != GuildSettings.PingOption.AUTHOR_ONLY) {
+            val pings = mutableListOf<String>()
+
+            if (calculatedPingOption == GuildSettings.PingOption.AUTHOR_AND_PROJECT_STAFF) {
+                pings += project!!.staffUsers.map { "<@${it.asString()}>" }
+                pings += project!!.staffRoles.map { "<@&${it.asString()}>" }
+            } else if (calculatedPingOption == GuildSettings.PingOption.AUTHOR_AND_ALL_STAFF) {
+                pings += settings.staff.map(Snowflake::of).map { "<@${it.asString()}>" }
+                if (settings.staffRole != null) pings += "<@&${settings.staffRole!!.asString()}>"
+
+                if (project != null) {
+                    pings += project.staffUsers.map { "<@${it.asString()}>" }
+                    pings += project.staffRoles.map { "<@&${it.asString()}>" }
+                }
+            }
+
+            val pingString = pings.joinToString(", ")
+
+            localeService.getString(settings.locale, "ticket.open.message.ping-author-staff", creatorId.asString(), pingString)
+        } else {
+            localeService.getString(settings.locale, "ticket.open.message.ping-author-only", creatorId.asString())
+        }
+
+        // Create message
         channel.createMessage()
-            .withContent(localeService.getString(settings.locale, "ticket.open.message", creatorId.asString()))
+            .withContent(message)
             .withEmbeds(embedBuilder.build())
             .withComponents(*componentService.getTicketMessageComponents(settings))
             .awaitSingle()

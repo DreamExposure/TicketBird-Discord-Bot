@@ -211,17 +211,17 @@ class ProjectCommand(
             if (staffRoles.contains(staffRole)) staffRoles.remove(staffRole)
             else staffRoles.add(staffRole)
         }
-        // TODO: Add ping override
         projectService.updateProject(project.copy(
             prefix = prefix,
             staffUsers = staffUsers,
             staffRoles = staffRoles,
             pingOverride = pingOverride,
         ))
+        val updatedProject = projectService.getProject(settings.guildId, project.id)!!
 
         // Return with project view embed
         event.createFollowup(localeService.getString(settings.locale, "command.project.edit.success"))
-            .withEmbeds(viewEmbed(settings, project))
+            .withEmbeds(viewEmbed(settings, updatedProject))
             .withEphemeral(ephemeral)
             .awaitSingleOrNull()
     }
@@ -324,7 +324,7 @@ class ProjectCommand(
 
         // Staff roles
         if (project.staffRoles.isNotEmpty()) {
-            val mentions = project.staffRoles.joinToString("\n") { "<@${it.asString()}>" }
+            val mentions = project.staffRoles.joinToString("\n") { "<@&${it.asString()}>" }
             builder.addField(
                 localeService.getString(settings.locale, "embed.project-view.field.staff-roles"),
                 mentions.embedFieldSafe(),
