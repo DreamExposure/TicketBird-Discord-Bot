@@ -1,10 +1,13 @@
 package org.dreamexposure.ticketbird.command
 
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
+import discord4j.core.`object`.command.ApplicationCommandInteractionOption
+import discord4j.core.`object`.command.ApplicationCommandInteractionOptionValue
 import discord4j.core.`object`.entity.Message
+import discord4j.core.`object`.entity.channel.TextChannel
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.LocaleService
-import org.dreamexposure.ticketbird.business.StaticMessageService
+import org.dreamexposure.ticketbird.business.ProjectService
 import org.dreamexposure.ticketbird.business.TicketService
 import org.dreamexposure.ticketbird.config.Config
 import org.dreamexposure.ticketbird.extensions.asSeconds
@@ -13,32 +16,26 @@ import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.springframework.stereotype.Component
 
 @Component
-class HoldCommand(
+class TopicCommand(
     private val ticketService: TicketService,
-    private val staticMessageService: StaticMessageService,
+    private val projectService: ProjectService,
     private val localeService: LocaleService,
 ): SlashCommand {
-    override val name = "hold"
+    override val name = "topic"
     override val ephemeral = true
 
     private val messageDeleteSeconds = Config.TIMING_MESSAGE_DELETE_GENERIC_SECONDS.getLong().asSeconds()
 
     override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings) {
+        val topic = event.getOption("topic")
+            .flatMap(ApplicationCommandInteractionOption::getValue)
+            .map(ApplicationCommandInteractionOptionValue::asString)
+            .orElse("")
         val ticket = ticketService.getTicket(settings.guildId, event.interaction.channelId)
 
         // Handle if not in a ticket channel
-        @Suppress("FoldInitializerAndIfToElvis") // Using == null for readability
         if (ticket == null) {
-            event.createFollowup(localeService.getString(settings.locale, "command.hold.not-ticket"))
-                .withEphemeral(ephemeral)
-                .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
-                .awaitSingleOrNull()
-            return
-        }
-        // Handle if ticket is already on hold
-        if (ticket.category == settings.holdCategory) {
-            event.createFollowup(localeService.getString(settings.locale, "command.hold.already-held"))
+            event.createFollowup(localeService.getString(settings.locale, "command.topic.not-ticket"))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
                 .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
@@ -46,11 +43,27 @@ class HoldCommand(
             return
         }
 
-        // We can place the ticket on hold now
-        ticketService.holdTicket(settings.guildId, event.interaction.channelId)
-        staticMessageService.update(settings.guildId)
+        val project = projectService.getProject(settings.guildId, topic)
 
-        event.createFollowup(localeService.getString(settings.locale, "command.hold.success"))
+        if (project == null) {
+            event.createFollowup(localeService.getString(settings.locale, "command.topic.not-found"))
+                .withEphemeral(ephemeral)
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+                .awaitSingleOrNull()
+            return
+        }
+
+        // Update
+        event.interaction.channel
+            .ofType(TextChannel::class.java)
+            .flatMap { it.edit().withName("${project.prefix}-ticket-${ticket.number}") }
+            .awaitSingleOrNull()
+
+        ticket.project = project.name
+        ticketService.updateTicket(ticket)
+
+        event.createFollowup(localeService.getString(settings.locale, "command.topic.success", project.name))
             .withEphemeral(ephemeral)
             .map(Message::getId)
             .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }

@@ -31,6 +31,7 @@ data class GuildSettings(
     var nextId: Int = 1,
     val staff: MutableList<String> = CopyOnWriteArrayList(),
     var staffRole: Snowflake? = null,
+    var pingOption: PingOption = PingOption.AUTHOR_ONLY,
 ) {
     constructor(data: GuildSettingsData) : this(
         guildId = Snowflake.of(data.guildId),
@@ -53,6 +54,7 @@ data class GuildSettings(
         nextId = data.nextId,
         staff = data.staff.listFromDb(),
         staffRole = data.staffRole?.toSnowflake(),
+        pingOption = PingOption.valueOf(data.pingOption)
     )
 
     fun hasRequiredIdsSet(): Boolean {
@@ -62,5 +64,16 @@ data class GuildSettings(
             && closeCategory != null
             && supportChannel != null
             && staticMessage != null
+    }
+
+    enum class PingOption(val value: Int, val localeEntry: String) {
+        AUTHOR_ONLY(1, "env.ping-option.author"),
+        AUTHOR_AND_PROJECT_STAFF(2, "env.ping-option.author-project-staff"),
+        AUTHOR_AND_ALL_STAFF(3, "env.ping-option.author-all-staff");
+
+        companion object {
+            fun valueOf(value: Int) = values().first { it.value == value }
+
+        }
     }
 }

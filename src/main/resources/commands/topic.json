@@ -1,0 +1,14 @@
+{
+  "name": "topic",
+  "description": "Changes the topic of the current ticket",
+  "dm_permission": false,
+  "options": [
+    {
+      "name": "topic",
+      "type": 3,
+      "description": "The topic to change to",
+      "autocomplete": true,
+      "required": true
+    }
+  ]
+}

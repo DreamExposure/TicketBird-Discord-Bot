@@ -4,6 +4,7 @@ import discord4j.common.util.Snowflake
 import discord4j.core.`object`.PermissionOverwrite
 import discord4j.rest.util.PermissionSet
 import org.dreamexposure.ticketbird.`object`.GuildSettings
+import org.dreamexposure.ticketbird.`object`.Project
 
 interface PermissionService {
 
@@ -15,7 +16,7 @@ interface PermissionService {
 
     fun getTicketGrantOverrides(): PermissionSet
 
-    fun getTicketChannelOverwrites(settings: GuildSettings, creator: Snowflake): List<PermissionOverwrite>
+    fun getTicketChannelOverwrites(settings: GuildSettings, creator: Snowflake, project: Project?): List<PermissionOverwrite>
 
     fun hasRequiredElevatedPermissions(memberPermissions: PermissionSet): Boolean
 }

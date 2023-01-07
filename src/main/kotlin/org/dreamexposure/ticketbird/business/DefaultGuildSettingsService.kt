@@ -54,6 +54,7 @@ class DefaultGuildSettingsService(
             nextId = settings.nextId,
             staff = settings.staff.asStringList(),
             staffRole = settings.staffRole?.asLong(),
+            pingOption = settings.pingOption.value,
         )).map(::GuildSettings).awaitSingle()
 
         settingsCache.put(settings.guildId.asLong(), saved)
@@ -81,6 +82,7 @@ class DefaultGuildSettingsService(
             nextId = settings.nextId,
             staff = settings.staff.asStringList(),
             staffRole = settings.staffRole?.asLong(),
+            pingOption = settings.pingOption.value,
         ).awaitSingleOrNull()
 
         settingsCache.put(settings.guildId.asLong(), settings)

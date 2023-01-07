@@ -1,21 +1,32 @@
 package org.dreamexposure.ticketbird
 
-import org.dreamexposure.ticketbird.config.BotSettings
+import org.dreamexposure.ticketbird.config.Config
 import org.dreamexposure.ticketbird.logger.LOGGER
-import org.dreamexposure.ticketbird.utils.GlobalVars.DEFAULT
+import org.dreamexposure.ticketbird.utils.GlobalVars
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.session.SessionAutoConfiguration
 import org.springframework.boot.builder.SpringApplicationBuilder
 import org.springframework.stereotype.Component
-import java.io.FileReader
 import java.lang.management.ManagementFactory
 import java.time.Duration
-import java.util.*
 
 @Component
 @SpringBootApplication(exclude = [SessionAutoConfiguration::class])
 class TicketBird {
     companion object {
+        @JvmStatic
+        fun main(args: Array<String>) {
+            Config.init()
+
+            //Start spring
+            try {
+                SpringApplicationBuilder(TicketBird::class.java).run(*args)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                LOGGER.error(GlobalVars.DEFAULT, "Spring error!", e)
+            }
+        }
+
         fun getShardIndex(): Int {
             /*
             This sucks. So k8s doesn't expose the pod ordinal for a pod in a stateful set
@@ -42,14 +53,14 @@ class TicketBird {
                 parts[parts.size - 1].toInt() //Get last part in name, that should be ordinal
             } else {
                 //Fall back to config value
-                BotSettings.SHARD_INDEX.get().toInt()
+                Config.SHARD_INDEX.getInt()
             }
         }
 
         fun getShardCount(): Int {
             val shardCount = System.getenv("SHARD_COUNT")
             return shardCount?.toInt() ?: //Fall back to config
-            BotSettings.SHARD_COUNT.get().toInt()
+            Config.SHARD_COUNT.getInt()
         }
 
         fun getUptime(): Duration {
@@ -57,22 +68,6 @@ class TicketBird {
 
             val rawDuration = System.currentTimeMillis() - mxBean.startTime
             return Duration.ofMillis(rawDuration)
-        }
-
-        @JvmStatic
-        fun main(args: Array<String>) {
-            //Get settings
-            val p = Properties()
-            p.load(FileReader("application.properties"))
-            BotSettings.init(p)
-
-            //Start spring
-            try {
-                SpringApplicationBuilder(TicketBird::class.java).run(*args)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                LOGGER.error(DEFAULT, "Spring error!", e)
-            }
         }
     }
 }

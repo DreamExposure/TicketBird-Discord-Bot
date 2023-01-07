@@ -2,12 +2,15 @@ package org.dreamexposure.ticketbird.interaction
 
 import discord4j.core.event.domain.interaction.ModalSubmitInteractionEvent
 import discord4j.core.`object`.component.TextInput
-import kotlinx.coroutines.reactor.awaitSingle
+import discord4j.core.`object`.entity.Message
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.TicketCreateStateCache
 import org.dreamexposure.ticketbird.business.LocaleService
 import org.dreamexposure.ticketbird.business.ProjectService
 import org.dreamexposure.ticketbird.business.TicketService
+import org.dreamexposure.ticketbird.config.Config
+import org.dreamexposure.ticketbird.extensions.asSeconds
+import org.dreamexposure.ticketbird.extensions.discord4j.deleteFollowupDelayed
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.springframework.stereotype.Component
 
@@ -17,8 +20,10 @@ class TicketDetailModal(
     private val localeService: LocaleService,
     private val projectService: ProjectService,
     private val ticketCreateStateCache: TicketCreateStateCache,
-): InteractionHandler<ModalSubmitInteractionEvent> {
+) : InteractionHandler<ModalSubmitInteractionEvent> {
     override val ids = arrayOf("ticket-detail")
+
+    private val messageDeleteSeconds = Config.TIMING_MESSAGE_DELETE_TICKET_FLOW_SECONDS.getLong().asSeconds()
 
     override suspend fun handle(event: ModalSubmitInteractionEvent, settings: GuildSettings) {
         // Defer, it could take a moment
@@ -35,10 +40,10 @@ class TicketDetailModal(
         )
 
         // Respond
-        event.createFollowup(localeService.getString(
-            settings.locale,
-            "generic.success.ticket-open",
-            ticket.channel.asString()
-        )).awaitSingle()
+        event.createFollowup(localeService.getString(settings.locale, "generic.success.ticket-open", ticket.channel.asString()))
+            .withEphemeral(true)
+            .map(Message::getId)
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+            .awaitSingleOrNull()
     }
 }

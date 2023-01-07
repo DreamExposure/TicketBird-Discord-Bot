@@ -30,6 +30,3 @@ services:
     depends_on:
       - mysql
       - redis
-
-volumes:
-  ticketbird_data: {}

@@ -9,7 +9,7 @@ data class Ticket(
 
     val number: Int,
 
-    val project: String = "N/a",
+    var project: String = "N/a",
 
     val creator: Snowflake,
 

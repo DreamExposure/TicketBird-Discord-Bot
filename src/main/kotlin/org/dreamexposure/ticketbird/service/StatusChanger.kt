@@ -22,14 +22,15 @@ class StatusChanger(private val client: GatewayDiscordClient) : ApplicationRunne
     private val index = AtomicInteger(0)
 
     private val statuses = listOf(
-        "/ticketbird for info & help",
-        "Do you know what a square is?",
-        "Version {version}",
-        "Now supports Slash Commands!",
-        "Trans rights are human rights",
-        "Sorting tickets in {guild_count} guilds!",
-        "Proudly written in Kotlin using Discord4J",
-        "Slava Ukraini!",
+            "/ticketbird for info & help",
+            "Do you know what a square is?",
+            "Version {version}",
+            "Now supports Slash Commands!",
+            "Trans rights are human rights",
+            "Sorting tickets in {guild_count} guilds!",
+            "Now supports staff per-topic!",
+            "Proudly written in Kotlin using Discord4J",
+            "Slava Ukraini!",
     )
 
     private fun update() = mono {
@@ -42,7 +43,7 @@ class StatusChanger(private val client: GatewayDiscordClient) : ApplicationRunne
 
         //Get status we want to change to
         var status = statuses[currentIndex]
-            .replace("{version}", GitProperty.TICKETBIRD_VERSION.value)
+                .replace("{version}", GitProperty.TICKETBIRD_VERSION.value)
 
         if (status.contains("{guild_count}")) {
             val count = client.guilds.count().awaitSingle()
@@ -55,9 +56,9 @@ class StatusChanger(private val client: GatewayDiscordClient) : ApplicationRunne
 
     override fun run(args: ApplicationArguments?) {
         Flux.interval(Duration.ofMinutes(5))
-            .flatMap { update() }
-            .doOnError { LOGGER.error(DEFAULT, "StatusChanger | Processor failure ", it) }
-            .onErrorResume { Mono.empty() }
-            .subscribe()
+                .flatMap { update() }
+                .doOnError { LOGGER.error(DEFAULT, "StatusChanger | Processor failure ", it) }
+                .onErrorResume { Mono.empty() }
+                .subscribe()
     }
 }
