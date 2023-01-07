@@ -1,3 +1,4 @@
+
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
@@ -6,21 +7,49 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     // Kotlin
-    kotlin("jvm") version "1.7.20"
+    kotlin("jvm") version "1.8.0"
 
     // Spring
-    kotlin("plugin.spring") version "1.7.20"
-    id("org.springframework.boot") version "2.7.4"
-    id("io.spring.dependency-management") version "1.0.14.RELEASE"
+    kotlin("plugin.spring") version "1.8.0"
+    id("org.springframework.boot") version "3.0.1"
+    id("io.spring.dependency-management") version "1.1.0"
 
     // Tooling
     id("com.gorylenko.gradle-git-properties") version "2.4.1"
-    id("com.google.cloud.tools.jib") version "3.3.0"
+    id("com.google.cloud.tools.jib") version "3.3.1"
 }
 
 buildscript {
     dependencies {
         classpath("com.squareup:kotlinpoet:1.12.0")
+    }
+}
+
+val ticketBirdVersion = "2.0.2"
+val gradleWrapperVersion = "7.5.1"
+val javaVersion = "17"
+val d4jVersion = "3.2.3"
+val d4jStoresVersion = "3.2.2"
+val thymeleafSpringVersion = "3.1.1.RELEASE"
+val mysqlR2dbcVersion = "0.8.2.RELEASE"
+val discordWebhooksVersion = "0.8.2"
+val springMockkVersion = "4.0.0"
+
+group = "org.dreamexposure"
+version = ticketBirdVersion
+
+val kotlinSrcDir: File = buildDir.resolve("src/main/kotlin")
+
+java {
+    sourceCompatibility = JavaVersion.toVersion(javaVersion)
+    targetCompatibility = sourceCompatibility
+}
+
+kotlin {
+    sourceSets {
+        all {
+            kotlin.srcDir(kotlinSrcDir)
+        }
     }
 }
 
@@ -30,11 +59,7 @@ repositories {
     maven("https://repo.maven.apache.org/maven2/")
     maven("https://oss.sonatype.org/content/repositories/snapshots")
 }
-//versions
-val d4jVersion = "3.2.3"
-val d4jStoresVersion = "3.2.2"
 
-val kotlinSrcDir: File = buildDir.resolve("src/main/kotlin")
 
 dependencies {
     // Tools
@@ -54,7 +79,7 @@ dependencies {
 
     // Web
     implementation("org.thymeleaf:thymeleaf")
-    implementation("org.thymeleaf:thymeleaf-spring5")
+    implementation("org.thymeleaf:thymeleaf-spring5:$thymeleafSpringVersion")
     implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect")
 
     implementation("com.squareup.okhttp3:okhttp")
@@ -62,7 +87,7 @@ dependencies {
     // Database
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-mysql")
-    implementation("dev.miku:r2dbc-mysql:0.8.2.RELEASE")
+    implementation("dev.miku:r2dbc-mysql:$mysqlR2dbcVersion")
     implementation("mysql:mysql-connector-java")
 
     // Serialization
@@ -72,7 +97,7 @@ dependencies {
     // Discord
     implementation("com.discord4j:discord4j-core:$d4jVersion")
     implementation("com.discord4j:stores-redis:$d4jStoresVersion")
-    implementation("club.minnced:discord-webhooks:0.8.2")
+    implementation("club.minnced:discord-webhooks:$discordWebhooksVersion")
 
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
@@ -82,21 +107,16 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     testImplementation("io.projectreactor:reactor-test")
-    testImplementation("com.ninja-squad:springmockk:3.1.1")
+    testImplementation("com.ninja-squad:springmockk:$springMockkVersion")
 }
 
-group = "org.dreamexposure"
-version = "2.0.2-SNAPSHOT"
-description = "TicketBird"
-java.sourceCompatibility = JavaVersion.VERSION_17
-
 jib {
-    var imageVersion = version.toString()
-    if (imageVersion.contains("SNAPSHOT")) imageVersion = "latest"
+    to {
+        image = "rg.nl-ams.scw.cloud/dreamexposure/ticketbird"
+        tags = mutableSetOf("latest", ticketBirdVersion)
+    }
 
-    to.image = "rg.nl-ams.scw.cloud/dreamexposure/ticketbird:$imageVersion"
     from.image = "eclipse-temurin:17-jre-alpine"
-    container.creationTime = "USE_CURRENT_TIMESTAMP"
 }
 
 gitProperties {
@@ -110,14 +130,6 @@ gitProperties {
 
     customProperty("ticketbird.version", versionName)
     customProperty("ticketbird.version.d4j", d4jVersion)
-}
-
-kotlin {
-    sourceSets {
-        all {
-            kotlin.srcDir(kotlinSrcDir)
-        }
-    }
 }
 
 tasks {
@@ -171,6 +183,6 @@ tasks {
 
     wrapper {
         distributionType = ALL
-        gradleVersion = "7.5.1"
+        gradleVersion = gradleWrapperVersion
     }
 }
