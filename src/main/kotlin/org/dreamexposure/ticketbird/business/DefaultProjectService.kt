@@ -40,8 +40,8 @@ class DefaultProjectService(
             guildId = project.guildId.asLong(),
             projectName = project.name,
             projectPrefix = project.prefix,
-            staffUsers = project.staffUsers.joinToString(","),
-            staffRoles = project.staffRoles.joinToString(","),
+            staffUsers = project.staffUsers.map(Snowflake::asLong).joinToString(","),
+            staffRoles = project.staffRoles.map(Snowflake::asLong).joinToString(","),
             pingOverride = project.pingOverride.value,
         )).map(::Project).awaitSingle()
 
@@ -57,8 +57,8 @@ class DefaultProjectService(
             guildId = project.guildId.asLong(),
             name = project.name,
             prefix = project.prefix,
-            staffUsers = project.staffUsers.joinToString(","),
-            staffRoles = project.staffRoles.joinToString(","),
+            staffUsers = project.staffUsers.map(Snowflake::asLong).joinToString(","),
+            staffRoles = project.staffRoles.map(Snowflake::asLong).joinToString(","),
             pingOverride = project.pingOverride.value,
         ).awaitSingleOrNull()
 
