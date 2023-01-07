@@ -25,7 +25,7 @@ buildscript {
     }
 }
 
-val ticketBirdVersion = "2.0.2"
+val ticketBirdVersion = "2.0.2.hf1"
 val gradleWrapperVersion = "7.5.1"
 val javaVersion = "17"
 val d4jVersion = "3.2.3"
