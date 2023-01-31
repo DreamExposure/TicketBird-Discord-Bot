@@ -42,16 +42,16 @@ class ActivityMonitor(
         LOGGER.debug("Running ticket inactivity close task...")
 
         client.guilds.collectList().awaitSingle().forEach { guild ->
-            val settings = settingsService.getGuildSettings(guild.id)
-            if (settings.requiresRepair) return@forEach // Skip processing this guild until they decide to run repair command
-            if (!environmentService.validateAllEntitiesExist(settings.guildId)) {
-                // Skip processing since we know something doesn't exist
-                staticMessageService.update(settings.guildId)
-                return@forEach
-            }
-
             // Isolate errors to guild-level
             try {
+                val settings = settingsService.getGuildSettings(guild.id)
+                if (settings.requiresRepair) return@forEach // Skip processing this guild until they decide to run repair command
+                if (!environmentService.validateAllEntitiesExist(settings.guildId)) {
+                    // Skip processing since we know something doesn't exist
+                    staticMessageService.update(settings.guildId)
+                    return@forEach
+                }
+
                 if (settings.hasRequiredIdsSet()) {
                     var updateStaticMessage = false
 
