@@ -111,7 +111,7 @@ class SetupCommand(
             .doOnNext { settings.staticMessage = it.id }
             .awaitSingle()
 
-        settingsService.createOrUpdateGuildSettings(settings)
+        settingsService.upsertGuildSettings(settings)
 
         event.createFollowup(localeService.getString(settings.locale, "command.setup.init.success"))
             .withEmbeds(viewSettingsEmbed(settings))
@@ -175,7 +175,7 @@ class SetupCommand(
             .get()
 
         settings.locale = newLocale
-        settingsService.createOrUpdateGuildSettings(settings)
+        settingsService.upsertGuildSettings(settings)
 
         event.createFollowup(localeService.getString(settings.locale, "command.setup.language.success"))
             .withEmbeds(viewSettingsEmbed(settings))
@@ -192,7 +192,7 @@ class SetupCommand(
             .get()
 
         settings.useProjects = useProjects
-        settingsService.createOrUpdateGuildSettings(settings)
+        settingsService.upsertGuildSettings(settings)
 
         event.createFollowup(localeService.getString(settings.locale, "command.setup.use-projects.success.$useProjects"))
             .withEmbeds(viewSettingsEmbed(settings))
@@ -243,7 +243,7 @@ class SetupCommand(
             }
         }
 
-        settingsService.createOrUpdateGuildSettings(settings)
+        settingsService.upsertGuildSettings(settings)
 
         event.createFollowup(localeService.getString(
             settings.locale,
@@ -266,7 +266,7 @@ class SetupCommand(
             .get()
 
         settings.pingOption = pingOption
-        settingsService.createOrUpdateGuildSettings(settings)
+        settingsService.upsertGuildSettings(settings)
 
         event.createFollowup(localeService.getString(
             settings.locale,

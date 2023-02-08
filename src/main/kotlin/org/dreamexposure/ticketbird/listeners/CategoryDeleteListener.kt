@@ -35,7 +35,7 @@ class CategoryDeleteListener(
         }
 
         // If we made it here, we should update the settings
-        settingsService.createOrUpdateGuildSettings(settings)
+        settingsService.upsertGuildSettings(settings)
 
         if (settings.requiresRepair) staticMessageService.update(settings.guildId)
     }

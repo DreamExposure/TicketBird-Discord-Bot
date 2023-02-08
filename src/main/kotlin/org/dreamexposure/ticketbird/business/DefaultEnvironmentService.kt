@@ -121,7 +121,7 @@ class DefaultEnvironmentService(
                 .awaitSingleOrNull()
         }
 
-        settingsService.createOrUpdateGuildSettings(settings)
+        settingsService.upsertGuildSettings(settings)
         return properSetup
     }
 
@@ -160,6 +160,6 @@ class DefaultEnvironmentService(
         }
 
         if (settings.hasRequiredIdsSet()) settings.requiresRepair = false
-        settingsService.createOrUpdateGuildSettings(settings)
+        settingsService.upsertGuildSettings(settings)
     }
 }
