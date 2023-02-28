@@ -102,13 +102,14 @@ class ProjectCommand(
     }
 
     private suspend fun remove(event: ChatInputInteractionEvent, settings: GuildSettings) {
-        val name = event.options[0].getOption("name")
+        val projectId = event.options[0].getOption("project")
             .flatMap(ApplicationCommandInteractionOption::getValue)
             .map(ApplicationCommandInteractionOptionValue::asString)
+            .map(String::toLong)
             .get()
 
 
-        if (projectService.getProject(settings.guildId, name) == null) {
+        if (projectService.getProject(settings.guildId, projectId) == null) {
             event.createFollowup(localeService.getString(settings.locale, "command.project.remove.not-found"))
                 .withEmbeds(listEmbed(settings))
                 .withEphemeral(ephemeral)
@@ -118,7 +119,7 @@ class ProjectCommand(
             return
         }
 
-        projectService.deleteProject(settings.guildId, name)
+        projectService.deleteProject(settings.guildId, projectId)
 
         event.createFollowup(localeService.getString(settings.locale, "command.project.remove.success"))
             .withEmbeds(listEmbed(settings))
@@ -129,12 +130,13 @@ class ProjectCommand(
     }
 
     private suspend fun view(event: ChatInputInteractionEvent, settings: GuildSettings) {
-        val name = event.options[0].getOption("name")
+        val projectId = event.options[0].getOption("project")
             .flatMap(ApplicationCommandInteractionOption::getValue)
             .map(ApplicationCommandInteractionOptionValue::asString)
+            .map(String::toLong)
             .get()
 
-        val project = projectService.getProject(settings.guildId, name)
+        val project = projectService.getProject(settings.guildId, projectId)
         if (project == null) {
             event.createFollowup(localeService.getString(settings.locale, "command.project.view.not-found"))
                 .withEmbeds(listEmbed(settings))
@@ -152,11 +154,12 @@ class ProjectCommand(
     }
 
     private suspend fun edit(event: ChatInputInteractionEvent, settings: GuildSettings) {
-        val name = event.options[0].getOption("project")
+        val projectId = event.options[0].getOption("project")
             .flatMap(ApplicationCommandInteractionOption::getValue)
             .map(ApplicationCommandInteractionOptionValue::asString)
+            .map(String::toLong)
             .get()
-        val project = projectService.getProject(settings.guildId, name)
+        val project = projectService.getProject(settings.guildId, projectId)
 
         val prefix = event.options[0].getOption("prefix")
             .flatMap(ApplicationCommandInteractionOption::getValue)

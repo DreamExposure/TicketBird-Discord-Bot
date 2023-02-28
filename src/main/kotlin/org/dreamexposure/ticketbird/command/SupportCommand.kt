@@ -36,10 +36,11 @@ class SupportCommand(
             .flatMap(ApplicationCommandInteractionOption::getValue)
             .map(ApplicationCommandInteractionOptionValue::asString)
             .orElse("")
-        val topic = event.getOption("topic")
+        val topicId = event.getOption("topic")
             .flatMap(ApplicationCommandInteractionOption::getValue)
             .map(ApplicationCommandInteractionOptionValue::asString)
-            .orElse("")
+            .map(String::toLong)
+            .orElse(-1)
 
         // Check if ticket bird is even functional
         if (!settings.hasRequiredIdsSet() && !settings.requiresRepair) {
@@ -58,7 +59,7 @@ class SupportCommand(
         }
 
         // Check if project required but missing; if so; cache info, give them project dropdown
-        if (settings.useProjects && topic.isNullOrBlank()) {
+        if (settings.useProjects && topicId <= 0) {
             ticketCreateStateCache.put("${settings.guildId}.${event.interaction.user.id.asLong()}", TicketCreateState(ticketInfo = info))
 
             event.createFollowup(localeService.getString(settings.locale, "dropdown.select-project.prompt"))
@@ -71,7 +72,7 @@ class SupportCommand(
         }
 
         // Only get projects if using project, otherwise no reason to do the fetch
-        val project = if (settings.useProjects) projectService.getProject(settings.guildId, topic) else null
+        val project = if (settings.useProjects) projectService.getProject(settings.guildId, topicId) else null
 
         // Check if project required and exists; if not; cache info, give them project dropdown
         if (settings.useProjects && project == null) {

@@ -27,10 +27,11 @@ class TopicCommand(
     private val messageDeleteSeconds = Config.TIMING_MESSAGE_DELETE_GENERIC_SECONDS.getLong().asSeconds()
 
     override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings) {
-        val topic = event.getOption("topic")
+        val topicId = event.getOption("topic")
             .flatMap(ApplicationCommandInteractionOption::getValue)
             .map(ApplicationCommandInteractionOptionValue::asString)
-            .orElse("")
+            .map(String::toLong)
+            .orElse(-1)
         val ticket = ticketService.getTicket(settings.guildId, event.interaction.channelId)
 
         // Handle if not in a ticket channel
@@ -43,7 +44,7 @@ class TopicCommand(
             return
         }
 
-        val project = projectService.getProject(settings.guildId, topic)
+        val project = projectService.getProject(settings.guildId, topicId)
 
         if (project == null) {
             event.createFollowup(localeService.getString(settings.locale, "command.topic.not-found"))
