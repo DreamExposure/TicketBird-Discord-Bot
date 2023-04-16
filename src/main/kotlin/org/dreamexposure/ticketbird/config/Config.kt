@@ -39,7 +39,9 @@ enum class Config(private val key: String, private var value: Any? = null) {
     SHARD_COUNT("bot.sharding.count"),
     SHARD_INDEX("bot.sharding.index"),
     LOGGING_WEBHOOKS_USE("bot.logging.webhooks.use", false),
-    LOGGING_WEBHOOKS_ALL_ERRORS("bot.logging.webhooks.all-errors", false);
+    LOGGING_WEBHOOKS_ALL_ERRORS("bot.logging.webhooks.all-errors", false),
+    TOGGLE_TICKET_LOGGING("bot.feature.toggle.ticket-logging", false),
+    ;
 
     companion object {
         fun init() {
