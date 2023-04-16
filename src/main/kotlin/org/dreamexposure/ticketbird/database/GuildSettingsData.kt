@@ -24,6 +24,8 @@ data class GuildSettingsData(
     val closeCategory: Long?,
 
     val supportChannel: Long?,
+    val logChannel: Long?,
+
     val staticMessage: Long?,
 
     val nextId: Int,
