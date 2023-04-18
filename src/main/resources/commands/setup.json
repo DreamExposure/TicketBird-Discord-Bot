@@ -103,6 +103,24 @@
     },
     {
       "type": 1,
+      "name": "logging",
+      "description": "Modify the logging behavior of TicketBird when a ticket is closed and deleted",
+      "options": [
+        {
+          "type": 5,
+          "name": "enable",
+          "description": "Whether to enable TicketBird's logging functionality"
+        },
+        {
+          "type": 7,
+          "name": "channel",
+          "description": "The channel for TicketBird's logs to appear in",
+          "channel_types": [0]
+        }
+      ]
+    },
+    {
+      "type": 1,
       "name": "view",
       "description": "Allows viewing TicketBird's configuration in this server"
     }
