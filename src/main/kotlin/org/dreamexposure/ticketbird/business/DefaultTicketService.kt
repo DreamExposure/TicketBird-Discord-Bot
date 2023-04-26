@@ -316,7 +316,7 @@ class DefaultTicketService(
                 // Download attachment to memory and write to zip
                 withContext(Dispatchers.IO) {
                     URL(it.proxyUrl).openStream().use { attachmentStream ->
-                        val entry = ZipEntry("TODO NAME THINGS.thing")
+                        val entry = ZipEntry(it.filename)
 
                         zipStream.putNextEntry(entry)
                         zipStream.write(attachmentStream.readAllBytes())
@@ -341,5 +341,10 @@ class DefaultTicketService(
         discordClient.getChannelById(settings.logChannel!!).ofType(TextChannel::class.java).flatMap { channel ->
             channel.createMessage("").withFiles(transcript, attachmentsZip)
         }.awaitSingleOrNull()
+
+        // Close any remaining streams
+        pipedOut.close()
+        pipedIn.close()
+        transcriptStream.close()
     }
 }
