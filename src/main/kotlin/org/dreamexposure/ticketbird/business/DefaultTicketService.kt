@@ -1,15 +1,23 @@
 package org.dreamexposure.ticketbird.business
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import discord4j.common.util.Snowflake
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.`object`.entity.channel.TextChannel
 import discord4j.core.spec.EmbedCreateSpec
+import discord4j.core.spec.MessageCreateFields.File
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.reactive.awaitLast
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import kotlinx.coroutines.reactor.mono
+import kotlinx.coroutines.withContext
 import org.dreamexposure.ticketbird.TicketCache
+import org.dreamexposure.ticketbird.config.Config
 import org.dreamexposure.ticketbird.database.TicketData
 import org.dreamexposure.ticketbird.database.TicketRepository
 import org.dreamexposure.ticketbird.extensions.embedDescriptionSafe
+import org.dreamexposure.ticketbird.extensions.ticketLogFileFormat
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.`object`.Project
 import org.dreamexposure.ticketbird.`object`.Ticket
@@ -17,7 +25,14 @@ import org.dreamexposure.ticketbird.utils.GlobalVars
 import org.springframework.beans.factory.BeanFactory
 import org.springframework.beans.factory.getBean
 import org.springframework.stereotype.Component
+import java.io.ByteArrayOutputStream
+import java.io.PipedInputStream
+import java.io.PipedOutputStream
+import java.net.URL
 import java.time.Instant
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
+import kotlin.jvm.optionals.getOrNull
 
 @Component
 class DefaultTicketService(
@@ -28,10 +43,14 @@ class DefaultTicketService(
     private val localeService: LocaleService,
     private val permissionService: PermissionService,
     private val componentService: ComponentService,
+    private val objectMapper: ObjectMapper,
 ) : TicketService {
-
     private val discordClient
         get() = beanFactory.getBean<GatewayDiscordClient>()
+
+    init {
+        objectMapper.writer()
+    }
 
     override suspend fun getTicket(guildId: Snowflake, number: Int): Ticket? {
         return getAllTickets(guildId).firstOrNull { it.number == number }
@@ -144,6 +163,8 @@ class DefaultTicketService(
         val settings = settingsService.getGuildSettings(guildId)
         val channel = discordClient.getChannelById(channelId).ofType(TextChannel::class.java).awaitSingle()
 
+        logTicket(guildId, channelId) // Always make sure to attempt logging before deleting the channel
+
         channel.delete(localeService.getString(settings.locale, "ticket.delete.time")).awaitSingleOrNull()
         deleteTicket(guildId, ticket.number)
     }
@@ -245,5 +266,80 @@ class DefaultTicketService(
             category = settings.awaitingCategory!!,
             lastActivity = Instant.now()
         ))
+    }
+
+    override suspend fun logTicket(guildId: Snowflake, channelId: Snowflake) {
+        if (!Config.TOGGLE_TICKET_LOGGING.getBoolean()) return
+
+        // Get everything we need
+        val settings = settingsService.getGuildSettings(guildId)
+        if (!settings.enableLogging || settings.logChannel == null) return // sanity check
+
+        val ticket = getTicket(guildId, channelId) ?: return // return if ticket does not exist
+        val ticketChannel = discordClient.getChannelById(channelId).ofType(TextChannel::class.java).awaitSingle()
+        val ticketAuthor = discordClient.getUserById(ticket.creator).awaitSingle()
+
+        val ticketLog = StringBuilder()
+            .appendLine(localeService.getString(settings.locale, "log.ticket.header",
+                ticket.number.toString(),
+                ticketChannel.name,
+                "${ticketAuthor.username}#${ticketAuthor.discriminator}",
+                ticketChannel.id.timestamp.ticketLogFileFormat(),
+                Instant.now().ticketLogFileFormat())
+            ).appendLine()
+        val zipByteStream = ByteArrayOutputStream()
+        val zipStream = ZipOutputStream(zipByteStream)
+
+
+        // Start logging
+        ticketChannel.getMessagesAfter(Snowflake.of(0)).flatMap {  message -> mono {
+            val author = message.author.getOrNull()
+            val authorName = if (author != null) "${author.username}#${author.discriminator}" else ""
+            val authorId = author?.id?.asString() ?: ""
+
+            // Start line with formatted info and log content
+            ticketLog.append(localeService.getString(settings.locale, "log.ticket.message",
+                message.timestamp.ticketLogFileFormat(),
+                authorName,
+                authorId,
+                message.content)
+            )
+
+            // Handle any embeds
+            if (message.embeds.isNotEmpty()) message.embeds.forEach {
+                ticketLog.append(",").append(objectMapper.writeValueAsString(it.data))
+            }
+
+            // Handle any attachments
+            if (message.attachments.isNotEmpty()) message.attachments.forEach {
+                ticketLog.append(",").append(objectMapper.writeValueAsString(it.data))
+                // Download attachment to memory and write to zip
+                withContext(Dispatchers.IO) {
+                    URL(it.proxyUrl).openStream().use { attachmentStream ->
+                        val entry = ZipEntry("TODO NAME THINGS.thing")
+
+                        zipStream.putNextEntry(entry)
+                        zipStream.write(attachmentStream.readAllBytes())
+                        zipStream.closeEntry()
+                    }
+                }
+            }
+
+            ticketLog.appendLine()
+        }}.awaitLast()
+
+        // Generate transcript file
+        val transcriptStream = ticketLog.toString().byteInputStream()
+        val transcript = File.of("transcript_ticket-${ticket.number}.log", transcriptStream)
+        // Generate zipped attachments file
+        val pipedIn = PipedInputStream()
+        val pipedOut = PipedOutputStream(pipedIn)
+        withContext(Dispatchers.IO) { pipedOut.write(zipByteStream.toByteArray()) }
+        zipStream.close()
+        val attachmentsZip = File.of("attachments_ticket-${ticket.number}.zip", pipedIn)
+
+        discordClient.getChannelById(settings.logChannel!!).ofType(TextChannel::class.java).flatMap { channel ->
+            channel.createMessage("").withFiles(transcript, attachmentsZip)
+        }.awaitSingleOrNull()
     }
 }

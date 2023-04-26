@@ -40,6 +40,7 @@ enum class Config(private val key: String, private var value: Any? = null) {
     SHARD_INDEX("bot.sharding.index"),
     LOGGING_WEBHOOKS_USE("bot.logging.webhooks.use", false),
     LOGGING_WEBHOOKS_ALL_ERRORS("bot.logging.webhooks.all-errors", false),
+    // TODO: Remove toggle when no longer needed
     TOGGLE_TICKET_LOGGING("bot.feature.toggle.ticket-logging", false),
     ;
 

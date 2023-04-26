@@ -11,8 +11,11 @@ class RedisCacheRepository<K : Any, V>(
 ) : CacheRepository<K, V> {
     private val cache = redisCacheManager.getCache(cacheName)!!
 
-    override suspend fun put(key: K, value: V) {
+    init {
         mapper.writer()
+    }
+
+    override suspend fun put(key: K, value: V) {
         cache.put(key, mapper.writeValueAsString(value))
     }
 
