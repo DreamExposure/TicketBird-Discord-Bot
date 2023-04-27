@@ -324,7 +324,7 @@ class SetupCommand(
         event.createFollowup(localeService.getString(
             settings.locale,
             "command.setup.logging.success",
-            localeService.getString(settings.locale, "$loggingEnabled")
+            "$loggingEnabled"
         ))
             .withEmbeds(viewSettingsEmbed(settings))
             .withEphemeral(ephemeral)

@@ -11,8 +11,10 @@ fun Duration.getHumanReadableMinimized(): String {
     if (toDays() == 1L) builder.append("${toDays()} day")
     if (toDays() >= 2L) builder.append("${toDays()} days")
 
-    if (toHoursPart() == 1) builder.append(", ${toHoursPart()} hour")
-    if (toHoursPart() >= 2) builder.append(", ${toHoursPart()} hours")
+    if (toDays() > 0 && toHoursPart() > 0) builder.append(", ")
+
+    if (toHoursPart() == 1) builder.append("${toHoursPart()} hour")
+    if (toHoursPart() >= 2) builder.append("${toHoursPart()} hours")
 
     return builder.toString()
 }
