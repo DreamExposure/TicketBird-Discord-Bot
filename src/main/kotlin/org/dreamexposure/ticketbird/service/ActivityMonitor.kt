@@ -11,6 +11,8 @@ import org.dreamexposure.ticketbird.business.EnvironmentService
 import org.dreamexposure.ticketbird.business.GuildSettingsService
 import org.dreamexposure.ticketbird.business.StaticMessageService
 import org.dreamexposure.ticketbird.business.TicketService
+import org.dreamexposure.ticketbird.config.Config
+import org.dreamexposure.ticketbird.extensions.asMinutes
 import org.dreamexposure.ticketbird.logger.LOGGER
 import org.dreamexposure.ticketbird.utils.GlobalVars.DEFAULT
 import org.springframework.boot.ApplicationArguments
@@ -31,7 +33,7 @@ class ActivityMonitor(
 ) : ApplicationRunner {
 
     override fun run(args: ApplicationArguments?) {
-        Flux.interval(Duration.ofHours(1))
+        Flux.interval(Config.TIMING_ACTIVITY_MONITOR_FREQUENCY_MINUTES.getLong().asMinutes())
             .flatMap { doTheThing() }
             .doOnError { LOGGER.error(DEFAULT, "ActivityMonitor | Processor failure ", it) }
             .onErrorResume { Mono.empty() }
