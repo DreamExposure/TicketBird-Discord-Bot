@@ -7,7 +7,6 @@ import discord4j.core.`object`.entity.channel.TextChannel
 import discord4j.core.spec.EmbedCreateSpec
 import discord4j.core.spec.MessageCreateFields.File
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.reactive.awaitLast
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.coroutines.reactor.mono
@@ -18,6 +17,7 @@ import org.dreamexposure.ticketbird.database.TicketData
 import org.dreamexposure.ticketbird.database.TicketRepository
 import org.dreamexposure.ticketbird.extensions.embedDescriptionSafe
 import org.dreamexposure.ticketbird.extensions.ticketLogFileFormat
+import org.dreamexposure.ticketbird.logger.LOGGER
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.`object`.Project
 import org.dreamexposure.ticketbird.`object`.Ticket
@@ -165,8 +165,9 @@ class DefaultTicketService(
 
         logTicket(guildId, channelId) // Always make sure to attempt logging before deleting the channel
 
-        channel.delete(localeService.getString(settings.locale, "ticket.delete.time")).awaitSingleOrNull()
-        deleteTicket(guildId, ticket.number)
+        // TODO: remove comments before commit!!!
+        //channel.delete(localeService.getString(settings.locale, "ticket.delete.time")).awaitSingleOrNull()
+        //deleteTicket(guildId, ticket.number)
     }
 
     override suspend fun moveTicket(guildId: Snowflake, channelId: Snowflake, toCategory: Snowflake, withActivity: Boolean) {
@@ -294,46 +295,66 @@ class DefaultTicketService(
 
 
         // Start logging
-        ticketChannel.getMessagesAfter(Snowflake.of(0)).flatMap { message ->
-            mono {
-                val author = message.author.getOrNull()
-                val authorName = if (author != null) "${author.username}#${author.discriminator}" else ""
-                val authorId = author?.id?.asString() ?: ""
+        ticketChannel.getMessagesAfter(Snowflake.of(0))
+            .takeWhile { message ->
+                message.id <= finalMessage.id
+            }.concatMap { message ->
+                mono {
+                    LOGGER.debug("Checkpoint 1 | Ticket ${ticket.number} | ${ticket.channel.asLong()}")
+                    val author = message.author.getOrNull()
+                    val authorName = if (author != null) "${author.username}#${author.discriminator}" else ""
+                    val authorId = author?.id?.asString() ?: ""
+                    LOGGER.debug("Checkpoint 2 | Ticket ${ticket.number} | ${ticket.channel.asLong()}")
 
-                // Start line with formatted info and log content
-                ticketLog.append(localeService.getString(settings.locale, "log.ticket.message",
-                    message.timestamp.ticketLogFileFormat(),
-                    authorName,
-                    authorId,
-                    message.content)
-                )
+                    // Start line with formatted info and log content
+                    ticketLog.append(localeService.getString(settings.locale, "log.ticket.message",
+                        message.timestamp.ticketLogFileFormat(),
+                        authorName,
+                        authorId,
+                        message.content)
+                    )
+                    LOGGER.debug("Checkpoint 3 | Ticket ${ticket.number} | ${message.id.asLong()}")
 
-                // Handle any embeds
-                if (message.embeds.isNotEmpty()) message.embeds.forEach {
-                    ticketLog.append(",").append(objectMapper.writeValueAsString(it.data))
-                }
+                    // Handle any embeds
+                    if (message.embeds.isNotEmpty()) message.embeds.forEach {
+                        ticketLog.append(",").append(objectMapper.writeValueAsString(it.data))
+                    }
 
-                // Handle any attachments
-                if (message.attachments.isNotEmpty()) message.attachments.forEach {
-                    ticketLog.append(",").append(objectMapper.writeValueAsString(it.data))
-                    // Download attachment to memory and write to zip
-                    withContext(Dispatchers.IO) {
-                        URL(it.url).openStream().use { attachmentStream ->
-                            hasAttachments = true
-                            val entry = ZipEntry(it.filename)
+                    // Handle any stickers
+                    if (message.stickersItems.isNotEmpty()) message.stickersItems.forEach {
+                        ticketLog.append(",").append(objectMapper.writeValueAsString(it.stickerData))
+                    }
+                    LOGGER.debug("Checkpoint 4 | Ticket ${ticket.number} | ${message.id.asLong()}")
 
-                            zipStream.putNextEntry(entry)
-                            zipStream.write(attachmentStream.readAllBytes())
-                            zipStream.closeEntry()
+                    // Handle any attachments
+                    if (message.attachments.isNotEmpty()) message.attachments.forEach {
+                        LOGGER.debug("Checkpoint 5.1 | Ticket ${ticket.number} | ${message.id.asLong()}")
+                        ticketLog.append(",").append(objectMapper.writeValueAsString(it.data))
+                        // Download attachment to memory and write to zip
+                        withContext(Dispatchers.IO) {
+                            LOGGER.debug("Checkpoint 5.2 | Ticket ${ticket.number}")
+                            URL(it.url).openStream().use { attachmentStream ->
+                                LOGGER.debug("Checkpoint 5.3 | Ticket ${ticket.number} | ${message.id.asLong()}")
+                                hasAttachments = true
+                                val entry = ZipEntry(it.filename)
+                                LOGGER.debug("Checkpoint 5.4 | Ticket ${ticket.number} | ${message.id.asLong()}")
+
+                                zipStream.putNextEntry(entry)
+                                zipStream.write(attachmentStream.readAllBytes())
+                                zipStream.closeEntry()
+                                LOGGER.debug("Checkpoint 5.5 | Ticket ${ticket.number} | ${message.id.asLong()}")
+                            }
                         }
                     }
+                    LOGGER.debug("Checkpoint 6 | Ticket ${ticket.number} | ${message.id.asLong()}")
+
+                    ticketLog.appendLine()
+                    message
                 }
+            }.collectList()
+            .awaitSingle()
 
-                ticketLog.appendLine()
-                message
-            }
-        }.takeWhile { message -> message.id <= finalMessage.id }.awaitLast()
-
+        LOGGER.debug("Checkpoint 7 | Ticket ${ticket.number}") // FIXME: Seems there's some halting going on somewhere around here
         val attachments = mutableListOf<File>()
         // Generate transcript file
         val transcriptStream = ticketLog.toString().byteInputStream()
@@ -345,15 +366,16 @@ class DefaultTicketService(
             val pipedOut = PipedOutputStream(pipedIn)
             withContext(Dispatchers.IO) { pipedOut.write(zipByteStream.toByteArray()) }
             attachments.add(File.of("attachments_ticket-${ticket.number}.zip", pipedIn))
-            zipStream.close()
             pipedOut.close()
             pipedIn.close()
         }
+        zipStream.close()
+        zipByteStream.close()
+        LOGGER.debug("Checkpoint 8 | Ticket ${ticket.number}")
 
         discordClient.getChannelById(settings.logChannel!!).ofType(TextChannel::class.java).flatMap { channel ->
             channel.createMessage("").withFiles(attachments)
         }.awaitSingleOrNull()
-
-        // Close any remaining streams
+        LOGGER.debug("Checkpoint 9 | Ticket ${ticket.number}")
     }
 }
