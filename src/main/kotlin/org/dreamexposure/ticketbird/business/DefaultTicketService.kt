@@ -278,6 +278,7 @@ class DefaultTicketService(
         val ticket = getTicket(guildId, channelId) ?: return // return if ticket does not exist
         val ticketChannel = discordClient.getChannelById(channelId).ofType(TextChannel::class.java).awaitSingle()
         val ticketAuthor = discordClient.getUserById(ticket.creator).awaitSingle()
+        val finalMessage = ticketChannel.createMessage(localeService.getString(settings.locale, "log.ticket.log-message")).awaitSingle()
 
         val ticketLog = StringBuilder()
             .appendLine(localeService.getString(settings.locale, "log.ticket.header",
@@ -289,62 +290,70 @@ class DefaultTicketService(
             ).appendLine()
         val zipByteStream = ByteArrayOutputStream()
         val zipStream = ZipOutputStream(zipByteStream)
+        var hasAttachments = false
 
 
         // Start logging
-        ticketChannel.getMessagesAfter(Snowflake.of(0)).flatMap {  message -> mono {
-            val author = message.author.getOrNull()
-            val authorName = if (author != null) "${author.username}#${author.discriminator}" else ""
-            val authorId = author?.id?.asString() ?: ""
+        ticketChannel.getMessagesAfter(Snowflake.of(0)).flatMap { message ->
+            mono {
+                val author = message.author.getOrNull()
+                val authorName = if (author != null) "${author.username}#${author.discriminator}" else ""
+                val authorId = author?.id?.asString() ?: ""
 
-            // Start line with formatted info and log content
-            ticketLog.append(localeService.getString(settings.locale, "log.ticket.message",
-                message.timestamp.ticketLogFileFormat(),
-                authorName,
-                authorId,
-                message.content)
-            )
+                // Start line with formatted info and log content
+                ticketLog.append(localeService.getString(settings.locale, "log.ticket.message",
+                    message.timestamp.ticketLogFileFormat(),
+                    authorName,
+                    authorId,
+                    message.content)
+                )
 
-            // Handle any embeds
-            if (message.embeds.isNotEmpty()) message.embeds.forEach {
-                ticketLog.append(",").append(objectMapper.writeValueAsString(it.data))
-            }
+                // Handle any embeds
+                if (message.embeds.isNotEmpty()) message.embeds.forEach {
+                    ticketLog.append(",").append(objectMapper.writeValueAsString(it.data))
+                }
 
-            // Handle any attachments
-            if (message.attachments.isNotEmpty()) message.attachments.forEach {
-                ticketLog.append(",").append(objectMapper.writeValueAsString(it.data))
-                // Download attachment to memory and write to zip
-                withContext(Dispatchers.IO) {
-                    URL(it.proxyUrl).openStream().use { attachmentStream ->
-                        val entry = ZipEntry(it.filename)
+                // Handle any attachments
+                if (message.attachments.isNotEmpty()) message.attachments.forEach {
+                    ticketLog.append(",").append(objectMapper.writeValueAsString(it.data))
+                    // Download attachment to memory and write to zip
+                    withContext(Dispatchers.IO) {
+                        URL(it.url).openStream().use { attachmentStream ->
+                            hasAttachments = true
+                            val entry = ZipEntry(it.filename)
 
-                        zipStream.putNextEntry(entry)
-                        zipStream.write(attachmentStream.readAllBytes())
-                        zipStream.closeEntry()
+                            zipStream.putNextEntry(entry)
+                            zipStream.write(attachmentStream.readAllBytes())
+                            zipStream.closeEntry()
+                        }
                     }
                 }
+
+                ticketLog.appendLine()
+                message
             }
+        }.takeWhile { message -> message.id <= finalMessage.id }.awaitLast()
 
-            ticketLog.appendLine()
-        }}.awaitLast()
-
+        val attachments = mutableListOf<File>()
         // Generate transcript file
         val transcriptStream = ticketLog.toString().byteInputStream()
-        val transcript = File.of("transcript_ticket-${ticket.number}.log", transcriptStream)
+        attachments.add(File.of("transcript_ticket-${ticket.number}.log", transcriptStream))
+        transcriptStream.close()
         // Generate zipped attachments file
-        val pipedIn = PipedInputStream()
-        val pipedOut = PipedOutputStream(pipedIn)
-        withContext(Dispatchers.IO) { pipedOut.write(zipByteStream.toByteArray()) }
-        zipStream.close()
-        val attachmentsZip = File.of("attachments_ticket-${ticket.number}.zip", pipedIn)
+        if (hasAttachments) {
+            val pipedIn = PipedInputStream()
+            val pipedOut = PipedOutputStream(pipedIn)
+            withContext(Dispatchers.IO) { pipedOut.write(zipByteStream.toByteArray()) }
+            attachments.add(File.of("attachments_ticket-${ticket.number}.zip", pipedIn))
+            zipStream.close()
+            pipedOut.close()
+            pipedIn.close()
+        }
 
         discordClient.getChannelById(settings.logChannel!!).ofType(TextChannel::class.java).flatMap { channel ->
-            channel.createMessage("").withFiles(transcript, attachmentsZip)
+            channel.createMessage("").withFiles(attachments)
         }.awaitSingleOrNull()
 
         // Close any remaining streams
-        pipedOut.close()
-        pipedIn.close()
-        transcriptStream.close()
     }
 }
