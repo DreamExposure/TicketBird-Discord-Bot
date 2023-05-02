@@ -48,6 +48,19 @@
     },
     {
       "type": 1,
+      "name": "show-ticket-stats",
+      "description": "Sets whether to publicly show total open/closed tickets in support messages. Defaults to true",
+      "options": [
+        {
+          "type": 5,
+          "name": "show",
+          "description": "Whether to publicly show total open/closed tickets in TicketBird's support messages",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": 1,
       "name": "timing",
       "description": "Allows changing timings for the various automatic actions performed by TicketBird",
       "options": [

@@ -55,6 +55,7 @@ class SetupCommand(
             "repair" -> repair(event, settings)
             "language" -> language(event, settings)
             "use-projects" -> useProjects(event, settings)
+            "show-ticket-stats" -> showTicketStats(event, settings)
             "timing" -> timing(event, settings)
             "ping" -> ping(event, settings)
             "logging" -> logging(event, settings)
@@ -197,6 +198,24 @@ class SetupCommand(
         settingsService.upsertGuildSettings(settings)
 
         event.createFollowup(localeService.getString(settings.locale, "command.setup.use-projects.success.$useProjects"))
+            .withEmbeds(viewSettingsEmbed(settings))
+            .withEphemeral(ephemeral)
+            .map(Message::getId)
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+            .awaitSingleOrNull()
+    }
+
+    private suspend fun showTicketStats(event: ChatInputInteractionEvent, settings: GuildSettings) {
+        val showStats = event.options[0].getOption("show")
+            .flatMap(ApplicationCommandInteractionOption::getValue)
+            .map(ApplicationCommandInteractionOptionValue::asBoolean)
+            .get()
+
+        settings.showTicketStats = showStats
+        settingsService.upsertGuildSettings(settings)
+        staticMessageService.update(settings.guildId)
+
+        event.createFollowup(localeService.getString(settings.locale, "command.setup.show-ticket-stats.success.$showStats"))
             .withEmbeds(viewSettingsEmbed(settings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
@@ -413,6 +432,11 @@ class SetupCommand(
                 false
             )
         }
+        builder.addField(
+            localeService.getString(settings.locale, "embed.settings.field.logging.stats"),
+            settings.showTicketStats.toString(),
+            true
+        )
 
         // Use projects status notes
         val projects = projectService.getAllProjects(settings.guildId)

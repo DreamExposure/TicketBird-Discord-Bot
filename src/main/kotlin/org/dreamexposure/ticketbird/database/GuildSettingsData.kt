@@ -14,6 +14,7 @@ data class GuildSettingsData(
 
     val useProjects: Boolean,
     val enableLogging: Boolean,
+    val showTicketStats: Boolean,
     val autoCloseHours: Int,
     val autoDeleteHours: Int,
 

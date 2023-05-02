@@ -48,24 +48,26 @@ class DefaultStaticMessageService(
         }
 
         // Add ticket stats
-        val awaiting = discordClient.getChannelById(settings.awaitingCategory!!).ofType(Category::class.java)
-            .flatMap { it.channels.count() }
-            .awaitSingle()
-        val responded = discordClient.getChannelById(settings.respondedCategory!!).ofType(Category::class.java)
-            .flatMap { it.channels.count() }
-            .awaitSingle()
-        val hold = discordClient.getChannelById(settings.holdCategory!!).ofType(Category::class.java)
-            .flatMap { it.channels.count() }
-            .awaitSingle()
+        if (settings.showTicketStats) {
+            val awaiting = discordClient.getChannelById(settings.awaitingCategory!!).ofType(Category::class.java)
+                .flatMap { it.channels.count() }
+                .awaitSingle()
+            val responded = discordClient.getChannelById(settings.respondedCategory!!).ofType(Category::class.java)
+                .flatMap { it.channels.count() }
+                .awaitSingle()
+            val hold = discordClient.getChannelById(settings.holdCategory!!).ofType(Category::class.java)
+                .flatMap { it.channels.count() }
+                .awaitSingle()
 
-        val allTickets = settings.nextId - 1
-        val closed = allTickets - awaiting - responded - hold
-        val open = awaiting + responded
+            val allTickets = settings.nextId - 1
+            val closed = allTickets - awaiting - responded - hold
+            val open = awaiting + responded
 
-        builder
-            .addField(localeService.getString(settings.locale, "embed.static.field.open"), "$open", true)
-            .addField(localeService.getString(settings.locale, "embed.static.field.hold"), "$hold", true)
-            .addField(localeService.getString(settings.locale, "embed.static.field.closed"), "$closed", true)
+            builder
+                .addField(localeService.getString(settings.locale, "embed.static.field.open"), "$open", true)
+                .addField(localeService.getString(settings.locale, "embed.static.field.hold"), "$hold", true)
+                .addField(localeService.getString(settings.locale, "embed.static.field.closed"), "$closed", true)
+        }
 
         return builder.build()
     }

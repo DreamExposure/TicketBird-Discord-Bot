@@ -17,6 +17,7 @@ data class GuildSettings(
 
     var useProjects: Boolean = false,
     var enableLogging: Boolean = false,
+    var showTicketStats: Boolean = true,
     var autoClose: Duration = Duration.ofDays(7),
     var autoDelete: Duration = Duration.ofHours(24),
 
@@ -42,6 +43,7 @@ data class GuildSettings(
         patronGuild = data.patronGuild,
         useProjects = data.useProjects,
         enableLogging = data.enableLogging,
+        showTicketStats = data.showTicketStats,
         autoClose = Duration.ofHours(data.autoCloseHours.toLong()),
         autoDelete = Duration.ofHours(data.autoDeleteHours.toLong()),
 
