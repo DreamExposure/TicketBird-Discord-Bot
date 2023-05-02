@@ -40,6 +40,7 @@ class DefaultGuildSettingsService(
             devGuild = settings.devGuild,
             patronGuild = settings.patronGuild,
             useProjects = settings.useProjects,
+            enableLogging = settings.enableLogging,
             autoCloseHours = settings.autoClose.toHours().toInt(),
             autoDeleteHours = settings.autoDelete.toHours().toInt(),
             requiresRepair = settings.requiresRepair,
@@ -49,6 +50,7 @@ class DefaultGuildSettingsService(
             holdCategory = settings.holdCategory?.asLong(),
             closeCategory = settings.closeCategory?.asLong(),
             supportChannel = settings.supportChannel?.asLong(),
+            logChannel = settings.logChannel?.asLong(),
             staticMessage = settings.staticMessage?.asLong(),
 
             nextId = settings.nextId,
@@ -68,6 +70,7 @@ class DefaultGuildSettingsService(
             devGuild = settings.devGuild,
             patronGuild = settings.patronGuild,
             useProjects = settings.useProjects,
+            enableLogging = settings.enableLogging,
             autoCloseHours = settings.autoClose.toHours().toInt(),
             autoDeleteHours = settings.autoDelete.toHours().toInt(),
             requiresRepair = settings.requiresRepair,
@@ -77,6 +80,7 @@ class DefaultGuildSettingsService(
             holdCategory = settings.holdCategory?.asLong(),
             closeCategory = settings.closeCategory?.asLong(),
             supportChannel = settings.supportChannel?.asLong(),
+            logChannel = settings.logChannel?.asLong(),
             staticMessage = settings.staticMessage?.asLong(),
 
             nextId = settings.nextId,

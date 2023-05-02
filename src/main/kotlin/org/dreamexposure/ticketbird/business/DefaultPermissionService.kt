@@ -56,7 +56,7 @@ class DefaultPermissionService(
         Permission.SEND_MESSAGES,
         Permission.READ_MESSAGE_HISTORY,
         Permission.VIEW_CHANNEL,
-        Permission.USE_SLASH_COMMANDS
+        Permission.USE_APPLICATION_COMMANDS,
     )
 
     override fun getTicketChannelOverwrites(settings: GuildSettings, creator: Snowflake, project: Project?): List<PermissionOverwrite> {

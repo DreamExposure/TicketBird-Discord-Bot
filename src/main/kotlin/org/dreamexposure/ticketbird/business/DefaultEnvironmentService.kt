@@ -162,4 +162,11 @@ class DefaultEnvironmentService(
         if (settings.hasRequiredIdsSet()) settings.requiresRepair = false
         settingsService.upsertGuildSettings(settings)
     }
+
+    override suspend fun validateChannelForLogging(guildId: Snowflake, channelId: Snowflake): Boolean {
+        return discordClient.getChannelById(channelId)
+            .ofType(TextChannel::class.java)
+            .onErrorResume(ClientException.isStatusCode(404, 403)) { Mono.empty() }
+            .awaitSingleOrNull() != null
+    }
 }

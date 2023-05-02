@@ -9,7 +9,6 @@ interface EnvironmentService {
 
     suspend fun createSupportChannel(guildId: Snowflake): TextChannel
 
-
     /**
      * Returns true if everything exists correctly, otherwise false
      * @return True if everything exists correctly, otherwise false
@@ -17,4 +16,6 @@ interface EnvironmentService {
     suspend fun validateAllEntitiesExist(guildId: Snowflake): Boolean
 
     suspend fun recreateMissingEntities(guildId: Snowflake)
+
+    suspend fun validateChannelForLogging(guildId: Snowflake, channelId: Snowflake): Boolean
 }

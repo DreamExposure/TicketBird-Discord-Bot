@@ -16,6 +16,7 @@ data class GuildSettings(
     var devGuild: Boolean = false,
 
     var useProjects: Boolean = false,
+    var enableLogging: Boolean = false,
     var autoClose: Duration = Duration.ofDays(7),
     var autoDelete: Duration = Duration.ofHours(24),
 
@@ -26,6 +27,8 @@ data class GuildSettings(
     var holdCategory: Snowflake? = null,
     var closeCategory: Snowflake? = null,
     var supportChannel: Snowflake? = null,
+    var logChannel: Snowflake? = null,
+
     var staticMessage: Snowflake? = null,
 
     var nextId: Int = 1,
@@ -38,6 +41,7 @@ data class GuildSettings(
         locale = data.lang.handleLocaleDebt(),
         patronGuild = data.patronGuild,
         useProjects = data.useProjects,
+        enableLogging = data.enableLogging,
         autoClose = Duration.ofHours(data.autoCloseHours.toLong()),
         autoDelete = Duration.ofHours(data.autoDeleteHours.toLong()),
 
@@ -49,6 +53,8 @@ data class GuildSettings(
         holdCategory = data.holdCategory?.toSnowflake(),
         closeCategory = data.closeCategory?.toSnowflake(),
         supportChannel = data.supportChannel?.toSnowflake(),
+        logChannel = data.logChannel?.toSnowflake(),
+
         staticMessage = data.staticMessage?.toSnowflake(),
 
         nextId = data.nextId,

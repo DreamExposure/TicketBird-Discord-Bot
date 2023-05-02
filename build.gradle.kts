@@ -28,12 +28,13 @@ buildscript {
 val ticketBirdVersion = "2.1.0"
 val gradleWrapperVersion = "7.6"
 val javaVersion = "17"
-val d4jVersion = "3.2.3"
+val d4jVersion = "3.2.4"
 val d4jStoresVersion = "3.2.2"
 val thymeleafSpringVersion = "3.1.1.RELEASE"
 val mysqlR2dbcVersion = "0.8.2.RELEASE"
 val discordWebhooksVersion = "0.8.2"
 val springMockkVersion = "4.0.0"
+val commonsIOVersion = "2.11.0"
 
 group = "org.dreamexposure"
 version = ticketBirdVersion
@@ -90,9 +91,10 @@ dependencies {
     implementation("dev.miku:r2dbc-mysql:$mysqlR2dbcVersion")
     implementation("mysql:mysql-connector-java")
 
-    // Serialization
+    // IO
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+    implementation("commons-io:commons-io:$commonsIOVersion")
 
     // Discord
     implementation("com.discord4j:discord4j-core:$d4jVersion")

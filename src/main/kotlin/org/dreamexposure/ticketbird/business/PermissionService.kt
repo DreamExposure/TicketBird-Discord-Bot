@@ -10,6 +10,7 @@ interface PermissionService {
 
     suspend fun checkingMissingBasePermissionsBot(guildId: Snowflake): PermissionSet
 
+
     fun getBotPermissionOverrides(): PermissionSet
 
     fun getSupportChannelMemberOverrides(): PermissionSet

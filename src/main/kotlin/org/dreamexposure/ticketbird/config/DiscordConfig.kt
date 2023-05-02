@@ -118,12 +118,17 @@ class DiscordConfig {
             .build()
     }
 
+    private fun getIntents(): IntentSet {
+        var intents = IntentSet.of(
+            Intent.GUILDS,
+            Intent.GUILD_MESSAGES,
+            Intent.GUILD_MESSAGE_REACTIONS,
+            Intent.DIRECT_MESSAGES,
+            Intent.DIRECT_MESSAGE_REACTIONS
+        )
 
-    private fun getIntents() = IntentSet.of(
-        Intent.GUILDS,
-        Intent.GUILD_MESSAGES,
-        Intent.GUILD_MESSAGE_REACTIONS,
-        Intent.DIRECT_MESSAGES,
-        Intent.DIRECT_MESSAGE_REACTIONS
-    )
+        if (Config.TOGGLE_TICKET_LOGGING.getBoolean()) intents = intents.or(IntentSet.of(Intent.MESSAGE_CONTENT))
+
+        return intents
+    }
 }
