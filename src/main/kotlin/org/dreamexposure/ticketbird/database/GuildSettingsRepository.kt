@@ -16,7 +16,7 @@ interface GuildSettingsRepository: R2dbcRepository<GuildSettingsData, Long> {
             dev_guild = :devGuild,
             use_projects = :useProjects,
             enable_logging = :enableLogging,
-            show_ticket_status = :showTicketStats,
+            show_ticket_stats = :showTicketStats,
             auto_close_hours = :autoCloseHours,
             auto_delete_hours = :autoDeleteHours,
             requires_repair = :requiresRepair,
