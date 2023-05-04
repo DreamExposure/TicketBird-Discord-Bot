@@ -284,7 +284,7 @@ class DefaultTicketService(
             .appendLine(localeService.getString(settings.locale, "log.ticket.header",
                 ticket.number.toString(),
                 ticketChannel.name,
-                "${ticketAuthor.username}#${ticketAuthor.discriminator}",
+                ticketAuthor.username,
                 ticketChannel.id.timestamp.ticketLogFileFormat(),
                 Instant.now().ticketLogFileFormat())
             ).appendLine()
@@ -300,7 +300,7 @@ class DefaultTicketService(
             }.concatMap { message ->
                 mono {
                     val author = message.author.getOrNull()
-                    val authorName = if (author != null) "${author.username}#${author.discriminator}" else ""
+                    val authorName = author?.username ?: ""
                     val authorId = author?.id?.asString() ?: ""
 
                     // Start line with formatted info and log content
