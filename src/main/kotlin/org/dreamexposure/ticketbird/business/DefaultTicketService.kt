@@ -18,6 +18,7 @@ import org.dreamexposure.ticketbird.config.Config
 import org.dreamexposure.ticketbird.database.TicketData
 import org.dreamexposure.ticketbird.database.TicketRepository
 import org.dreamexposure.ticketbird.extensions.embedDescriptionSafe
+import org.dreamexposure.ticketbird.extensions.sha256Hash
 import org.dreamexposure.ticketbird.extensions.ticketLogFileFormat
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.`object`.Project
@@ -82,6 +83,8 @@ class DefaultTicketService(
             channel = ticket.channel.asLong(),
             category = ticket.category.asLong(),
             lastActivity = ticket.lastActivity.toEpochMilli(),
+            transcriptSha256 = ticket.transcriptSha256,
+            attachmentsSha256 = ticket.attachmentsSha256,
         )).map(::Ticket).awaitSingle()
 
         val cached = ticketCache.get(ticket.guildId.asLong())
@@ -98,7 +101,9 @@ class DefaultTicketService(
             creator = ticket.creator.asLong(),
             channel = ticket.channel.asLong(),
             category = ticket.category.asLong(),
-            lastActivity = ticket.lastActivity.toEpochMilli()
+            lastActivity = ticket.lastActivity.toEpochMilli(),
+            transcriptSha256 = ticket.transcriptSha256,
+            attachmentsSha256 = ticket.attachmentsSha256,
         ).awaitSingleOrNull()
 
         val cached = ticketCache.get(ticket.guildId.asLong())
@@ -159,14 +164,14 @@ class DefaultTicketService(
     }
 
     override suspend fun purgeTicket(guildId: Snowflake, channelId: Snowflake) {
-        val ticket = getTicket(guildId, channelId) ?: return // return if ticket does not exist
+        //val ticket = getTicket(guildId, channelId) ?: return // return if ticket does not exist
         val settings = settingsService.getGuildSettings(guildId)
         val channel = discordClient.getChannelById(channelId).ofType(TextChannel::class.java).awaitSingle()
 
         logTicket(guildId, channelId) // Always make sure to attempt logging before deleting the channel
 
         channel.delete(localeService.getString(settings.locale, "ticket.delete.time")).awaitSingleOrNull()
-        deleteTicket(guildId, ticket.number)
+        //deleteTicket(guildId, ticket.number)
     }
 
     override suspend fun moveTicket(guildId: Snowflake, channelId: Snowflake, toCategory: Snowflake, withActivity: Boolean) {
@@ -344,8 +349,10 @@ class DefaultTicketService(
             }.awaitLast()
 
         val attachments = mutableListOf<File>()
+
         // Generate transcript file
         val transcriptStream = ticketLog.toString().byteInputStream()
+        ticket.transcriptSha256 = ticketLog.toString().toByteArray().sha256Hash()
         attachments.add(File.of("transcript_ticket-${ticket.number}.log", transcriptStream))
         transcriptStream.close()
 
@@ -353,12 +360,16 @@ class DefaultTicketService(
         zipStream.close()
         if (hasAttachments) {
             withContext(Dispatchers.IO) {
-                val zipInput = ByteArrayInputStream(byteStream.toByteArray())
+                val byteArray = byteStream.toByteArray()
+                ticket.attachmentsSha256 = byteArray.sha256Hash()
+                val zipInput = ByteArrayInputStream(byteArray)
                 attachments.add(File.of("attachments_ticket-${ticket.number}.zip", zipInput))
                 zipInput.close()
             }
         }
         byteStream.close()
+
+        updateTicket(ticket)
 
         discordClient.getChannelById(settings.logChannel!!).ofType(TextChannel::class.java).flatMap { channel ->
             channel.createMessage("").withFiles(attachments)

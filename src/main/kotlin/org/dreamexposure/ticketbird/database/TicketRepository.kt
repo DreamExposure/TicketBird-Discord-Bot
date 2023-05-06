@@ -23,7 +23,9 @@ interface TicketRepository: R2dbcRepository<TicketData, Long> {
             creator = :creator,
             channel = :channel,
             category = :category,
-            last_activity = :lastActivity
+            last_activity = :lastActivity,
+            transcript_sha256 = :transcriptSha256,
+            attachments_sha256 = :attachmentsSha256
         WHERE guild_id = :guildId
             AND number = :number
     """)
@@ -35,5 +37,7 @@ interface TicketRepository: R2dbcRepository<TicketData, Long> {
         channel: Long,
         category: Long,
         lastActivity: Long,
+        transcriptSha256: String?,
+        attachmentsSha256: String?,
     ): Mono<Int>
 }

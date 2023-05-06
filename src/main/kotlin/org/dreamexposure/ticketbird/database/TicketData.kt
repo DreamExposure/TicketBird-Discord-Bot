@@ -13,4 +13,7 @@ data class TicketData(
     var category: Long,
 
     val lastActivity: Long,
+
+    val transcriptSha256: String?,
+    val attachmentsSha256: String?,
 )

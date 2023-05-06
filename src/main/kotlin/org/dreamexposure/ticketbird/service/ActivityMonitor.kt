@@ -86,7 +86,7 @@ class ActivityMonitor(
 
                     // Loop open tickets
                     for (openTicketChannel in awaitingCategoryChannels + respondedCategoryChannels) {
-                        val ticket = ticketService.getTicket(guild.id, openTicketChannel.id) ?: return@forEach
+                        val ticket = ticketService.getTicket(guild.id, openTicketChannel.id) ?: continue
 
                         try {
                             if (Duration.between(Instant.now(), ticket.lastActivity).abs() > settings.autoClose) {
