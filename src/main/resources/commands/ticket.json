@@ -69,6 +69,23 @@
       ]
     },
     {
+      "name": "remove",
+      "type": 1,
+      "description": "Remove a user and/or role from the current ticket",
+      "options": [
+        {
+          "name": "member",
+          "type": 6,
+          "description": "The user to remove from the current ticket"
+        },
+        {
+          "name": "role",
+          "type": 8,
+          "description": "The role to remove from the current ticket"
+        }
+      ]
+    },
+    {
       "name": "hold",
       "type": 1,
       "description": "Places the current ticket on hold"
@@ -81,7 +98,7 @@
     {
       "name": "checksum",
       "type": 1,
-      "description": "Validate a transcript.log or attachments.zip's legitimacy",
+      "description": "Validate a transcript.log or attachments.zip's legitimacy with its SHA-256 checksum",
       "options": [
         {
           "name": "transcript",

@@ -13,12 +13,6 @@ interface TicketRepository: R2dbcRepository<TicketData, Long> {
 
     fun findByGuildId(guildId: Long): Flux<TicketData>
 
-    fun findByGuildIdAndTranscriptSha256(guildId: Long, transcriptSha256: String): Mono<TicketData>
-
-    fun findByGuildIdAndAttachmentsSha256(guildId: Long, attachmentsSha256: String): Mono<TicketData>
-
-    fun findByTranscriptSha256OrAttachmentsSha256(transcriptSha256: String, attachmentsSha256: String): Mono<TicketData>
-
     fun deleteByGuildIdAndNumber(guildId: Long, number: Int): Mono<Void>
 
     fun deleteAllByGuildId(guildId: Long): Mono<Void>

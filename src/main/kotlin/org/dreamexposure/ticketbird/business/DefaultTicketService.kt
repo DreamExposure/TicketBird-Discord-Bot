@@ -61,6 +61,11 @@ class DefaultTicketService(
         return getAllTickets(guildId).firstOrNull { it.channel == channelId }
     }
 
+    override suspend fun getTicket(guildId: Snowflake, sha256Hash: String): Ticket? {
+        return getAllTickets(guildId)
+            .firstOrNull { it.transcriptSha256 == sha256Hash || it.attachmentsSha256 == sha256Hash }
+    }
+
     override suspend fun getAllTickets(guildId: Snowflake): List<Ticket> {
         var tickets = ticketCache.get(guildId.asLong())?.toList()
         if (tickets != null) return tickets

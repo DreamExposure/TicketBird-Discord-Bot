@@ -12,13 +12,14 @@ import org.springframework.stereotype.Component
 class ProjectCommandAutoComplete(
     private val projectService: ProjectService,
 ) : InteractionHandler<ChatInputAutoCompleteEvent> {
-    override val ids = arrayOf("project.project", "support.topic", "topic.topic")
+    override val ids = arrayOf("project.project", "support.topic", "topic.topic", "ticket.topic")
 
     override suspend fun handle(event: ChatInputAutoCompleteEvent, settings: GuildSettings) {
         when ("${event.commandName}.${event.focusedOption.name}") {
             "project.project" -> projectName(event)
             "support.topic",
-            "topic.topic" -> checkUsingFirst(event, settings)
+            "topic.topic",
+            "ticket.topic" -> checkUsingFirst(event, settings)
             else -> event.respondWithSuggestions(listOf()).awaitSingleOrNull()
         }
     }

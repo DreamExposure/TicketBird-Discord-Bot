@@ -10,6 +10,8 @@ interface TicketService {
 
     suspend fun getTicket(guildId: Snowflake, channelId: Snowflake): Ticket?
 
+    suspend fun getTicket(guildId: Snowflake, sha256Hash: String): Ticket?
+
     suspend fun getAllTickets(guildId: Snowflake): List<Ticket>
 
     suspend fun createTicket(ticket: Ticket): Ticket
