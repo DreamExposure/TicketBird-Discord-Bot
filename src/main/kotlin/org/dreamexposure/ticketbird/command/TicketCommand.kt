@@ -62,11 +62,33 @@ class TicketCommand(
     }
 
     private suspend fun add(event: ChatInputInteractionEvent, settings: GuildSettings) {
+        val permission = event.options[0].getOption("permissions")
+            .flatMap(ApplicationCommandInteractionOption::getValue)
+            .map(ApplicationCommandInteractionOptionValue::asLong)
+            .get()
+        val memberId = event.options[0].getOption("member")
+            .flatMap(ApplicationCommandInteractionOption::getValue)
+            .map(ApplicationCommandInteractionOptionValue::asSnowflake)
+            .getOrNull()
+        val roleId = event.options[0].getOption("role")
+            .flatMap(ApplicationCommandInteractionOption::getValue)
+            .map(ApplicationCommandInteractionOptionValue::asSnowflake)
+            .getOrNull()
+
         // TODO: add perms check
         TODO("Not yet implemented")
     }
 
     private suspend fun remove(event: ChatInputInteractionEvent, settings: GuildSettings) {
+        val memberId = event.options[0].getOption("member")
+            .flatMap(ApplicationCommandInteractionOption::getValue)
+            .map(ApplicationCommandInteractionOptionValue::asSnowflake)
+            .getOrNull()
+        val roleId = event.options[0].getOption("role")
+            .flatMap(ApplicationCommandInteractionOption::getValue)
+            .map(ApplicationCommandInteractionOptionValue::asSnowflake)
+            .getOrNull()
+
         // TODO: add perms check
         TODO("Not yet implemented")
     }
