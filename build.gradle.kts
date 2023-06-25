@@ -25,10 +25,10 @@ buildscript {
     }
 }
 
-val ticketBirdVersion = "2.1.0"
+val ticketBirdVersion = "2.0.3"
 val gradleWrapperVersion = "7.6"
 val javaVersion = "17"
-val d4jVersion = "3.2.4"
+val d4jVersion = "3.2.5"
 val d4jStoresVersion = "3.2.2"
 val thymeleafSpringVersion = "3.1.1.RELEASE"
 val mysqlR2dbcVersion = "0.8.2.RELEASE"

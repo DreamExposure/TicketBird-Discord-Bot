@@ -55,6 +55,7 @@ class DefaultPermissionService(
         Permission.EMBED_LINKS,
         Permission.SEND_MESSAGES,
         Permission.READ_MESSAGE_HISTORY,
+        Permission.ADD_REACTIONS,
         Permission.VIEW_CHANNEL,
         Permission.USE_APPLICATION_COMMANDS,
     )
