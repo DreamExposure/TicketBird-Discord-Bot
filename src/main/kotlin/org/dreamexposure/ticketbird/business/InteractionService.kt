@@ -1,5 +1,6 @@
 package org.dreamexposure.ticketbird.business
 
+import discord4j.common.util.Snowflake
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import discord4j.core.`object`.entity.Message
 import discord4j.core.`object`.entity.channel.TextChannel
@@ -195,6 +196,23 @@ class DefaultInteractionService(
             .flatMap { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
             .awaitSingleOrNull()
     }
+
+    override suspend fun addOverrideViaCommand(write: Boolean, userId: Snowflake?, roleId: Snowflake?, ephemeral: Boolean, event: ChatInputInteractionEvent, settings: GuildSettings) {
+        val ticket = ticketService.getTicket(settings.guildId, event.interaction.channelId)
+
+        // Handle if not in a ticket channel
+        if (ticket == null) {
+            event.createFollowup(localeService.getString(settings.locale, "command.ticket.add.not-ticket"))
+                .withEphemeral(ephemeral)
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
+                .awaitSingleOrNull()
+            return
+        }
+
+        // TODO: Make sure this user has permission to modify this
+        TODO("Not yet implemented")
+    }
 }
 
 interface InteractionService {
@@ -205,6 +223,8 @@ interface InteractionService {
     suspend fun closeTicketViaCommand(ephemeral: Boolean, event: ChatInputInteractionEvent, settings: GuildSettings)
 
     suspend fun changeTopicViaCommand(topicId: Long, ephemeral: Boolean, event: ChatInputInteractionEvent, settings: GuildSettings)
+
+    suspend fun addOverrideViaCommand(write: Boolean, userId: Snowflake?, roleId: Snowflake?, ephemeral: Boolean, event: ChatInputInteractionEvent, settings: GuildSettings)
 }
 
 
