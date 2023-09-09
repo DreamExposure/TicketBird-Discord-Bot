@@ -1,5 +1,6 @@
 package org.dreamexposure.ticketbird.business.cache
 
+import org.dreamexposure.ticketbird.extensions.isExpiredTtl
 import reactor.core.publisher.Flux
 import java.time.Duration
 import java.time.Instant
@@ -15,18 +16,25 @@ class JdkCacheRepository<K : Any, V>(override val ttl: Duration) : CacheReposito
     }
 
     override suspend fun put(key: K, value: V) {
-        cache[key] = Pair(Instant.now(), value)
+        cache[key] = Pair(Instant.now().plus(ttl), value)
     }
 
     override suspend fun get(key: K): V? {
-        return cache[key]?.second
+        val cached = cache[key] ?: return null
+        if (cached.first.isExpiredTtl()) {
+            evict(key)
+            return null
+        }
+
+
+        return cached.second
     }
 
     override suspend fun getAndRemove(key: K): V? {
-        val cached = cache[key]?.second
-
+        val cached = cache[key] ?: return null
         evict(key)
-        return cached
+
+        return if (cached.first.isExpiredTtl()) null else cached.second
     }
 
     override suspend fun evict(key: K) {
@@ -34,6 +42,6 @@ class JdkCacheRepository<K : Any, V>(override val ttl: Duration) : CacheReposito
     }
 
     private fun evictOld() {
-        cache.forEach { (key, pair) -> if (Duration.between(pair.first, Instant.now()) >= ttl) cache.remove(key) }
+        cache.forEach { (key, pair) -> if (pair.first.isExpiredTtl()) cache.remove(key) }
     }
 }
