@@ -16,25 +16,25 @@ plugins {
 
     // Tooling
     id("com.gorylenko.gradle-git-properties") version "2.4.1"
-    id("com.google.cloud.tools.jib") version "3.3.1"
+    id("com.google.cloud.tools.jib") version "3.3.2"
 }
 
 buildscript {
     dependencies {
-        classpath("com.squareup:kotlinpoet:1.12.0")
+        classpath("com.squareup:kotlinpoet:1.14.2")
     }
 }
 
-val ticketBirdVersion = "2.0.3"
+val ticketBirdVersion = "2.1.0"
 val gradleWrapperVersion = "7.6"
 val javaVersion = "17"
-val d4jVersion = "3.2.5"
+val d4jVersion = "3.2.6"
 val d4jStoresVersion = "3.2.2"
 val mysqlR2dbcVersion = "0.8.2.RELEASE"
 val mySqlConnectorVersion = "8.0.33"
-val discordWebhooksVersion = "0.8.2"
+val discordWebhooksVersion = "0.8.4"
 val springMockkVersion = "4.0.2"
-val commonsIOVersion = "2.11.0"
+val commonsIOVersion = "2.13.0"
 
 group = "org.dreamexposure"
 version = ticketBirdVersion
