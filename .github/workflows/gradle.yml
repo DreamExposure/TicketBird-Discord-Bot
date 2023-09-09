@@ -14,7 +14,7 @@ jobs:
     if: ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name != 'DreamExposure/TicketBird-Discord-Bot' }}
     strategy:
       matrix:
-        java: [ 17 ]
+        java: [ 17, 20 ]
     steps:
       - uses: actions/checkout@v2
 
@@ -83,8 +83,8 @@ jobs:
 
       # Have K8S pull latest images for dev pods
       - name: Trigger dev deploy
-        uses: Consensys/kubernetes-action@master
+        uses: davi020/kubernetes-action@master
         env:
           KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
         with:
-          args: delete -n ticketbird pods -l profile=dev,app=ticketbird
+          args: delete -n ticketbird pods -l env=dev,app=ticketbird
