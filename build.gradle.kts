@@ -11,8 +11,8 @@ plugins {
 
     // Spring
     kotlin("plugin.spring") version "1.9.10"
-    id("org.springframework.boot") version "3.0.1"
-    id("io.spring.dependency-management") version "1.1.0"
+    id("org.springframework.boot") version "3.1.3"
+    id("io.spring.dependency-management") version "1.1.3"
 
     // Tooling
     id("com.gorylenko.gradle-git-properties") version "2.4.1"
@@ -30,10 +30,10 @@ val gradleWrapperVersion = "7.6"
 val javaVersion = "17"
 val d4jVersion = "3.2.5"
 val d4jStoresVersion = "3.2.2"
-val thymeleafSpringVersion = "3.1.1.RELEASE"
 val mysqlR2dbcVersion = "0.8.2.RELEASE"
+val mySqlConnectorVersion = "8.0.33"
 val discordWebhooksVersion = "0.8.2"
-val springMockkVersion = "4.0.0"
+val springMockkVersion = "4.0.2"
 val commonsIOVersion = "2.11.0"
 
 group = "org.dreamexposure"
@@ -79,17 +79,13 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-cache")
 
     // Web
-    implementation("org.thymeleaf:thymeleaf")
-    implementation("org.thymeleaf:thymeleaf-spring5:$thymeleafSpringVersion")
-    implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect")
-
     implementation("com.squareup.okhttp3:okhttp")
 
     // Database
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-mysql")
     implementation("dev.miku:r2dbc-mysql:$mysqlR2dbcVersion")
-    implementation("mysql:mysql-connector-java")
+    implementation("mysql:mysql-connector-java:$mySqlConnectorVersion")
 
     // IO
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
