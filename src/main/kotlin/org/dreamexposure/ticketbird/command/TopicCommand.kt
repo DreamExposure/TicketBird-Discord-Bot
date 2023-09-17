@@ -15,11 +15,13 @@ class TopicCommand(
     override val ephemeral = true
 
     override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings) {
-        val topicId = event.getOption("topic")
-            .flatMap(ApplicationCommandInteractionOption::getValue)
-            .map(ApplicationCommandInteractionOptionValue::asString)
-            .map(String::toLong)
-            .orElse(-1)
+        val topicId = try {
+            event.getOption("topic")
+                .flatMap(ApplicationCommandInteractionOption::getValue)
+                .map(ApplicationCommandInteractionOptionValue::asString)
+                .map(String::toLong)
+                .orElse(-1)
+        } catch (ex: NumberFormatException) { -1 }
 
         interactionService.changeTopicViaCommand(topicId, ephemeral, event, settings)
     }

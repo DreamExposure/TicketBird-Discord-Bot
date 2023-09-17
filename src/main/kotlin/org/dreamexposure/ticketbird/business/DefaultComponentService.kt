@@ -22,7 +22,7 @@ class DefaultComponentService(
 
     override suspend fun getProjectSelectComponents(settings: GuildSettings, withCreate: Boolean): Array<LayoutComponent> {
         val projectsAsOptions = projectService.getAllProjects(settings.guildId)
-            .map { SelectMenu.Option.of(it.name, it.name) }
+            .map { SelectMenu.Option.of(it.name, it.id.toString()) }
 
         val id = if (withCreate) "select-project-with-create" else "select-project"
 

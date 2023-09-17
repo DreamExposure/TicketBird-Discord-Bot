@@ -9,7 +9,7 @@ import java.util.*
 
 @Component
 class DefaultLocaleService: LocaleService {
-    private val source: ResourceBundleMessageSource
+    private final val source: ResourceBundleMessageSource
 
     init {
         val src = ResourceBundleMessageSource()

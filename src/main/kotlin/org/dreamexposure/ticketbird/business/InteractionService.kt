@@ -2,11 +2,12 @@ package org.dreamexposure.ticketbird.business
 
 import discord4j.common.util.Snowflake
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
+import discord4j.core.event.domain.interaction.DeferrableInteractionEvent
 import discord4j.core.`object`.entity.Message
 import discord4j.core.`object`.entity.channel.TextChannel
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
-import org.dreamexposure.ticketbird.business.cache.CacheRepository
+import org.dreamexposure.ticketbird.TicketCreateStateCache
 import org.dreamexposure.ticketbird.config.Config
 import org.dreamexposure.ticketbird.extensions.asSeconds
 import org.dreamexposure.ticketbird.extensions.discord4j.deleteFollowupDelayed
@@ -15,18 +16,18 @@ import org.dreamexposure.ticketbird.`object`.TicketCreateState
 import org.springframework.stereotype.Component
 
 @Component
-class DefaultInteractionService(
+class InteractionService(
     private val projectService: ProjectService,
     private val ticketService: TicketService,
     private val localeService: LocaleService,
     private val componentService: ComponentService,
     private val staticMessageService: StaticMessageService,
-    private val ticketCreateStateCache: CacheRepository<String, TicketCreateState>,
-): InteractionService {
+    private val ticketCreateStateCache: TicketCreateStateCache,
+) {
     private val openTicketMessageDeleteSeconds = Config.TIMING_MESSAGE_DELETE_TICKET_FLOW_SECONDS.getLong().asSeconds()
     private val genericMessageDeleteSeconds = Config.TIMING_MESSAGE_DELETE_GENERIC_SECONDS.getLong().asSeconds()
 
-    override suspend fun openTicketViaCommand(info: String, topicId: Long, ephemeral: Boolean, event: ChatInputInteractionEvent, settings: GuildSettings) {
+    suspend fun openTicketViaInteraction(info: String, topicId: Long, ephemeral: Boolean, event: DeferrableInteractionEvent, settings: GuildSettings) {
         // Check if ticket bird is even functional
         if (!settings.hasRequiredIdsSet() && !settings.requiresRepair) {
             // TicketBird never init
@@ -45,7 +46,7 @@ class DefaultInteractionService(
 
         // Check if project required but missing; if so; cache info, give them project dropdown
         if (settings.useProjects && topicId <= 0) {
-            ticketCreateStateCache.put("${settings.guildId}.${event.interaction.user.id.asLong()}", TicketCreateState(ticketInfo = info))
+            ticketCreateStateCache.put(guildId = settings.guildId, event.interaction.user.id, TicketCreateState(ticketInfo = info))
 
             event.createFollowup(localeService.getString(settings.locale, "dropdown.select-project.prompt"))
                 .withComponents(*componentService.getProjectSelectComponents(settings, withCreate = true))
@@ -61,7 +62,7 @@ class DefaultInteractionService(
 
         // Check if project required and exists; if not; cache info, give them project dropdown
         if (settings.useProjects && project == null) {
-            ticketCreateStateCache.put("${settings.guildId}.${event.interaction.user.id.asLong()}", TicketCreateState(ticketInfo = info))
+            ticketCreateStateCache.put(guildId = settings.guildId, event.interaction.user.id, TicketCreateState(ticketInfo = info))
 
             event.createFollowup(localeService.getString(settings.locale, "command.support.topic.not-found"))
                 .withComponents(*componentService.getProjectSelectComponents(settings, withCreate = true))
@@ -91,7 +92,7 @@ class DefaultInteractionService(
             .awaitSingleOrNull()
     }
 
-    override suspend fun holdTicketViaCommand(ephemeral: Boolean, event: ChatInputInteractionEvent, settings: GuildSettings) {
+    suspend fun holdTicketViaCommand(ephemeral: Boolean, event: ChatInputInteractionEvent, settings: GuildSettings) {
         val ticket = ticketService.getTicket(settings.guildId, event.interaction.channelId)
 
         // Handle if not in a ticket channel
@@ -124,7 +125,7 @@ class DefaultInteractionService(
             .awaitSingleOrNull()
     }
 
-    override suspend fun closeTicketViaCommand(ephemeral: Boolean, event: ChatInputInteractionEvent, settings: GuildSettings) {
+    suspend fun closeTicketViaCommand(ephemeral: Boolean, event: ChatInputInteractionEvent, settings: GuildSettings) {
         val ticket = ticketService.getTicket(settings.guildId, event.interaction.channelId)
 
         // Handle if not in a ticket channel
@@ -157,7 +158,7 @@ class DefaultInteractionService(
             .awaitSingleOrNull()
     }
 
-    override suspend fun changeTopicViaCommand(topicId: Long, ephemeral: Boolean, event: ChatInputInteractionEvent, settings: GuildSettings) {
+    suspend fun changeTopicViaCommand(topicId: Long, ephemeral: Boolean, event: ChatInputInteractionEvent, settings: GuildSettings) {
         val ticket = ticketService.getTicket(settings.guildId, event.interaction.channelId)
 
         // Handle if not in a ticket channel
@@ -197,7 +198,7 @@ class DefaultInteractionService(
             .awaitSingleOrNull()
     }
 
-    override suspend fun addOverrideViaCommand(write: Boolean, userId: Snowflake?, roleId: Snowflake?, ephemeral: Boolean, event: ChatInputInteractionEvent, settings: GuildSettings) {
+    suspend fun addOverrideViaCommand(write: Boolean, userId: Snowflake?, roleId: Snowflake?, ephemeral: Boolean, event: ChatInputInteractionEvent, settings: GuildSettings) {
         val ticket = ticketService.getTicket(settings.guildId, event.interaction.channelId)
 
         // Handle if not in a ticket channel
@@ -214,17 +215,3 @@ class DefaultInteractionService(
         TODO("Not yet implemented")
     }
 }
-
-interface InteractionService {
-    suspend fun openTicketViaCommand(info: String, topicId: Long, ephemeral: Boolean, event: ChatInputInteractionEvent, settings: GuildSettings)
-
-    suspend fun holdTicketViaCommand(ephemeral: Boolean, event: ChatInputInteractionEvent, settings: GuildSettings)
-
-    suspend fun closeTicketViaCommand(ephemeral: Boolean, event: ChatInputInteractionEvent, settings: GuildSettings)
-
-    suspend fun changeTopicViaCommand(topicId: Long, ephemeral: Boolean, event: ChatInputInteractionEvent, settings: GuildSettings)
-
-    suspend fun addOverrideViaCommand(write: Boolean, userId: Snowflake?, roleId: Snowflake?, ephemeral: Boolean, event: ChatInputInteractionEvent, settings: GuildSettings)
-}
-
-

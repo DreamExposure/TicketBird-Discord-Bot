@@ -42,21 +42,25 @@ class TicketCommand(
             .flatMap(ApplicationCommandInteractionOption::getValue)
             .map(ApplicationCommandInteractionOptionValue::asString)
             .orElse("")
-        val topicId = event.options[0].getOption("topic")
-            .flatMap(ApplicationCommandInteractionOption::getValue)
-            .map(ApplicationCommandInteractionOptionValue::asString)
-            .map(String::toLong)
-            .orElse(-1)
+        val topicId = try {
+            event.options[0].getOption("topic")
+                .flatMap(ApplicationCommandInteractionOption::getValue)
+                .map(ApplicationCommandInteractionOptionValue::asString)
+                .map(String::toLong)
+                .orElse(-1)
+        } catch (ex: NumberFormatException) { -1 }
 
-        interactionService.openTicketViaCommand(info, topicId, ephemeral, event, settings)
+        interactionService.openTicketViaInteraction(info, topicId, ephemeral, event, settings)
     }
 
     private suspend fun topic(event: ChatInputInteractionEvent, settings: GuildSettings) {
-        val topicId = event.options[0].getOption("topic")
-            .flatMap(ApplicationCommandInteractionOption::getValue)
-            .map(ApplicationCommandInteractionOptionValue::asString)
-            .map(String::toLong)
-            .orElse(-1)
+        val topicId = try {
+            event.options[0].getOption("topic")
+                .flatMap(ApplicationCommandInteractionOption::getValue)
+                .map(ApplicationCommandInteractionOptionValue::asString)
+                .map(String::toLong)
+                .orElse(-1)
+        } catch (ex: NumberFormatException) { -1 }
 
         interactionService.changeTopicViaCommand(topicId, ephemeral, event, settings)
     }

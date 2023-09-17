@@ -97,7 +97,7 @@ class ActivityMonitor(
                         } catch (ex: ClientException) {
                             if (ex.status == HttpResponseStatus.FORBIDDEN) {
                                 // Missing permissions to channel, delete record of ticket as bot can no longer manage it
-                                ticketService.deleteTicket(guild.id, ticket.number)
+                                ticketService.deleteTicket(guild.id, ticket.channel)
                             } else throw ex // Rethrow
                         }
                     }

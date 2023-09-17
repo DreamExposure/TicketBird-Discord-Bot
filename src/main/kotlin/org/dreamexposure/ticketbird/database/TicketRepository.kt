@@ -6,14 +6,11 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 interface TicketRepository: R2dbcRepository<TicketData, Long> {
-
-    fun findByGuildIdAndNumber(guildId: Long, number: Int): Mono<TicketData>
-
     fun findByGuildIdAndChannel(guildId: Long, channel: Long): Mono<TicketData>
 
     fun findByGuildId(guildId: Long): Flux<TicketData>
 
-    fun deleteByGuildIdAndNumber(guildId: Long, number: Int): Mono<Void>
+    fun deleteByGuildIdAndChannel(guildId: Long, channel: Long): Mono<Void>
 
     fun deleteAllByGuildId(guildId: Long): Mono<Void>
 
