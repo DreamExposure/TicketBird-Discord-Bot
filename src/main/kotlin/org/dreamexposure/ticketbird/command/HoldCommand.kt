@@ -13,6 +13,6 @@ class HoldCommand(
     override val ephemeral = true
 
     override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings) {
-        interactionService.holdTicketViaCommand(ephemeral, event, settings)
+        interactionService.holdTicketViaInteraction(ephemeral, event, settings)
     }
 }

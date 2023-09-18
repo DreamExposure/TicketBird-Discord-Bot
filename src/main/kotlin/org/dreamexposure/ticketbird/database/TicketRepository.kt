@@ -18,6 +18,7 @@ interface TicketRepository: R2dbcRepository<TicketData, Long> {
         UPDATE tickets
         SET project = :project,
             creator = :creator,
+            participants = :participants,
             channel = :channel,
             category = :category,
             last_activity = :lastActivity,
@@ -31,6 +32,7 @@ interface TicketRepository: R2dbcRepository<TicketData, Long> {
         number: Int,
         project: String,
         creator: Long,
+        participants: String?,
         channel: Long,
         category: Long,
         lastActivity: Long,

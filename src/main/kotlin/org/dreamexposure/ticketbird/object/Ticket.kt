@@ -13,6 +13,8 @@ data class Ticket(
 
     val creator: Snowflake,
 
+    val participants: List<Snowflake> = listOf(),
+
     val channel: Snowflake,
 
     var category: Snowflake,
@@ -27,6 +29,11 @@ data class Ticket(
         number = data.number,
         project = data.project,
         creator = Snowflake.of(data.creator),
+        participants = data.participants
+            ?.split(",")
+            ?.filter(String::isNotBlank)
+            ?.map(Snowflake::of)
+            ?.toList() ?: listOf(),
         channel = Snowflake.of(data.channel),
         category = Snowflake.of(data.category),
         lastActivity = Instant.ofEpochMilli(data.lastActivity),

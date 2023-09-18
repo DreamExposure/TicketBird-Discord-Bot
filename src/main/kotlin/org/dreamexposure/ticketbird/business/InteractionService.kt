@@ -12,6 +12,7 @@ import org.dreamexposure.ticketbird.config.Config
 import org.dreamexposure.ticketbird.extensions.asSeconds
 import org.dreamexposure.ticketbird.extensions.discord4j.deleteFollowupDelayed
 import org.dreamexposure.ticketbird.`object`.GuildSettings
+import org.dreamexposure.ticketbird.`object`.Ticket
 import org.dreamexposure.ticketbird.`object`.TicketCreateState
 import org.springframework.stereotype.Component
 
@@ -92,7 +93,7 @@ class InteractionService(
             .awaitSingleOrNull()
     }
 
-    suspend fun holdTicketViaCommand(ephemeral: Boolean, event: ChatInputInteractionEvent, settings: GuildSettings) {
+    suspend fun holdTicketViaInteraction(ephemeral: Boolean, event: DeferrableInteractionEvent, settings: GuildSettings) {
         val ticket = ticketService.getTicket(settings.guildId, event.interaction.channelId)
 
         // Handle if not in a ticket channel
@@ -104,6 +105,10 @@ class InteractionService(
                 .awaitSingleOrNull()
             return
         }
+
+        // Permission check
+        if (!handleIfHasLifecyclePermission(ticket, event, settings)) return
+
         // Handle if ticket is already on hold
         if (ticket.category == settings.holdCategory) {
             event.createFollowup(localeService.getString(settings.locale, "command.hold.already-held"))
@@ -125,7 +130,7 @@ class InteractionService(
             .awaitSingleOrNull()
     }
 
-    suspend fun closeTicketViaCommand(ephemeral: Boolean, event: ChatInputInteractionEvent, settings: GuildSettings) {
+    suspend fun closeTicketViaInteraction(ephemeral: Boolean, event: DeferrableInteractionEvent, settings: GuildSettings) {
         val ticket = ticketService.getTicket(settings.guildId, event.interaction.channelId)
 
         // Handle if not in a ticket channel
@@ -137,6 +142,10 @@ class InteractionService(
                 .awaitSingleOrNull()
             return
         }
+
+        // Permission check
+        if (!handleIfHasLifecyclePermission(ticket, event, settings)) return
+
         // Handle if ticket is already closed
         if (ticket.category == settings.closeCategory) {
             event.createFollowup(localeService.getString(settings.locale, "command.close.already-closed"))
@@ -171,6 +180,9 @@ class InteractionService(
             return
         }
 
+        // Permission check
+        if (!handleIfHasLifecyclePermission(ticket, event, settings)) return
+
         val project = projectService.getProject(settings.guildId, topicId)
 
         if (project == null) {
@@ -198,7 +210,7 @@ class InteractionService(
             .awaitSingleOrNull()
     }
 
-    suspend fun addOverrideViaCommand(write: Boolean, userId: Snowflake?, roleId: Snowflake?, ephemeral: Boolean, event: ChatInputInteractionEvent, settings: GuildSettings) {
+    suspend fun addParticipantViaCommand(write: Boolean, userId: Snowflake, ephemeral: Boolean, event: ChatInputInteractionEvent, settings: GuildSettings) {
         val ticket = ticketService.getTicket(settings.guildId, event.interaction.channelId)
 
         // Handle if not in a ticket channel
@@ -211,7 +223,62 @@ class InteractionService(
             return
         }
 
-        // TODO: Make sure this user has permission to modify this
-        TODO("Not yet implemented")
+        // Permission check
+        if (!handleIfHasLifecyclePermission(ticket, event, settings)) return
+
+        // Check if user already has access to this ticket
+        if (ticket.participants.contains(userId)) {
+            event.createFollowup(localeService.getString(settings.locale, "command.ticket.add.already"))
+                .withEphemeral(ephemeral)
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
+                .awaitSingleOrNull()
+            return
+        }
+
+        ticketService.addParticipant(settings.guildId, ticket.channel, userId, event.interaction.user.id, write)
+
+        event.createFollowup(localeService.getString(settings.locale, "generic.success"))
+            .withEphemeral(ephemeral)
+            .map(Message::getId)
+            .flatMap { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
+            .awaitSingleOrNull()
+    }
+
+    suspend fun removeParticipantViaCommand(userId: Snowflake, ephemeral: Boolean, event: ChatInputInteractionEvent, settings: GuildSettings) {
+        val ticket = ticketService.getTicket(settings.guildId, event.interaction.channelId)
+
+        // Handle if not in a ticket channel
+        if (ticket == null) {
+            event.createFollowup(localeService.getString(settings.locale, "command.ticket.remove.not-ticket"))
+                .withEphemeral(ephemeral)
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
+                .awaitSingleOrNull()
+            return
+        }
+
+        // Permission check
+        if (!handleIfHasLifecyclePermission(ticket, event, settings)) return
+
+        ticketService.removeParticipant(settings.guildId, ticket.channel, userId, event.interaction.user.id)
+
+        event.createFollowup(localeService.getString(settings.locale, "generic.success"))
+            .withEphemeral(ephemeral)
+            .map(Message::getId)
+            .flatMap { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
+            .awaitSingleOrNull()
+    }
+
+    suspend fun handleIfHasLifecyclePermission(ticket: Ticket, event: DeferrableInteractionEvent, settings: GuildSettings): Boolean {
+        return if (ticket.participants.contains(event.interaction.user.id)) {
+            // User was added as a participant and can't alter lifecycle of tickets
+            event.createFollowup(localeService.getString(settings.locale, "generic.error.lifecycle-permission-denied"))
+                .withEphemeral(true)
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
+                .awaitSingleOrNull()
+            false
+        } else true
     }
 }

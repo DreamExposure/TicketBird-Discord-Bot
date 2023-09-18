@@ -83,6 +83,7 @@ class DefaultTicketService(
             number = ticket.number,
             project = ticket.project,
             creator = ticket.creator.asLong(),
+            participants = ticket.participants.map(Snowflake::asLong).joinToString(","),
             channel = ticket.channel.asLong(),
             category = ticket.category.asLong(),
             lastActivity = ticket.lastActivity.toEpochMilli(),
@@ -101,6 +102,7 @@ class DefaultTicketService(
             number = ticket.number,
             project = ticket.project,
             creator = ticket.creator.asLong(),
+            participants = ticket.participants.map(Snowflake::asLong).joinToString(","),
             channel = ticket.channel.asLong(),
             category = ticket.category.asLong(),
             lastActivity = ticket.lastActivity.toEpochMilli(),
@@ -342,28 +344,69 @@ class DefaultTicketService(
         val attachments = mutableListOf<File>()
 
         // Generate transcript file
-        val transcriptStream = ticketLog.toString().byteInputStream()
-        ticket.transcriptSha256 = ticketLog.toString().toByteArray().sha256Hash()
-        attachments.add(File.of("transcript_ticket-${ticket.number}.log", transcriptStream))
-        transcriptStream.close()
+        withContext(Dispatchers.IO) {
+            val transcriptStream = ticketLog.toString().byteInputStream()
+            ticket.transcriptSha256 = ticketLog.toString().toByteArray().sha256Hash()
+            attachments.add(File.of("transcript_ticket-${ticket.number}.log", transcriptStream))
+            transcriptStream.close()
 
-        // Generate zipped attachments file
-        zipStream.close()
-        if (hasAttachments) {
-            withContext(Dispatchers.IO) {
-                val byteArray = byteStream.toByteArray()
-                ticket.attachmentsSha256 = byteArray.sha256Hash()
-                val zipInput = ByteArrayInputStream(byteArray)
-                attachments.add(File.of("attachments_ticket-${ticket.number}.zip", zipInput))
-                zipInput.close()
+            // Generate zipped attachments file
+            zipStream.close()
+            if (hasAttachments) {
+                withContext(Dispatchers.IO) {
+                    val byteArray = byteStream.toByteArray()
+                    ticket.attachmentsSha256 = byteArray.sha256Hash()
+                    val zipInput = ByteArrayInputStream(byteArray)
+                    attachments.add(File.of("attachments_ticket-${ticket.number}.zip", zipInput))
+                    zipInput.close()
+                }
             }
+            byteStream.close()
         }
-        byteStream.close()
 
         updateTicket(ticket)
 
         discordClient.getChannelById(settings.logChannel!!).ofType(TextChannel::class.java).flatMap { channel ->
             channel.createMessage("").withFiles(attachments)
         }.awaitSingleOrNull()
+    }
+
+    override suspend fun addParticipant(guildId: Snowflake, channelId: Snowflake, participant: Snowflake, addedBy: Snowflake, write: Boolean) {
+        val ticket = getTicket(guildId, channelId) ?: return // return if ticket does not exist
+        val settings = settingsService.getGuildSettings(guildId)
+        val channel = discordClient.getChannelById(channelId).ofType(TextChannel::class.java).awaitSingle()
+
+        channel.addMemberOverwrite(participant, permissionService.getTicketParticipantGrantOverwrites(write, participant),
+            localeService.getString(settings.locale, "env.audit.ticket.participant.added-reason")
+        ).awaitSingleOrNull()
+        updateTicket(ticket.copy(participants = ticket.participants + participant))
+
+        channel.createMessage(localeService.getString(
+            settings.locale,
+            "ticket.participant.added",
+            participant.asString(),
+            addedBy.asString()
+        )).awaitSingleOrNull()
+    }
+
+    override suspend fun removeParticipant(guildId: Snowflake, channelId: Snowflake, participant: Snowflake, removedBy: Snowflake) {
+        val ticket = getTicket(guildId, channelId) ?: return // return if ticket does not exist
+        val settings = settingsService.getGuildSettings(guildId)
+        val channel = discordClient.getChannelById(channelId).ofType(TextChannel::class.java).awaitSingle()
+
+        val participants = ticket.participants.toMutableList()
+        participants.remove(participant)
+
+        channel.addMemberOverwrite(participant, permissionService.getTicketParticipantDenyOverwrites(participant),
+            localeService.getString(settings.locale, "env.audit.ticket.participant.removed-reason")
+        ).awaitSingleOrNull()
+        updateTicket(ticket.copy(participants = participants))
+
+        channel.createMessage(localeService.getString(
+            settings.locale,
+            "ticket.participant.removed",
+            participant.asString(),
+            removedBy.asString()
+        )).awaitSingleOrNull()
     }
 }

@@ -13,6 +13,6 @@ class CloseCommand(
     override val ephemeral = true
 
     override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings) {
-        interactionService.closeTicketViaCommand(ephemeral, event, settings)
+        interactionService.closeTicketViaInteraction(ephemeral, event, settings)
     }
 }

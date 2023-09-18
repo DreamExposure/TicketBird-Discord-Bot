@@ -34,4 +34,8 @@ interface TicketService {
     suspend fun createNewTicketFull(guildId: Snowflake, creatorId: Snowflake, project: Project? = null, info: String?): Ticket
 
     suspend fun logTicket(guildId: Snowflake, channelId: Snowflake)
+
+    suspend fun addParticipant(guildId: Snowflake, channelId: Snowflake, participant: Snowflake, addedBy: Snowflake, write: Boolean)
+
+    suspend fun removeParticipant(guildId: Snowflake, channelId: Snowflake, participant: Snowflake, removedBy: Snowflake)
 }

@@ -41,6 +41,12 @@
       "description": "Add a user and/or role to the current ticket",
       "options": [
         {
+          "name": "member",
+          "type": 6,
+          "description": "The user to add to the current ticket",
+          "required": "true"
+        },
+        {
           "name": "permissions",
           "type": 4,
           "description": "The level of permission to give to these users/roles",
@@ -55,16 +61,6 @@
               "value": 1
             }
           ]
-        },
-        {
-          "name": "member",
-          "type": 6,
-          "description": "The user to add to the current ticket"
-        },
-        {
-          "name": "role",
-          "type": 8,
-          "description": "The role to add to the current ticket"
         }
       ]
     },
@@ -76,12 +72,8 @@
         {
           "name": "member",
           "type": 6,
-          "description": "The user to remove from the current ticket"
-        },
-        {
-          "name": "role",
-          "type": 8,
-          "description": "The role to remove from the current ticket"
+          "description": "The user to remove from the current ticket",
+          "required": true
         }
       ]
     },
@@ -101,14 +93,14 @@
       "description": "Validate a transcript.log or attachments.zip's legitimacy with its SHA-256 checksum",
       "options": [
         {
-          "name": "transcript",
+          "name": "file",
           "type": 11,
-          "description": "A transcript.log file from TicketBird's logging"
+          "description": "A file for TicketBird to validate against"
         },
         {
-          "name": "attachments",
-          "type": 11,
-          "description": "An attachments.zip file from TicketBird's logging"
+          "name": "checksum",
+          "type": 3,
+          "description": "A SHA-256 checksum for TicketBird to search for"
         }
       ]
     }
