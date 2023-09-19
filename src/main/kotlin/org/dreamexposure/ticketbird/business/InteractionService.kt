@@ -5,6 +5,7 @@ import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import discord4j.core.event.domain.interaction.DeferrableInteractionEvent
 import discord4j.core.`object`.entity.Message
 import discord4j.core.`object`.entity.channel.TextChannel
+import discord4j.rest.util.Permission
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.TicketCreateStateCache
@@ -227,7 +228,11 @@ class InteractionService(
         if (!handleIfHasLifecyclePermission(ticket, event, settings)) return
 
         // Check if user already has access to this ticket
-        if (ticket.participants.contains(userId)) {
+        val canSeeChannel = event.interaction.channel.ofType(TextChannel::class.java)
+            .flatMap { it.getEffectivePermissions(userId) }
+            .map { it.contains(Permission.VIEW_CHANNEL) || it.contains(Permission.ADMINISTRATOR) }
+            .awaitSingle()
+        if (canSeeChannel) {
             event.createFollowup(localeService.getString(settings.locale, "command.ticket.add.already"))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
@@ -260,6 +265,20 @@ class InteractionService(
 
         // Permission check
         if (!handleIfHasLifecyclePermission(ticket, event, settings)) return
+
+        // Check if target user is admin
+        val userIsAdmin = event.interaction.channel.ofType(TextChannel::class.java)
+            .flatMap { it.getEffectivePermissions(userId) }
+            .map { it.contains(Permission.ADMINISTRATOR) }
+            .awaitSingle()
+        if (userIsAdmin) {
+            event.createFollowup(localeService.getString(settings.locale, "command.ticket.remove.admin"))
+                .withEphemeral(ephemeral)
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
+                .awaitSingleOrNull()
+            return
+        }
 
         ticketService.removeParticipant(settings.guildId, ticket.channel, userId, event.interaction.user.id)
 
