@@ -68,18 +68,6 @@ class ProjectCommand(
             .map { it.substring(0, 16.coerceAtMost(it.length)) }
             .get()
 
-
-        // Check if project with same name exists
-        if (projectService.getProject(settings.guildId, name) != null) {
-            event.createFollowup(localeService.getString(settings.locale, "command.project.add.exists"))
-                .withEmbeds(listEmbed(settings))
-                .withEphemeral(ephemeral)
-                .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
-                .awaitSingleOrNull()
-            return
-        }
-
         // Check if max amount of projects has been created
         if (projectService.getAllProjects(settings.guildId).size >= 25) {
             event.createFollowup(localeService.getString(settings.locale, "command.project.add.limit-reached"))
@@ -102,11 +90,13 @@ class ProjectCommand(
     }
 
     private suspend fun remove(event: ChatInputInteractionEvent, settings: GuildSettings) {
-        val projectId = event.options[0].getOption("project")
-            .flatMap(ApplicationCommandInteractionOption::getValue)
-            .map(ApplicationCommandInteractionOptionValue::asString)
-            .map(String::toLong)
-            .get()
+        val projectId = try {
+            event.options[0].getOption("project")
+                .flatMap(ApplicationCommandInteractionOption::getValue)
+                .map(ApplicationCommandInteractionOptionValue::asString)
+                .map(String::toLong)
+                .get()
+        } catch (ex: NumberFormatException) { -1 }
 
 
         if (projectService.getProject(settings.guildId, projectId) == null) {
@@ -130,11 +120,13 @@ class ProjectCommand(
     }
 
     private suspend fun view(event: ChatInputInteractionEvent, settings: GuildSettings) {
-        val projectId = event.options[0].getOption("project")
-            .flatMap(ApplicationCommandInteractionOption::getValue)
-            .map(ApplicationCommandInteractionOptionValue::asString)
-            .map(String::toLong)
-            .get()
+        val projectId = try {
+            event.options[0].getOption("project")
+                .flatMap(ApplicationCommandInteractionOption::getValue)
+                .map(ApplicationCommandInteractionOptionValue::asString)
+                .map(String::toLong)
+                .get()
+        } catch (ex: NumberFormatException) { -1 }
 
         val project = projectService.getProject(settings.guildId, projectId)
         if (project == null) {
@@ -154,11 +146,13 @@ class ProjectCommand(
     }
 
     private suspend fun edit(event: ChatInputInteractionEvent, settings: GuildSettings) {
-        val projectId = event.options[0].getOption("project")
-            .flatMap(ApplicationCommandInteractionOption::getValue)
-            .map(ApplicationCommandInteractionOptionValue::asString)
-            .map(String::toLong)
-            .get()
+        val projectId = try {
+            event.options[0].getOption("project")
+                .flatMap(ApplicationCommandInteractionOption::getValue)
+                .map(ApplicationCommandInteractionOptionValue::asString)
+                .map(String::toLong)
+                .get()
+        } catch (ex: NumberFormatException) { -1 }
         val project = projectService.getProject(settings.guildId, projectId)
 
         val prefix = event.options[0].getOption("prefix")

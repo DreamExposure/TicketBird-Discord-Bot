@@ -10,8 +10,6 @@ interface ProjectRepository: R2dbcRepository<ProjectData, Long> {
 
     fun deleteAllByGuildId(guildId: Long): Mono<Void>
 
-    fun deleteByGuildIdAndProjectName(guildId: Long, projectName: String): Mono<Void>
-
     @Query("""
         UPDATE projects
         SET project_prefix = :prefix,

@@ -15,9 +15,13 @@ interface PermissionService {
 
     fun getSupportChannelMemberOverrides(): PermissionSet
 
-    fun getTicketGrantOverrides(): PermissionSet
+    fun getTicketGrantOverrides(write: Boolean): PermissionSet
 
     fun getTicketChannelOverwrites(settings: GuildSettings, creator: Snowflake, project: Project?): List<PermissionOverwrite>
+
+    fun getTicketParticipantGrantOverwrites(write: Boolean, user: Snowflake): PermissionOverwrite
+
+    fun getTicketParticipantDenyOverwrites(user: Snowflake): PermissionOverwrite
 
     fun hasRequiredElevatedPermissions(memberPermissions: PermissionSet): Boolean
 }

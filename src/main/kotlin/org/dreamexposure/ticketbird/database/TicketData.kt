@@ -9,6 +9,7 @@ data class TicketData(
     val project: String,
 
     val creator: Long,
+    val participants: String?,
     val channel: Long,
     var category: Long,
 

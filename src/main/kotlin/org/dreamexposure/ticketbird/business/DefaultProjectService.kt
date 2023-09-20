@@ -18,12 +18,9 @@ class DefaultProjectService(
     override suspend fun getProject(guildId: Snowflake, id: Long): Project? {
         return getAllProjects(guildId).firstOrNull {it.id == id }
     }
-    override suspend fun getProject(guildId: Snowflake, name: String): Project? {
-        return getAllProjects(guildId).firstOrNull { it.name == name }
-    }
 
     override suspend fun getAllProjects(guildId: Snowflake): List<Project> {
-        var projects = projectCache.get(guildId.asLong())?.toList()
+        var projects = projectCache.get(key = guildId)?.toList()
         if (projects != null) return projects
 
         projects = projectRepository.findByGuildId(guildId.asLong())
@@ -31,7 +28,7 @@ class DefaultProjectService(
             .collectList()
             .awaitSingle()
 
-        projectCache.put(guildId.asLong(), projects.toTypedArray())
+        projectCache.put(key = guildId, value = projects.toTypedArray())
         return projects
     }
 
@@ -45,8 +42,8 @@ class DefaultProjectService(
             pingOverride = project.pingOverride.value,
         )).map(::Project).awaitSingle()
 
-        val cached = projectCache.get(project.guildId.asLong())
-        if (cached != null) projectCache.put(project.guildId.asLong(), cached + newProject)
+        val cached = projectCache.get(key = project.guildId)
+        if (cached != null) projectCache.put(key = project.guildId, value = cached + newProject)
 
         return project
     }
@@ -62,38 +59,27 @@ class DefaultProjectService(
             pingOverride = project.pingOverride.value,
         ).awaitSingleOrNull()
 
-        val cached = projectCache.get(project.guildId.asLong())
+        val cached = projectCache.get(key = project.guildId)
         if (cached != null) {
             val newList = cached.toMutableList()
             newList.removeIf { it.id == project.id }
-            projectCache.put(project.guildId.asLong(), (newList + project).toTypedArray())
-        }
-    }
-
-    override suspend fun deleteProject(guildId: Snowflake, name: String) {
-        projectRepository.deleteByGuildIdAndProjectName(guildId.asLong(), name).awaitSingleOrNull()
-
-        val cached = projectCache.get(guildId.asLong())
-        if (cached != null) {
-            val newList = cached.toMutableList()
-            newList.removeIf { it.name == name }
-            projectCache.put(guildId.asLong(), newList.toTypedArray())
+            projectCache.put(key = project.guildId, value = (newList + project).toTypedArray())
         }
     }
 
     override suspend fun deleteProject(guildId: Snowflake, id: Long) {
         projectRepository.deleteById(id).awaitSingleOrNull()
 
-        val cached = projectCache.get(guildId.asLong())
+        val cached = projectCache.get(key = guildId)
         if (cached != null) {
             val newList = cached.toMutableList()
             newList.removeIf { it.id == id }
-            projectCache.put(guildId.asLong(), newList.toTypedArray())
+            projectCache.put(key = guildId, value = newList.toTypedArray())
         }
     }
 
     override suspend fun deleteAllProjects(guildId: Snowflake) {
         projectRepository.deleteAllByGuildId(guildId.asLong()).awaitSingleOrNull()
-        projectCache.evict(guildId.asLong())
+        projectCache.evict(key = guildId)
     }
 }

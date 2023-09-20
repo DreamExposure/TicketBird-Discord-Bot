@@ -28,8 +28,13 @@ class CreateTicketButton(
         }
 
         if (settings.useProjects) {
+            // Defer, fetching all projects may be slow
+            event.deferReply()
+                .withEphemeral(true)
+                .awaitSingleOrNull()
+
             // Guild is set up to use projects, send an ephemeral select menu to let them select the project
-            event.reply(localeService.getString(settings.locale, "dropdown.select-project.prompt"))
+            event.createFollowup(localeService.getString(settings.locale, "dropdown.select-project.prompt"))
                 .withComponents(*componentService.getProjectSelectComponents(settings))
                 .withEphemeral(true)
                 .flatMap { event.deleteReplyDelayed(messageDeleteSeconds) }

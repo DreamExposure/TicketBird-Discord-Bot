@@ -18,10 +18,10 @@ class SelectProjectDropdown(
     override val ids = arrayOf("select-project")
 
     override suspend fun handle(event: SelectMenuInteractionEvent, settings: GuildSettings) {
-        val selected = event.values[0]
+        val selected = event.values[0].toLong()
 
         // Save selected project to state
-        ticketCreateStateCache.put("${settings.guildId}.${event.interaction.user.id.asLong()}", TicketCreateState(selected))
+        ticketCreateStateCache.put(settings.guildId, event.interaction.user.id, TicketCreateState(selected))
 
         // Pop modal
         event.presentModal()

@@ -50,33 +50,46 @@ class DefaultPermissionService(
         Permission.READ_MESSAGE_HISTORY,
     )
 
-    override fun getTicketGrantOverrides() = PermissionSet.of(
-        Permission.ATTACH_FILES,
-        Permission.EMBED_LINKS,
-        Permission.SEND_MESSAGES,
-        Permission.READ_MESSAGE_HISTORY,
-        Permission.ADD_REACTIONS,
-        Permission.VIEW_CHANNEL,
-        Permission.USE_APPLICATION_COMMANDS,
-    )
+    override fun getTicketGrantOverrides(write: Boolean): PermissionSet {
+        val defaultPerms = PermissionSet.of(
+            Permission.VIEW_CHANNEL,
+            Permission.READ_MESSAGE_HISTORY,
+        )
+
+        return if (write) defaultPerms.or(PermissionSet.of(
+            Permission.ATTACH_FILES,
+            Permission.EMBED_LINKS,
+            Permission.ADD_REACTIONS,
+            Permission.SEND_MESSAGES,
+            Permission.USE_APPLICATION_COMMANDS,
+        )) else defaultPerms
+    }
 
     override fun getTicketChannelOverwrites(settings: GuildSettings, creator: Snowflake, project: Project?): List<PermissionOverwrite> {
         val overwrites = mutableListOf<PermissionOverwrite>()
 
-        overwrites += PermissionOverwrite.forMember(creator, getTicketGrantOverrides(), PermissionSet.none())
+        overwrites += PermissionOverwrite.forMember(creator, getTicketGrantOverrides(true), PermissionSet.none())
         overwrites += PermissionOverwrite.forRole(settings.guildId, PermissionSet.none(), PermissionSet.all())
         overwrites += settings.staff
             .map(Snowflake::of)
-            .map { PermissionOverwrite.forMember(it, getTicketGrantOverrides(), PermissionSet.none()) }
+            .map { PermissionOverwrite.forMember(it, getTicketGrantOverrides(true), PermissionSet.none()) }
 
         if (project != null) {
-            overwrites += project.staffUsers.map { PermissionOverwrite.forMember(it, getTicketGrantOverrides(), PermissionSet.none()) }
-            overwrites += project.staffRoles.map { PermissionOverwrite.forRole(it, getTicketGrantOverrides(), PermissionSet.none()) }
+            overwrites += project.staffUsers.map { PermissionOverwrite.forMember(it, getTicketGrantOverrides(true), PermissionSet.none()) }
+            overwrites += project.staffRoles.map { PermissionOverwrite.forRole(it, getTicketGrantOverrides(true), PermissionSet.none()) }
         }
         if (settings.staffRole != null)
-            overwrites += PermissionOverwrite.forRole(settings.staffRole!!, getTicketGrantOverrides(), PermissionSet.none())
+            overwrites += PermissionOverwrite.forRole(settings.staffRole!!, getTicketGrantOverrides(true), PermissionSet.none())
 
         return overwrites
+    }
+
+    override fun getTicketParticipantGrantOverwrites(write: Boolean, user: Snowflake): PermissionOverwrite {
+        return PermissionOverwrite.forMember(user, getTicketGrantOverrides(write), PermissionSet.none())
+    }
+
+    override fun getTicketParticipantDenyOverwrites(user: Snowflake): PermissionOverwrite {
+        return PermissionOverwrite.forMember(user, PermissionSet.none(), PermissionSet.all())
     }
 
     override fun hasRequiredElevatedPermissions(memberPermissions: PermissionSet) =

@@ -6,9 +6,10 @@ import org.dreamexposure.ticketbird.`object`.Project
 import org.dreamexposure.ticketbird.`object`.Ticket
 
 interface TicketService {
-    suspend fun getTicket(guildId: Snowflake, number: Int): Ticket?
 
     suspend fun getTicket(guildId: Snowflake, channelId: Snowflake): Ticket?
+
+    suspend fun getTicket(guildId: Snowflake, sha256Hash: String): Ticket?
 
     suspend fun getAllTickets(guildId: Snowflake): List<Ticket>
 
@@ -16,7 +17,7 @@ interface TicketService {
 
     suspend fun updateTicket(ticket: Ticket)
 
-    suspend fun deleteTicket(guildId: Snowflake, number: Int)
+    suspend fun deleteTicket(guildId: Snowflake, channelId: Snowflake)
 
     suspend fun deleteAllTickets(guildId: Snowflake)
 
@@ -33,4 +34,8 @@ interface TicketService {
     suspend fun createNewTicketFull(guildId: Snowflake, creatorId: Snowflake, project: Project? = null, info: String?): Ticket
 
     suspend fun logTicket(guildId: Snowflake, channelId: Snowflake)
+
+    suspend fun addParticipant(guildId: Snowflake, channelId: Snowflake, participant: Snowflake, addedBy: Snowflake, write: Boolean)
+
+    suspend fun removeParticipant(guildId: Snowflake, channelId: Snowflake, participant: Snowflake, removedBy: Snowflake)
 }

@@ -80,8 +80,7 @@ data class GuildSettings(
         AUTHOR_AND_ALL_STAFF(3, "env.ping-option.author-all-staff");
 
         companion object {
-            fun valueOf(value: Int) = values().first { it.value == value }
-
+            fun valueOf(value: Int) = entries.first { it.value == value }
         }
     }
 }

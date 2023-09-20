@@ -21,7 +21,7 @@ class DefaultGuildSettingsService(
     }
 
     override suspend fun getGuildSettings(guildId: Snowflake): GuildSettings {
-        var settings = settingsCache.get(guildId.asLong())
+        var settings = settingsCache.get(key = guildId)
         if (settings != null) return settings
 
         settings = settingsRepository.findByGuildId(guildId.asLong())
@@ -29,7 +29,7 @@ class DefaultGuildSettingsService(
             .defaultIfEmpty(GuildSettings(guildId = guildId))
             .awaitSingle()
 
-        settingsCache.put(guildId.asLong(), settings)
+        settingsCache.put(key = guildId, value = settings)
         return settings
     }
 
@@ -60,7 +60,7 @@ class DefaultGuildSettingsService(
             pingOption = settings.pingOption.value,
         )).map(::GuildSettings).awaitSingle()
 
-        settingsCache.put(settings.guildId.asLong(), saved)
+        settingsCache.put(key = saved.guildId, value = saved)
         return saved
     }
 
@@ -91,11 +91,11 @@ class DefaultGuildSettingsService(
             pingOption = settings.pingOption.value,
         ).awaitSingleOrNull()
 
-        settingsCache.put(settings.guildId.asLong(), settings)
+        settingsCache.put(key = settings.guildId, value = settings)
     }
 
     override suspend fun deleteGuildSettings(guildId: Snowflake) {
         settingsRepository.deleteByGuildId(guildId.asLong()).awaitSingle()
-        settingsCache.evict(guildId.asLong())
+        settingsCache.evict(key = guildId)
     }
 }
