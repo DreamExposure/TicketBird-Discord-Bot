@@ -3,19 +3,27 @@ package org.dreamexposure.ticketbird.business
 import discord4j.common.util.Snowflake
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import discord4j.core.event.domain.interaction.DeferrableInteractionEvent
+import discord4j.core.`object`.entity.Attachment
 import discord4j.core.`object`.entity.Message
 import discord4j.core.`object`.entity.channel.TextChannel
+import discord4j.core.spec.EmbedCreateSpec
 import discord4j.rest.util.Permission
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import kotlinx.coroutines.withContext
 import org.dreamexposure.ticketbird.TicketCreateStateCache
 import org.dreamexposure.ticketbird.config.Config
 import org.dreamexposure.ticketbird.extensions.asSeconds
 import org.dreamexposure.ticketbird.extensions.discord4j.deleteFollowupDelayed
+import org.dreamexposure.ticketbird.extensions.sha256Hash
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.`object`.Ticket
 import org.dreamexposure.ticketbird.`object`.TicketCreateState
+import org.dreamexposure.ticketbird.utils.GlobalVars
 import org.springframework.stereotype.Component
+import java.net.URL
+import java.time.Instant
 
 @Component
 class InteractionService(
@@ -286,6 +294,41 @@ class InteractionService(
             .withEphemeral(ephemeral)
             .map(Message::getId)
             .flatMap { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
+            .awaitSingleOrNull()
+    }
+
+    suspend fun validateChecksumViaInteraction(file: Attachment, ephemeral: Boolean, event: DeferrableInteractionEvent, settings: GuildSettings) {
+        val fileSha =  withContext(Dispatchers.IO) {
+                URL(file.url).openStream().use {
+                    it.readBytes().sha256Hash()
+                }
+        }
+        val ticket = ticketService.getTicket(settings.guildId, fileSha)
+
+        if (ticket == null) {
+            event.createFollowup(localeService.getString(settings.locale, "command.ticket.checksum.no-tickets", fileSha))
+                .withEphemeral(ephemeral)
+                .map(Message::getId)
+                .flatMap { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
+                .awaitSingleOrNull()
+            return
+        }
+
+        val embed = EmbedCreateSpec.builder()
+            .author(localeService.getString(settings.locale, "bot.name"), null, GlobalVars.iconUrl)
+            .color(GlobalVars.embedColor)
+            .title(localeService.getString(settings.locale, "embed.checksum.title"))
+            .addField(localeService.getString(settings.locale, "embed.checksum.field.checksum"), "`$fileSha`", false)
+            .addField(localeService.getString(settings.locale, "embed.checksum.field.ticket"), "ticket-${ticket.number}", false)
+            .addField(localeService.getString(settings.locale, "embed.checksum.field.transcript"), "`${ticket.attachmentsSha256 ?: "N/a"}`", true)
+            .addField(localeService.getString(settings.locale, "embed.checksum.field.attachments"), "`${ticket.attachmentsSha256 ?: "N/a"}`", true)
+            .footer(localeService.getString(settings.locale, "embed.checksum.footer"), null)
+            .timestamp(Instant.now())
+            .build()
+
+        event.createFollowup()
+            .withEmbeds(embed)
+            .withEphemeral(ephemeral)
             .awaitSingleOrNull()
     }
 

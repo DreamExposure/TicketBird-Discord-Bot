@@ -4,11 +4,8 @@ import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import discord4j.core.`object`.command.ApplicationCommandInteractionOption
 import discord4j.core.`object`.command.ApplicationCommandInteractionOptionValue
 import org.dreamexposure.ticketbird.business.InteractionService
-import org.dreamexposure.ticketbird.config.Config
-import org.dreamexposure.ticketbird.extensions.asSeconds
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.springframework.stereotype.Component
-import kotlin.jvm.optionals.getOrNull
 
 @Component
 class TicketCommand(
@@ -16,8 +13,6 @@ class TicketCommand(
 ) : SlashCommand {
     override val name = "ticket"
     override val ephemeral = true
-
-    private val genericMessageDeleteSeconds = Config.TIMING_MESSAGE_DELETE_GENERIC_SECONDS.getLong().asSeconds()
 
     override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings) {
         when (event.options[0].name) {
@@ -94,13 +89,8 @@ class TicketCommand(
         val fileAttachment = event.options[0].getOption("file")
             .flatMap(ApplicationCommandInteractionOption::getValue)
             .map(ApplicationCommandInteractionOptionValue::asAttachment)
-            .getOrNull()
-        val checksumInput = event.options[0].getOption("checksum")
-            .flatMap(ApplicationCommandInteractionOption::getValue)
-            .map(ApplicationCommandInteractionOptionValue::asString)
-            .getOrNull()
+            .get()
 
-
-        TODO("Not yet implemented")
+        interactionService.validateChecksumViaInteraction(fileAttachment, ephemeral, event, settings)
     }
 }

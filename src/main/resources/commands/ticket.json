@@ -95,12 +95,8 @@
         {
           "name": "file",
           "type": 11,
-          "description": "A file for TicketBird to validate against"
-        },
-        {
-          "name": "checksum",
-          "type": 3,
-          "description": "A SHA-256 checksum for TicketBird to search for"
+          "description": "A file for TicketBird to validate against",
+          "required": true
         }
       ]
     }
