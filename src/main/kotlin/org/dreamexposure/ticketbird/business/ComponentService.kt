@@ -20,7 +20,7 @@ class ComponentService(
         return arrayOf(ActionRow.of(button))
     }
 
-    suspend fun getProjectSelectComponents(settings: GuildSettings, withCreate: Boolean): Array<LayoutComponent> {
+    suspend fun getProjectSelectComponents(settings: GuildSettings, withCreate: Boolean = false): Array<LayoutComponent> {
         val projectsAsOptions = projectService.getAllProjects(settings.guildId)
             .map { SelectMenu.Option.of(it.name, it.id.toString()) }
 
