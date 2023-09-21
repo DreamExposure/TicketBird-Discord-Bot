@@ -30,6 +30,7 @@ val gradleWrapperVersion = "7.6"
 val javaVersion = "17"
 val d4jVersion = "3.2.6"
 val d4jStoresVersion = "3.2.2"
+val logbackContribVersion = "0.1.5"
 val mysqlR2dbcVersion = "0.8.2.RELEASE"
 val mySqlConnectorVersion = "8.0.33"
 val discordWebhooksVersion = "0.8.4"
@@ -77,6 +78,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-cache")
+
+    // Logging
+    implementation("ch.qos.logback.contrib:logback-json-classic:$logbackContribVersion")
+    implementation("ch.qos.logback.contrib:logback-jackson:$logbackContribVersion")
 
     // Web
     implementation("com.squareup.okhttp3:okhttp")
