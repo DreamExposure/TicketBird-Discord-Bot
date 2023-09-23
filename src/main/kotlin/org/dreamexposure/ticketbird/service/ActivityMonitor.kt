@@ -106,6 +106,8 @@ class ActivityMonitor(
                 }
             } catch (ex: Exception) {
                 LOGGER.error(DEFAULT, "ActivityMonitor Failed to process guild | id: ${guild.id.asString()}", ex)
+            } finally {
+                LOGGER.debug("Ticket inactivity task completed")
             }
         }
     }

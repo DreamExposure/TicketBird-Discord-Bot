@@ -20,6 +20,7 @@ import org.dreamexposure.ticketbird.database.TicketRepository
 import org.dreamexposure.ticketbird.extensions.embedDescriptionSafe
 import org.dreamexposure.ticketbird.extensions.sha256Hash
 import org.dreamexposure.ticketbird.extensions.ticketLogFileFormat
+import org.dreamexposure.ticketbird.logger.LOGGER
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.`object`.Project
 import org.dreamexposure.ticketbird.`object`.Ticket
@@ -124,6 +125,8 @@ class TicketService(
     }
 
     suspend fun closeTicket(guildId: Snowflake, channelId: Snowflake, inactive: Boolean = false) {
+        LOGGER.debug("Closing ticket | guildId: {} | channel: {} | inactive: {}", guildId, channelId, inactive)
+
         val ticket = getTicket(guildId, channelId) ?: return // return if ticket does not exist
         val settings = settingsService.getGuildSettings(guildId)
         val channel = discordClient.getChannelById(channelId).ofType(TextChannel::class.java).awaitSingle()
@@ -141,6 +144,8 @@ class TicketService(
     }
 
     suspend fun holdTicket(guildId: Snowflake, channelId: Snowflake) {
+        LOGGER.debug("Placing ticket on hold | guildId: {} | channel: {}", guildId, channelId)
+
         val ticket = getTicket(guildId, channelId) ?: return // return if ticket does not exist
         val settings = settingsService.getGuildSettings(guildId)
         val channel = discordClient.getChannelById(channelId).ofType(TextChannel::class.java).awaitSingle()
@@ -157,6 +162,8 @@ class TicketService(
     }
 
     suspend fun purgeTicket(guildId: Snowflake, channelId: Snowflake) {
+        LOGGER.debug("Purging ticket | guildId: {} | channel: {}", guildId, channelId)
+
         //val ticket = getTicket(guildId, channelId) ?: return // return if ticket does not exist
         val settings = settingsService.getGuildSettings(guildId)
         val channel = discordClient.getChannelById(channelId).ofType(TextChannel::class.java).awaitSingle()
@@ -168,6 +175,8 @@ class TicketService(
     }
 
     suspend fun moveTicket(guildId: Snowflake, channelId: Snowflake, toCategory: Snowflake, withActivity: Boolean = true) {
+        LOGGER.debug("Moving ticket | guildId: {} | channel: {}", guildId, channelId)
+
         val ticket = getTicket(guildId, channelId) ?: return // return if ticket does not exist
         val channel = discordClient.getChannelById(channelId).ofType(TextChannel::class.java).awaitSingle()
 
@@ -179,6 +188,8 @@ class TicketService(
     }
 
     suspend fun createTicketChannel(guildId: Snowflake, creator: Snowflake, project: Project?, number: Int): TextChannel {
+        LOGGER.debug("Creating ticket channel | guildId: {} | ticketNumber: {}", guildId, number)
+
         val settings = settingsService.getGuildSettings(guildId)
         val guild = discordClient.getGuildById(guildId).awaitSingle()
 
@@ -192,6 +203,8 @@ class TicketService(
     }
 
     suspend fun createNewTicketFull(guildId: Snowflake, creatorId: Snowflake, project: Project? = null, info: String?): Ticket {
+        LOGGER.debug("Full create ticket | guildId: {}", guildId)
+
         // Get stuff
         val creator = discordClient.getMemberById(guildId, creatorId).awaitSingle()
         val settings = settingsService.getGuildSettings(guildId)
@@ -268,6 +281,7 @@ class TicketService(
 
     suspend fun logTicket(guildId: Snowflake, channelId: Snowflake) {
         if (!Config.TOGGLE_TICKET_LOGGING.getBoolean()) return
+        LOGGER.debug("Logging ticket | guildId: {} | channel: {}", guildId, channelId)
 
         // Get everything we need
         val settings = settingsService.getGuildSettings(guildId)
@@ -372,6 +386,8 @@ class TicketService(
     }
 
     suspend fun addParticipant(guildId: Snowflake, channelId: Snowflake, participant: Snowflake, addedBy: Snowflake, write: Boolean) {
+        LOGGER.debug("Adding ticket participant | guildId: {} | channel: {} | write: {}", guildId, channelId, write)
+
         val ticket = getTicket(guildId, channelId) ?: return // return if ticket does not exist
         val settings = settingsService.getGuildSettings(guildId)
         val channel = discordClient.getChannelById(channelId).ofType(TextChannel::class.java).awaitSingle()
@@ -390,6 +406,8 @@ class TicketService(
     }
 
     suspend fun removeParticipant(guildId: Snowflake, channelId: Snowflake, participant: Snowflake, removedBy: Snowflake) {
+        LOGGER.debug("Removing ticket participant | guildId: {} | channel: {}", guildId, channelId)
+
         val ticket = getTicket(guildId, channelId) ?: return // return if ticket does not exist
         val settings = settingsService.getGuildSettings(guildId)
         val channel = discordClient.getChannelById(channelId).ofType(TextChannel::class.java).awaitSingle()

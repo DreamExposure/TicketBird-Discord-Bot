@@ -10,6 +10,7 @@ import discord4j.rest.util.Permission
 import discord4j.rest.util.PermissionSet
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import org.dreamexposure.ticketbird.logger.LOGGER
 import org.springframework.beans.factory.BeanFactory
 import org.springframework.beans.factory.getBean
 import org.springframework.stereotype.Component
@@ -28,6 +29,8 @@ class EnvironmentService(
         get() = beanFactory.getBean<GatewayDiscordClient>()
 
     suspend fun createCategory(guildId: Snowflake, type: String): Category {
+        LOGGER.debug("Creating category type {} for guild: {}", type, guildId)
+
         val settings = settingsService.getGuildSettings(guildId)
         val guild = discordClient.getGuildById(guildId).awaitSingle()
 
@@ -40,6 +43,8 @@ class EnvironmentService(
     }
 
     suspend fun createSupportChannel(guildId: Snowflake): TextChannel {
+        LOGGER.debug("Creating support channel for guild {}", guildId)
+
         val settings = settingsService.getGuildSettings(guildId)
         val guild = discordClient.getGuildById(guildId).awaitSingle()
 
@@ -60,6 +65,8 @@ class EnvironmentService(
     }
 
     suspend fun validateAllEntitiesExist(guildId: Snowflake): Boolean {
+        LOGGER.debug("Validating entities for {}...", guildId)
+
         val settings = settingsService.getGuildSettings(guildId)
         val guild = discordClient.getGuildById(guildId).awaitSingle()
 
@@ -121,11 +128,15 @@ class EnvironmentService(
                 .awaitSingleOrNull()
         }
 
+        LOGGER.debug("Validated guild {} | Results - needs repair {}, proper setup {}", guildId, settings.requiresRepair, properSetup)
+
         settingsService.upsertGuildSettings(settings)
         return properSetup
     }
 
     suspend fun recreateMissingEntities(guildId: Snowflake) {
+        LOGGER.debug("Recreating missing entities for guild {}", guildId)
+
         val settings = settingsService.getGuildSettings(guildId)
 
         if (settings.awaitingCategory == null) settings.awaitingCategory = createCategory(guildId, "awaiting").id
@@ -164,6 +175,8 @@ class EnvironmentService(
     }
 
     suspend fun validateChannelForLogging(guildId: Snowflake, channelId: Snowflake): Boolean {
+        LOGGER.debug("Validating channel for logging for guild {} | channelId: {}", guildId, channelId)
+
         return discordClient.getChannelById(channelId)
             .ofType(TextChannel::class.java)
             .onErrorResume(ClientException.isStatusCode(404, 403)) { Mono.empty() }

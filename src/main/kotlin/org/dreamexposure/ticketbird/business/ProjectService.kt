@@ -6,6 +6,7 @@ import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.ProjectCache
 import org.dreamexposure.ticketbird.database.ProjectData
 import org.dreamexposure.ticketbird.database.ProjectRepository
+import org.dreamexposure.ticketbird.logger.LOGGER
 import org.dreamexposure.ticketbird.`object`.Project
 import org.springframework.stereotype.Component
 
@@ -33,6 +34,7 @@ class ProjectService(
     }
 
     suspend fun createProject(project: Project): Project {
+        LOGGER.debug("Create new project | guildId {}", project.guildId)
         val newProject =  projectRepository.save(ProjectData(
             guildId = project.guildId.asLong(),
             projectName = project.name,
@@ -49,6 +51,7 @@ class ProjectService(
     }
 
     suspend fun updateProject(project: Project) {
+        LOGGER.debug("Update project | guildId {} | projectId {}", project.guildId, project.id)
         projectRepository.updateByIdAndGuildId(
             id = project.id,
             guildId = project.guildId.asLong(),
@@ -68,6 +71,8 @@ class ProjectService(
     }
 
     suspend fun deleteProject(guildId: Snowflake, id: Long) {
+        LOGGER.debug("Delete project | guildId {} | projectId {}", guildId, id)
+
         projectRepository.deleteById(id).awaitSingleOrNull()
 
         val cached = projectCache.get(key = guildId)
@@ -79,6 +84,8 @@ class ProjectService(
     }
 
     suspend fun deleteAllProjects(guildId: Snowflake) {
+        LOGGER.debug("Delete all projects | guildId {}", guildId)
+
         projectRepository.deleteAllByGuildId(guildId.asLong()).awaitSingleOrNull()
         projectCache.evict(key = guildId)
     }

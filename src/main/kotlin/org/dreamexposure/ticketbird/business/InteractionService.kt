@@ -17,6 +17,7 @@ import org.dreamexposure.ticketbird.config.Config
 import org.dreamexposure.ticketbird.extensions.asSeconds
 import org.dreamexposure.ticketbird.extensions.discord4j.deleteFollowupDelayed
 import org.dreamexposure.ticketbird.extensions.sha256Hash
+import org.dreamexposure.ticketbird.logger.LOGGER
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.`object`.Ticket
 import org.dreamexposure.ticketbird.`object`.TicketCreateState
@@ -38,6 +39,8 @@ class InteractionService(
     private val genericMessageDeleteSeconds = Config.TIMING_MESSAGE_DELETE_GENERIC_SECONDS.getLong().asSeconds()
 
     suspend fun openTicketViaInteraction(info: String, topicId: Long, ephemeral: Boolean, event: DeferrableInteractionEvent, settings: GuildSettings) {
+        LOGGER.debug("Open ticket via interaction | guild {} | hasTopic: {} | eventType: {}", settings.guildId, topicId > 0, event.interaction.type.name)
+
         // Check if ticket bird is even functional
         if (!settings.hasRequiredIdsSet() && !settings.requiresRepair) {
             // TicketBird never init
@@ -103,6 +106,8 @@ class InteractionService(
     }
 
     suspend fun holdTicketViaInteraction(ephemeral: Boolean, event: DeferrableInteractionEvent, settings: GuildSettings) {
+        LOGGER.debug("Hold ticket via interaction | guild {} | eventType: {}", settings.guildId, event.interaction.type.name)
+
         val ticket = ticketService.getTicket(settings.guildId, event.interaction.channelId)
 
         // Handle if not in a ticket channel
@@ -140,6 +145,8 @@ class InteractionService(
     }
 
     suspend fun closeTicketViaInteraction(ephemeral: Boolean, event: DeferrableInteractionEvent, settings: GuildSettings) {
+        LOGGER.debug("Close ticket via interaction | guild {} | eventType: {}", settings.guildId, event.interaction.type.name)
+
         val ticket = ticketService.getTicket(settings.guildId, event.interaction.channelId)
 
         // Handle if not in a ticket channel
@@ -177,6 +184,8 @@ class InteractionService(
     }
 
     suspend fun changeTopicViaCommand(topicId: Long, ephemeral: Boolean, event: ChatInputInteractionEvent, settings: GuildSettings) {
+        LOGGER.debug("Change ticket topic via interaction | guild {} | eventType: {}", settings.guildId, event.interaction.type.name)
+
         val ticket = ticketService.getTicket(settings.guildId, event.interaction.channelId)
 
         // Handle if not in a ticket channel
@@ -220,6 +229,8 @@ class InteractionService(
     }
 
     suspend fun addParticipantViaCommand(write: Boolean, userId: Snowflake, ephemeral: Boolean, event: ChatInputInteractionEvent, settings: GuildSettings) {
+        LOGGER.debug("Add ticket participant via command | guild {}", settings.guildId)
+
         val ticket = ticketService.getTicket(settings.guildId, event.interaction.channelId)
 
         // Handle if not in a ticket channel
@@ -259,6 +270,7 @@ class InteractionService(
     }
 
     suspend fun removeParticipantViaCommand(userId: Snowflake, ephemeral: Boolean, event: ChatInputInteractionEvent, settings: GuildSettings) {
+        LOGGER.debug("Remove ticket participant via command | guild {}", settings.guildId)
         val ticket = ticketService.getTicket(settings.guildId, event.interaction.channelId)
 
         // Handle if not in a ticket channel
@@ -298,6 +310,8 @@ class InteractionService(
     }
 
     suspend fun validateChecksumViaInteraction(file: Attachment, ephemeral: Boolean, event: DeferrableInteractionEvent, settings: GuildSettings) {
+        LOGGER.debug("Validate ticket checksum via interaction | guild {} | eventType: {}", settings.guildId, event.interaction.type.name)
+
         val fileSha =  withContext(Dispatchers.IO) {
                 URL(file.url).openStream().use {
                     it.readBytes().sha256Hash()

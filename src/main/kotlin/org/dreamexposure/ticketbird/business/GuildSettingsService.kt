@@ -7,6 +7,7 @@ import org.dreamexposure.ticketbird.GuildSettingsCache
 import org.dreamexposure.ticketbird.database.GuildSettingsData
 import org.dreamexposure.ticketbird.database.GuildSettingsRepository
 import org.dreamexposure.ticketbird.extensions.asStringList
+import org.dreamexposure.ticketbird.logger.LOGGER
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.springframework.stereotype.Component
 
@@ -34,6 +35,8 @@ class GuildSettingsService(
     }
 
     suspend fun createGuildSettings(settings: GuildSettings): GuildSettings {
+        LOGGER.debug("Creating new settings for guild: {}", settings.guildId)
+
         val saved =  settingsRepository.save(GuildSettingsData(
             guildId = settings.guildId.asLong(),
             lang = settings.locale.toLanguageTag(),
@@ -65,6 +68,8 @@ class GuildSettingsService(
     }
 
     suspend fun updateGuildSettings(settings: GuildSettings) {
+        LOGGER.debug("Updating guild settings for {}", settings.guildId)
+
         settingsRepository.updateByGuildId(
             guildId = settings.guildId.asLong(),
             lang = settings.locale.toLanguageTag(),

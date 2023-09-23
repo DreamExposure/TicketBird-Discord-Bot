@@ -9,6 +9,7 @@ import discord4j.core.spec.EmbedCreateSpec
 import discord4j.rest.http.client.ClientException
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import org.dreamexposure.ticketbird.logger.LOGGER
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.utils.GlobalVars.embedColor
 import org.dreamexposure.ticketbird.utils.GlobalVars.iconUrl
@@ -73,6 +74,7 @@ class StaticMessageService(
     }
 
     suspend fun update(guildId: Snowflake): Message? {
+        LOGGER.debug("Updating static message | guildId {}", guildId)
 
         val settings = settingsService.getGuildSettings(guildId)
 
