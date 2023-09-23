@@ -16,7 +16,7 @@ plugins {
 
     // Tooling
     id("com.gorylenko.gradle-git-properties") version "2.4.1"
-    id("com.google.cloud.tools.jib") version "3.3.2"
+    id("com.google.cloud.tools.jib") version "3.4.0"
 }
 
 buildscript {
@@ -78,10 +78,12 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-cache")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
 
-    // Logging
+    // Observability
     implementation("ch.qos.logback.contrib:logback-json-classic:$logbackContribVersion")
     implementation("ch.qos.logback.contrib:logback-jackson:$logbackContribVersion")
+    implementation("io.micrometer:micrometer-registry-prometheus")
 
     // Web
     implementation("com.squareup.okhttp3:okhttp")

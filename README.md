@@ -69,7 +69,7 @@ This bot is a hobby project for me, please note that while these features are pl
 # 🧰 Tech stack
 - Java 17
 - 100% Kotlin utilizing Kotlin Coroutines
-- Spring Boot (Data, Dependency Injection, etc)
+- Spring Boot (Data, Dependency Injection, Actuator, etc)
 - Flyway for automatic database migrations (MySQL)
 - Redis cluster caching
 - Enterprise repository & service pattern for maintainability
