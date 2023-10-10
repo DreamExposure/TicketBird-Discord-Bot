@@ -40,6 +40,11 @@ val commonsIOVersion = "2.13.0"
 group = "org.dreamexposure"
 version = ticketBirdVersion
 
+val buildVersion = if (System.getenv("GITHUB_RUN_NUMBER") != null) {
+    "$version.b${System.getenv("GITHUB_RUN_NUMBER")}"
+} else {
+    "$version.d${System.currentTimeMillis().div(1000)}" //Seconds since epoch
+}
 val kotlinSrcDir: File = buildDir.resolve("src/main/kotlin")
 
 java {
@@ -118,7 +123,7 @@ dependencies {
 jib {
     to {
         image = "rg.nl-ams.scw.cloud/dreamexposure/ticketbird"
-        tags = mutableSetOf("latest", ticketBirdVersion)
+        tags = mutableSetOf("latest", ticketBirdVersion, buildVersion)
     }
 
     from.image = "eclipse-temurin:17-jre-alpine"
@@ -127,13 +132,7 @@ jib {
 gitProperties {
     extProperty = "gitPropertiesExt"
 
-    val versionName = if (System.getenv("GITHUB_RUN_NUMBER") != null) {
-        "$version.b${System.getenv("GITHUB_RUN_NUMBER")}"
-    } else {
-        "$version.d${System.currentTimeMillis().div(1000)}" //Seconds since epoch
-    }
-
-    customProperty("ticketbird.version", versionName)
+    customProperty("ticketbird.version", buildVersion)
     customProperty("ticketbird.version.d4j", d4jVersion)
 }
 
