@@ -108,7 +108,8 @@ class SetupCommand(
         settings.supportChannel = supportChannel.id
 
         // Create static message
-        val embed = staticMessageService.getEmbed(settings) ?: throw IllegalStateException("Failed to get embed during setup")
+        val embed = staticMessageService.getEmbed(settings)
+            ?: throw IllegalStateException("Failed to get embed during setup")
         supportChannel.createMessage(embed)
             .withComponents(*componentService.getStaticMessageComponents(settings))
             .doOnNext { settings.staticMessage = it.id }
@@ -339,10 +340,12 @@ class SetupCommand(
         settings.logChannel = logChannel
         settingsService.upsertGuildSettings(settings)
 
-
+        val localeString =
+            if (Config.TOGGLE_TICKET_LOGGING.getBoolean()) "command.setup.logging.success.with-toggle"
+            else "command.setup.logging.success"
         event.createFollowup(localeService.getString(
             settings.locale,
-            "command.setup.logging.success",
+            localeString,
             "$loggingEnabled"
         ))
             .withEmbeds(viewSettingsEmbed(settings))
