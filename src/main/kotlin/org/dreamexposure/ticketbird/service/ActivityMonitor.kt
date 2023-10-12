@@ -11,6 +11,8 @@ import org.dreamexposure.ticketbird.business.EnvironmentService
 import org.dreamexposure.ticketbird.business.GuildSettingsService
 import org.dreamexposure.ticketbird.business.StaticMessageService
 import org.dreamexposure.ticketbird.business.TicketService
+import org.dreamexposure.ticketbird.config.Config
+import org.dreamexposure.ticketbird.extensions.asMinutes
 import org.dreamexposure.ticketbird.logger.LOGGER
 import org.dreamexposure.ticketbird.utils.GlobalVars.DEFAULT
 import org.springframework.boot.ApplicationArguments
@@ -31,7 +33,7 @@ class ActivityMonitor(
 ) : ApplicationRunner {
 
     override fun run(args: ApplicationArguments?) {
-        Flux.interval(Duration.ofHours(1))
+        Flux.interval(Config.TIMING_ACTIVITY_MONITOR_FREQUENCY_MINUTES.getLong().asMinutes())
             .flatMap { doTheThing() }
             .doOnError { LOGGER.error(DEFAULT, "ActivityMonitor | Processor failure ", it) }
             .onErrorResume { Mono.empty() }
@@ -42,16 +44,16 @@ class ActivityMonitor(
         LOGGER.debug("Running ticket inactivity close task...")
 
         client.guilds.collectList().awaitSingle().forEach { guild ->
-            val settings = settingsService.getGuildSettings(guild.id)
-            if (settings.requiresRepair) return@forEach // Skip processing this guild until they decide to run repair command
-            if (!environmentService.validateAllEntitiesExist(settings.guildId)) {
-                // Skip processing since we know something doesn't exist
-                staticMessageService.update(settings.guildId)
-                return@forEach
-            }
-
             // Isolate errors to guild-level
             try {
+                val settings = settingsService.getGuildSettings(guild.id)
+                if (settings.requiresRepair) return@forEach // Skip processing this guild until they decide to run repair command
+                if (!environmentService.validateAllEntitiesExist(settings.guildId)) {
+                    // Skip processing since we know something doesn't exist
+                    staticMessageService.update(settings.guildId)
+                    return@forEach
+                }
+
                 if (settings.hasRequiredIdsSet()) {
                     var updateStaticMessage = false
 
@@ -84,7 +86,7 @@ class ActivityMonitor(
 
                     // Loop open tickets
                     for (openTicketChannel in awaitingCategoryChannels + respondedCategoryChannels) {
-                        val ticket = ticketService.getTicket(guild.id, openTicketChannel.id) ?: return@forEach
+                        val ticket = ticketService.getTicket(guild.id, openTicketChannel.id) ?: continue
 
                         try {
                             if (Duration.between(Instant.now(), ticket.lastActivity).abs() > settings.autoClose) {
@@ -95,7 +97,7 @@ class ActivityMonitor(
                         } catch (ex: ClientException) {
                             if (ex.status == HttpResponseStatus.FORBIDDEN) {
                                 // Missing permissions to channel, delete record of ticket as bot can no longer manage it
-                                ticketService.deleteTicket(guild.id, ticket.number)
+                                ticketService.deleteTicket(guild.id, ticket.channel)
                             } else throw ex // Rethrow
                         }
                     }
@@ -104,6 +106,8 @@ class ActivityMonitor(
                 }
             } catch (ex: Exception) {
                 LOGGER.error(DEFAULT, "ActivityMonitor Failed to process guild | id: ${guild.id.asString()}", ex)
+            } finally {
+                LOGGER.debug("Ticket inactivity task completed")
             }
         }
     }

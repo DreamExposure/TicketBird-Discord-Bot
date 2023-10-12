@@ -7,37 +7,44 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     // Kotlin
-    kotlin("jvm") version "1.8.0"
+    kotlin("jvm") version "1.9.10"
 
     // Spring
-    kotlin("plugin.spring") version "1.8.0"
-    id("org.springframework.boot") version "3.0.1"
-    id("io.spring.dependency-management") version "1.1.0"
+    kotlin("plugin.spring") version "1.9.10"
+    id("org.springframework.boot") version "3.1.3"
+    id("io.spring.dependency-management") version "1.1.3"
 
     // Tooling
     id("com.gorylenko.gradle-git-properties") version "2.4.1"
-    id("com.google.cloud.tools.jib") version "3.3.1"
+    id("com.google.cloud.tools.jib") version "3.4.0"
 }
 
 buildscript {
     dependencies {
-        classpath("com.squareup:kotlinpoet:1.12.0")
+        classpath("com.squareup:kotlinpoet:1.14.2")
     }
 }
 
-val ticketBirdVersion = "2.0.2"
-val gradleWrapperVersion = "7.5.1"
+val ticketBirdVersion = "2.1.0"
+val gradleWrapperVersion = "7.6"
 val javaVersion = "17"
-val d4jVersion = "3.2.3"
+val d4jVersion = "3.2.6"
 val d4jStoresVersion = "3.2.2"
-val thymeleafSpringVersion = "3.1.1.RELEASE"
+val logbackContribVersion = "0.1.5"
 val mysqlR2dbcVersion = "0.8.2.RELEASE"
-val discordWebhooksVersion = "0.8.2"
-val springMockkVersion = "4.0.0"
+val mySqlConnectorVersion = "8.0.33"
+val discordWebhooksVersion = "0.8.4"
+val springMockkVersion = "4.0.2"
+val commonsIOVersion = "2.13.0"
 
 group = "org.dreamexposure"
 version = ticketBirdVersion
 
+val buildVersion = if (System.getenv("GITHUB_RUN_NUMBER") != null) {
+    "$version.b${System.getenv("GITHUB_RUN_NUMBER")}"
+} else {
+    "$version.d${System.currentTimeMillis().div(1000)}" //Seconds since epoch
+}
 val kotlinSrcDir: File = buildDir.resolve("src/main/kotlin")
 
 java {
@@ -76,23 +83,26 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-cache")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+
+    // Observability
+    implementation("ch.qos.logback.contrib:logback-json-classic:$logbackContribVersion")
+    implementation("ch.qos.logback.contrib:logback-jackson:$logbackContribVersion")
+    implementation("io.micrometer:micrometer-registry-prometheus")
 
     // Web
-    implementation("org.thymeleaf:thymeleaf")
-    implementation("org.thymeleaf:thymeleaf-spring5:$thymeleafSpringVersion")
-    implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect")
-
     implementation("com.squareup.okhttp3:okhttp")
 
     // Database
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-mysql")
     implementation("dev.miku:r2dbc-mysql:$mysqlR2dbcVersion")
-    implementation("mysql:mysql-connector-java")
+    implementation("mysql:mysql-connector-java:$mySqlConnectorVersion")
 
-    // Serialization
+    // IO
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+    implementation("commons-io:commons-io:$commonsIOVersion")
 
     // Discord
     implementation("com.discord4j:discord4j-core:$d4jVersion")
@@ -113,7 +123,7 @@ dependencies {
 jib {
     to {
         image = "rg.nl-ams.scw.cloud/dreamexposure/ticketbird"
-        tags = mutableSetOf("latest", ticketBirdVersion)
+        tags = mutableSetOf("latest", ticketBirdVersion, buildVersion)
     }
 
     from.image = "eclipse-temurin:17-jre-alpine"
@@ -122,13 +132,7 @@ jib {
 gitProperties {
     extProperty = "gitPropertiesExt"
 
-    val versionName = if (System.getenv("GITHUB_RUN_NUMBER") != null) {
-        "$version.b${System.getenv("GITHUB_RUN_NUMBER")}"
-    } else {
-        "$version.d${System.currentTimeMillis().div(1000)}" //Seconds since epoch
-    }
-
-    customProperty("ticketbird.version", versionName)
+    customProperty("ticketbird.version", buildVersion)
     customProperty("ticketbird.version.d4j", d4jVersion)
 }
 

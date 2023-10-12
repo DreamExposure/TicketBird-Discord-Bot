@@ -13,6 +13,8 @@ data class GuildSettingsData(
     val devGuild: Boolean,
 
     val useProjects: Boolean,
+    val enableLogging: Boolean,
+    val showTicketStats: Boolean,
     val autoCloseHours: Int,
     val autoDeleteHours: Int,
 
@@ -24,6 +26,8 @@ data class GuildSettingsData(
     val closeCategory: Long?,
 
     val supportChannel: Long?,
+    val logChannel: Long?,
+
     val staticMessage: Long?,
 
     val nextId: Int,

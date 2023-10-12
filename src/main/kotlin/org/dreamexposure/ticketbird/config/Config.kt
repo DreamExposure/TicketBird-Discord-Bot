@@ -20,6 +20,7 @@ enum class Config(private val key: String, private var value: Any? = null) {
     CACHE_TTL_TICKET_CREATE_STATE_MINUTES("bot.cache.ttl-minutes.ticket-create-state", 15),
 
     // Global bot timings
+    TIMING_ACTIVITY_MONITOR_FREQUENCY_MINUTES("bot.timing.activity-monitor.frequency.minutes", 60),
     TIMING_MESSAGE_DELETE_TICKET_FLOW_SECONDS("bot.timing.message-delete.open-ticket-flow.seconds", 60),
     TIMING_MESSAGE_DELETE_GENERIC_SECONDS("bot, timing.message-delete.generic.seconds", 30),
 
@@ -39,14 +40,17 @@ enum class Config(private val key: String, private var value: Any? = null) {
     SHARD_COUNT("bot.sharding.count"),
     SHARD_INDEX("bot.sharding.index"),
     LOGGING_WEBHOOKS_USE("bot.logging.webhooks.use", false),
-    LOGGING_WEBHOOKS_ALL_ERRORS("bot.logging.webhooks.all-errors", false);
+    LOGGING_WEBHOOKS_ALL_ERRORS("bot.logging.webhooks.all-errors", false),
+    // TODO: Remove toggle when no longer needed
+    TOGGLE_TICKET_LOGGING("bot.feature.toggle.ticket-logging", false),
+    ;
 
     companion object {
         fun init() {
             val props = Properties()
             props.load(FileReader("application.properties"))
 
-            values().forEach { it.value = props.getProperty(it.key, it.value?.toString()) }
+            entries.forEach { it.value = props.getProperty(it.key, it.value?.toString()) }
         }
     }
 

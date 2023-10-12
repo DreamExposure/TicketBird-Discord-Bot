@@ -48,6 +48,19 @@
     },
     {
       "type": 1,
+      "name": "show-ticket-stats",
+      "description": "Sets whether to publicly show total open/closed tickets in support messages. Defaults to true",
+      "options": [
+        {
+          "type": 5,
+          "name": "show",
+          "description": "Whether to publicly show total open/closed tickets in TicketBird's support messages",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": 1,
       "name": "timing",
       "description": "Allows changing timings for the various automatic actions performed by TicketBird",
       "options": [
@@ -98,6 +111,24 @@
               "value": 3
             }
           ]
+        }
+      ]
+    },
+    {
+      "type": 1,
+      "name": "logging",
+      "description": "Modify the logging behavior of TicketBird when a ticket is closed and deleted",
+      "options": [
+        {
+          "type": 5,
+          "name": "enable",
+          "description": "Whether to enable TicketBird's logging functionality"
+        },
+        {
+          "type": 7,
+          "name": "channel",
+          "description": "The channel for TicketBird's logs to appear in",
+          "channel_types": [0]
         }
       ]
     },

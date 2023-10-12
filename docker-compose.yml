@@ -23,6 +23,7 @@ services:
       - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
     ports:
       - "8080:8080"
+      - "8008:8008"
       - "5005:5005"
     volumes:
       - ./.docker/bot-config:/ticketbird/bot

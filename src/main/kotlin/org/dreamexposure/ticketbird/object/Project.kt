@@ -20,12 +20,12 @@ data class Project(
         prefix = data.projectPrefix,
         staffUsers = data.staffUsers
             ?.split(",")
-            ?.filter(String::isNullOrEmpty)
+            ?.filter(String::isNotBlank)
             ?.map(Snowflake::of)
             ?.toList() ?: listOf(),
         staffRoles = data.staffRoles
             ?.split(",")
-            ?.filter(String::isNullOrEmpty)
+            ?.filter(String::isNotBlank)
             ?.map(Snowflake::of)
             ?.toList() ?: listOf(),
         pingOverride = PingOverride.valueOf(data.pingOverride)
@@ -39,7 +39,7 @@ data class Project(
         AUTHOR_AND_ALL_STAFF(4, "env.ping-option.author-all-staff");
 
         companion object {
-            fun valueOf(value: Int) = values().first { it.value == value }
+            fun valueOf(value: Int) = entries.first { it.value == value }
         }
     }
 }

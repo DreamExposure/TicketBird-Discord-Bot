@@ -1,6 +1,6 @@
 # TicketBird
 [![Discord](https://img.shields.io/discord/375357265198317579?label=DreamExposure&style=flat-square)](https://discord.gg/2TFqyuy)
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/DreamExposure/TicketBird-Discord-Bot/Java%20CI?label=Build&style=flat-square)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/DreamExposure/TicketBird-Discord-Bot/gradle.yml?label=Build&style=flat-square)
 [![Website](https://img.shields.io/website?down_color=red&down_message=offline&label=Status&style=flat-square&up_message=online&url=https%3A%2F%2Fticketbird.dreamexposure.org)](https://ticketbird.dreamexposure.org)
 
 TicketBird is a simple help desk and ticket managing Discord bot allowing you to run a simple help desk system within your Discord server. 
@@ -23,30 +23,42 @@ Perfect for modmail, community management, and more, TicketBird is capable of al
   - This allows you to define a user or role as staff for only a specific ticket type, allowing further customization similar to traditional RBAC.
 - Ping specific staff members and roles when a new ticket is opened
   - Can be overridden on a project-level basis
+- Ticket logging
+  - Log files can be validated with a SHA-256 file checksum
 
 ## ⌨️ Commands
-| Command             | Description                                                                               | Permissions |
-|---------------------|-------------------------------------------------------------------------------------------|-------------|
-| /ticketbird         | Shows info about the bot                                                                  | Everyone    |
-| /support            | Opens a new ticket                                                                        | Everyone    |
-| /close              | Closes a ticket when run in a ticket channel                                              | Everyone    |
-| /hold               | Places a ticket on hold when run in a ticket channel                                      | Everyone    |
-| /setup init         | Lets the bot setup by creating needed channels/categories                                 | Admin-only  |
-| /setup repair       | Attempts to automatically repair any configuration issues                                 | Admin-only  |
-| /setup use-projects | Whether to use "projects" or ticket topics to help sort tickets                           | Admin-only  |
-| /setup timing       | Allows configuring the timing of TicketBird's automated actions                           | Admin-only  |
-| /setup language     | Allows you to select the language for the bot to use                                      | Admin-only  |
-| /setup ping         | Allows modifying the default ping setting when a new ticket is opened                     | Admin-only  |
-| /setup view         | Allows viewing TicketBird's configuration in the current server                           | Admin-only  |
-| /staff role         | Allows users with the role to see all tickets as "TicketBird Staff"                       | Admin-only  |
-| /staff add          | Add a user as being "TicketBird Staff" allowing them to see all tickets                   | Admin-only  |
-| /staff remove       | Remove a user as "TicketBird Staff"                                                       | Admin-only  |
-| /staff list         | List all users who are currently "TicketBird staff"                                       | Admin-only  |
-| /project add        | Adds a new "project" or ticket category/topic to aid with sorting                         | Admin-only  |
-| /project remove     | Removes an existing project                                                               | Admin-only  |
-| /project list       | Lists all existing projects/topics                                                        | Admin-only  |
-| /project view       | View full details about a specific project/topic                                          | Admin-only  |
-| /project edit       | Edit various settings for a project/topic - Like changing prefix, staff, or ping override | Admin-only  |
+| Command                  | Description                                                                               | Permissions |
+|--------------------------|-------------------------------------------------------------------------------------------|-------------|
+| /ticketbird              | Shows info about the bot                                                                  | Everyone    |
+| /support                 | Opens a new ticket                                                                        | Everyone    |
+| /topic                   | Changes a ticket's topic                                                                  | Everyone    |
+| /close                   | Closes a ticket when run in a ticket channel                                              | Everyone    |
+| /hold                    | Places a ticket on hold when run in a ticket channel                                      | Everyone    |
+| /setup init              | Lets the bot setup by creating needed channels/categories                                 | Admin-only  |
+| /setup repair            | Attempts to automatically repair any configuration issues                                 | Admin-only  |
+| /setup language          | Allows you to select the language for the bot to use                                      | Admin-only  |
+| /setup use-projects      | Whether to use "projects" or ticket topics to help sort tickets                           | Admin-only  |
+| /setup show-ticket-stats | Whether to show opened/closed ticket stats in the support request embed                   | Admin-only  |
+| /setup timing            | Allows configuring the timing of TicketBird's automated actions                           | Admin-only  |
+| /setup ping              | Allows modifying the default ping setting when a new ticket is opened                     | Admin-only  |
+| /setup logging           | Allows enabling and configuring ticket logging                                            | Admin-only  |
+| /setup view              | Allows viewing TicketBird's configuration in the current server                           | Admin-only  |
+| /staff role              | Allows users with the role to see all tickets as "TicketBird Staff"                       | Admin-only  |
+| /staff add               | Add a user as being "TicketBird Staff" allowing them to see all tickets                   | Admin-only  |
+| /staff remove            | Remove a user as "TicketBird Staff"                                                       | Admin-only  |
+| /staff list              | List all users who are currently "TicketBird staff"                                       | Admin-only  |
+| /project add             | Adds a new "project" or ticket category/topic to aid with sorting                         | Admin-only  |
+| /project remove          | Removes an existing project                                                               | Admin-only  |
+| /project list            | Lists all existing projects/topics                                                        | Admin-only  |
+| /project view            | View full details about a specific project/topic                                          | Admin-only  |
+| /project edit            | Edit various settings for a project/topic - Like changing prefix, staff, or ping override | Admin-only  |
+| /ticket open             | Opens a new ticket                                                                        | Everyone    | 
+| /ticket topic            | Changes a ticket's topic when run in a ticket channel                                     | Everyone    |
+| /ticket add              | Adds a user to the ticket as a participant when run in a ticket channel                   | Everyone    |
+| /ticket remove           | Removes a user from the ticket when run in a ticket channel                               | Everyone    |
+| /ticket hold             | Places a ticket on hold when run in a ticket channel                                      | Everyone    |
+| /ticket close            | Closes a ticket when run in a ticket channel                                              | Everyone    |
+| /ticket checksum         | Allows validating the authenticity of a TicketBird log file with a SHA-256 checksum       | Everyone    |
 
 # 🗓️ Planned & Work In Progress
 This bot is a hobby project for me, please note that while these features are planned, there's no solid timeline.
@@ -57,7 +69,7 @@ This bot is a hobby project for me, please note that while these features are pl
 # 🧰 Tech stack
 - Java 17
 - 100% Kotlin utilizing Kotlin Coroutines
-- Spring Boot (Data, Dependency Injection, etc)
+- Spring Boot (Data, Dependency Injection, Actuator, etc)
 - Flyway for automatic database migrations (MySQL)
 - Redis cluster caching
 - Enterprise repository & service pattern for maintainability
@@ -71,7 +83,7 @@ For development, you need JDK 17+ and Docker installed.
 
 1. Fork this repository and open it in your favorite editor (IntelliJ recommended for Kotlin)
 2. Write your code and add applicable tests
-3. Compile and build the docker image with `./gradlew clean build jibDockerBuild`
+3. Compile and build the docker image with `./gradlew clean jibDockerBuild`
 4. Place config in `./docker/bot-config/application.properties`
 5. Start the bot and dependencies for testing with `docker compose up -d`
    - You can connect to the Java debugger at port `5005`

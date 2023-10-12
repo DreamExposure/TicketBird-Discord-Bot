@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component
 import java.time.Duration
 import java.time.Instant
 import java.util.*
+import kotlin.jvm.optionals.getOrNull
 
 @Component
 class SetupCommand(
@@ -54,8 +55,10 @@ class SetupCommand(
             "repair" -> repair(event, settings)
             "language" -> language(event, settings)
             "use-projects" -> useProjects(event, settings)
+            "show-ticket-stats" -> showTicketStats(event, settings)
             "timing" -> timing(event, settings)
             "ping" -> ping(event, settings)
+            "logging" -> logging(event, settings)
             "view" -> view(event, settings)
             else -> throw IllegalStateException("Invalid subcommand specified")
         }
@@ -105,13 +108,14 @@ class SetupCommand(
         settings.supportChannel = supportChannel.id
 
         // Create static message
-        val embed = staticMessageService.getEmbed(settings) ?: throw IllegalStateException("Failed to get embed during setup")
+        val embed = staticMessageService.getEmbed(settings)
+            ?: throw IllegalStateException("Failed to get embed during setup")
         supportChannel.createMessage(embed)
             .withComponents(*componentService.getStaticMessageComponents(settings))
             .doOnNext { settings.staticMessage = it.id }
             .awaitSingle()
 
-        settingsService.createOrUpdateGuildSettings(settings)
+        settingsService.upsertGuildSettings(settings)
 
         event.createFollowup(localeService.getString(settings.locale, "command.setup.init.success"))
             .withEmbeds(viewSettingsEmbed(settings))
@@ -175,7 +179,7 @@ class SetupCommand(
             .get()
 
         settings.locale = newLocale
-        settingsService.createOrUpdateGuildSettings(settings)
+        settingsService.upsertGuildSettings(settings)
 
         event.createFollowup(localeService.getString(settings.locale, "command.setup.language.success"))
             .withEmbeds(viewSettingsEmbed(settings))
@@ -192,9 +196,27 @@ class SetupCommand(
             .get()
 
         settings.useProjects = useProjects
-        settingsService.createOrUpdateGuildSettings(settings)
+        settingsService.upsertGuildSettings(settings)
 
         event.createFollowup(localeService.getString(settings.locale, "command.setup.use-projects.success.$useProjects"))
+            .withEmbeds(viewSettingsEmbed(settings))
+            .withEphemeral(ephemeral)
+            .map(Message::getId)
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+            .awaitSingleOrNull()
+    }
+
+    private suspend fun showTicketStats(event: ChatInputInteractionEvent, settings: GuildSettings) {
+        val showStats = event.options[0].getOption("show")
+            .flatMap(ApplicationCommandInteractionOption::getValue)
+            .map(ApplicationCommandInteractionOptionValue::asBoolean)
+            .get()
+
+        settings.showTicketStats = showStats
+        settingsService.upsertGuildSettings(settings)
+        staticMessageService.update(settings.guildId)
+
+        event.createFollowup(localeService.getString(settings.locale, "command.setup.show-ticket-stats.success.$showStats"))
             .withEmbeds(viewSettingsEmbed(settings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
@@ -243,7 +265,7 @@ class SetupCommand(
             }
         }
 
-        settingsService.createOrUpdateGuildSettings(settings)
+        settingsService.upsertGuildSettings(settings)
 
         event.createFollowup(localeService.getString(
             settings.locale,
@@ -266,12 +288,65 @@ class SetupCommand(
             .get()
 
         settings.pingOption = pingOption
-        settingsService.createOrUpdateGuildSettings(settings)
+        settingsService.upsertGuildSettings(settings)
 
         event.createFollowup(localeService.getString(
             settings.locale,
             "command.setup.ping.success",
             localeService.getString(settings.locale, pingOption.localeEntry)
+        ))
+            .withEmbeds(viewSettingsEmbed(settings))
+            .withEphemeral(ephemeral)
+            .map(Message::getId)
+            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+            .awaitSingleOrNull()
+    }
+
+    private suspend fun logging(event: ChatInputInteractionEvent, settings: GuildSettings) {
+        val loggingEnabled = event.options[0].getOption("enable")
+            .flatMap(ApplicationCommandInteractionOption::getValue)
+            .map(ApplicationCommandInteractionOptionValue::asBoolean)
+            .orElse(settings.enableLogging)
+        val logChannel = event.options[0].getOption("channel")
+            .flatMap(ApplicationCommandInteractionOption::getValue)
+            .map(ApplicationCommandInteractionOptionValue::asSnowflake)
+            .getOrNull() ?: settings.logChannel
+
+        // Validation
+        if (loggingEnabled) {
+            // Cannot enable logging without a channel to log to
+            if (logChannel == null) {
+                event.createFollowup(localeService.getString(settings.locale, "command.setup.logging.error.no-channel"))
+                    .withEphemeral(ephemeral)
+                    .map(Message::getId)
+                    .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+                    .awaitSingleOrNull()
+                return
+            }
+
+            // Check perms on channel to make sure TicketBird can actually use it for logging
+            if (!environmentService.validateChannelForLogging(settings.guildId, logChannel)) {
+                event.createFollowup(localeService.getString(settings.locale, "command.setup.logging.error.channel-invalid"))
+                    .withEphemeral(ephemeral)
+                    .map(Message::getId)
+                    .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+                    .awaitSingleOrNull()
+                return
+            }
+        }
+
+        // Actually update the settings
+        settings.enableLogging = loggingEnabled
+        settings.logChannel = logChannel
+        settingsService.upsertGuildSettings(settings)
+
+        val localeString =
+            if (Config.TOGGLE_TICKET_LOGGING.getBoolean()) "command.setup.logging.success.with-toggle"
+            else "command.setup.logging.success"
+        event.createFollowup(localeService.getString(
+            settings.locale,
+            localeString,
+            "$loggingEnabled"
         ))
             .withEmbeds(viewSettingsEmbed(settings))
             .withEphemeral(ephemeral)
@@ -344,6 +419,25 @@ class SetupCommand(
         ).addField(
             localeService.getString(settings.locale, "embed.settings.field.ping"),
             localeService.getString(settings.locale, settings.pingOption.localeEntry),
+            true
+        )
+
+        if (settings.enableLogging) {
+            builder.addField(
+                localeService.getString(settings.locale, "embed.settings.field.logging"),
+                localeService.getString(settings.locale, "embed.settings.field.logging.enabled", settings.logChannel?.asString() ?: ""),
+                false
+            )
+        } else {
+            builder.addField(
+                localeService.getString(settings.locale, "embed.settings.field.logging"),
+                localeService.getString(settings.locale, "embed.settings.field.logging.disabled"),
+                false
+            )
+        }
+        builder.addField(
+            localeService.getString(settings.locale, "embed.settings.field.logging.stats"),
+            settings.showTicketStats.toString(),
             true
         )
 

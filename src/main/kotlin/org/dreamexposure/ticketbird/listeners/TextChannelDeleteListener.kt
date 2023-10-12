@@ -20,6 +20,6 @@ class TextChannelDeleteListener(
         }
 
         // If we made it here, we should update the settings
-        settingsService.createOrUpdateGuildSettings(settings)
+        settingsService.upsertGuildSettings(settings)
     }
 }

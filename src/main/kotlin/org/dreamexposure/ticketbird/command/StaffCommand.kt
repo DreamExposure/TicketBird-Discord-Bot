@@ -60,7 +60,7 @@ class StaffCommand(
             .orElse(settings.guildId) // everyone role, means to remove staff role
 
         if (roleId == settings.guildId || roleId.asLong() == 0L) settings.staffRole = null else settings.staffRole = roleId
-        settingsService.createOrUpdateGuildSettings(settings)
+        settingsService.upsertGuildSettings(settings)
 
         event.createFollowup(localeService.getString(settings.locale, "command.staff.role.success"))
             .withEmbeds(getListEmbed(event, settings))
@@ -89,7 +89,7 @@ class StaffCommand(
         }
 
         settings.staff.add(toAddId.asString())
-        settingsService.createOrUpdateGuildSettings(settings)
+        settingsService.upsertGuildSettings(settings)
 
         event.createFollowup(localeService.getString(settings.locale, "command.staff.add.success", toAddId.asString()))
             .withEmbeds(getListEmbed(event, settings))
@@ -118,7 +118,7 @@ class StaffCommand(
         }
 
         settings.staff.remove(toRemoveId.asString())
-        settingsService.createOrUpdateGuildSettings(settings)
+        settingsService.upsertGuildSettings(settings)
 
         event.createFollowup(localeService.getString(settings.locale, "command.staff.remove.success", toRemoveId.asString()))
             .withEmbeds(getListEmbed(event, settings))

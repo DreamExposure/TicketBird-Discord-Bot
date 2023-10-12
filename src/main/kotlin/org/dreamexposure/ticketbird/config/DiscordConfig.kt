@@ -22,6 +22,7 @@ import discord4j.store.api.mapping.MappingStoreService
 import discord4j.store.api.service.StoreService
 import discord4j.store.jdk.JdkStoreService
 import discord4j.store.redis.RedisClusterStoreService
+import discord4j.store.redis.RedisStoreDefaults
 import discord4j.store.redis.RedisStoreService
 import io.lettuce.core.RedisClient
 import io.lettuce.core.RedisURI
@@ -83,6 +84,7 @@ class DiscordConfig {
         val redisPort = Config.REDIS_PORT.getInt()
         val redisPassword = Config.REDIS_PASSWORD.getString().toCharArray()
         val isRedisCluster = Config.CACHE_REDIS_IS_CLUSTER.getBoolean()
+        val prefix = Config.CACHE_PREFIX.getString()
 
         return if (useRedis) {
             val uriBuilder = RedisURI.Builder
@@ -92,10 +94,12 @@ class DiscordConfig {
             val rss = if (isRedisCluster) {
                 RedisClusterStoreService.Builder()
                     .redisClient(RedisClusterClient.create(uriBuilder.build()))
+                    .keyPrefix("$prefix.${RedisStoreDefaults.DEFAULT_KEY_PREFIX}")
                     .build()
             } else {
                 RedisStoreService.Builder()
                     .redisClient(RedisClient.create(uriBuilder.build()))
+                    .keyPrefix("$prefix.${RedisStoreDefaults.DEFAULT_KEY_PREFIX}")
                     .build()
             }
 
@@ -114,12 +118,17 @@ class DiscordConfig {
             .build()
     }
 
+    private fun getIntents(): IntentSet {
+        var intents = IntentSet.of(
+            Intent.GUILDS,
+            Intent.GUILD_MESSAGES,
+            Intent.GUILD_MESSAGE_REACTIONS,
+            Intent.DIRECT_MESSAGES,
+            Intent.DIRECT_MESSAGE_REACTIONS
+        )
 
-    private fun getIntents() = IntentSet.of(
-        Intent.GUILDS,
-        Intent.GUILD_MESSAGES,
-        Intent.GUILD_MESSAGE_REACTIONS,
-        Intent.DIRECT_MESSAGES,
-        Intent.DIRECT_MESSAGE_REACTIONS
-    )
+        if (Config.TOGGLE_TICKET_LOGGING.getBoolean()) intents = intents.or(IntentSet.of(Intent.MESSAGE_CONTENT))
+
+        return intents
+    }
 }
