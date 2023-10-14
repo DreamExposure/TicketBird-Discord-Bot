@@ -21,7 +21,8 @@ class SelectMenuInteractionListener(
 ) : EventListener<SelectMenuInteractionEvent> {
 
     override suspend fun handle(event: SelectMenuInteractionEvent) {
-        val timer = StopWatch().apply { start() }
+        val timer = StopWatch()
+        timer.start()
 
         if (!event.interaction.guildId.isPresent) {
             event.reply(localeService.getString(Locale.ENGLISH, "dropdown.dm-not-supported")).awaitSingleOrNull()
@@ -47,7 +48,8 @@ class SelectMenuInteractionListener(
                 .awaitSingleOrNull()
         }
 
-        metricService.recordInteractionDuration(event.customId, "select-menu", timer.totalTimeMillis.apply { timer.stop() })
+        timer.stop()
+        metricService.recordInteractionDuration(event.customId, "select-menu", timer.totalTimeMillis)
     }
 }
 

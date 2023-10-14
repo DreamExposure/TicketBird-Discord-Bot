@@ -20,7 +20,8 @@ class SlashCommandListener(
     private val metricService: MetricService,
 ): EventListener<ChatInputInteractionEvent> {
     override suspend fun handle(event: ChatInputInteractionEvent) {
-        val timer = StopWatch().apply { start() }
+        val timer = StopWatch()
+        timer.start()
 
         if (!event.interaction.guildId.isPresent) {
             event.reply(localeService.getString(Locale.ENGLISH, "command.dm-not-supported")).awaitSingleOrNull()
@@ -49,6 +50,7 @@ class SlashCommandListener(
         }
 
         // I lose visibility to sub-command level performance... will want to investigate that eventually
-        metricService.recordInteractionDuration(event.commandName, "chat-input", timer.totalTimeMillis.apply { timer.stop() })
+        timer.stop()
+        metricService.recordInteractionDuration(event.commandName, "chat-input", timer.totalTimeMillis)
     }
 }

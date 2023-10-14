@@ -21,7 +21,8 @@ class ButtonInteractionListener(
 ) : EventListener<ButtonInteractionEvent> {
 
     override suspend fun handle(event: ButtonInteractionEvent) {
-        val timer = StopWatch().apply { start() }
+        val timer = StopWatch()
+        timer.start()
 
         if (!event.interaction.guildId.isPresent) {
             event.reply(localeService.getString(Locale.ENGLISH, "button.dm-not-supported")).awaitSingleOrNull()
@@ -47,6 +48,7 @@ class ButtonInteractionListener(
                 .awaitSingleOrNull()
         }
 
-        metricService.recordInteractionDuration(event.customId, "button", timer.totalTimeMillis.apply { timer.stop() })
+        timer.stop()
+        metricService.recordInteractionDuration(event.customId, "button", timer.totalTimeMillis)
     }
 }

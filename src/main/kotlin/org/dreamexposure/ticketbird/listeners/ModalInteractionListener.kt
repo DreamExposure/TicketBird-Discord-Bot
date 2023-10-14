@@ -21,7 +21,8 @@ class ModalInteractionListener(
 ) : EventListener<ModalSubmitInteractionEvent> {
 
     override suspend fun handle(event: ModalSubmitInteractionEvent) {
-        val timer = StopWatch().apply { start() }
+        val timer = StopWatch()
+        timer.start()
 
         if (!event.interaction.guildId.isPresent) {
             event.reply(localeService.getString(Locale.ENGLISH, "modal.dm-not-supported")).awaitSingleOrNull()
@@ -47,6 +48,7 @@ class ModalInteractionListener(
                 .awaitSingleOrNull()
         }
 
-        metricService.recordInteractionDuration(event.customId, "modal", timer.totalTimeMillis.apply { timer.stop() })
+        timer.stop()
+        metricService.recordInteractionDuration(event.customId, "modal", timer.totalTimeMillis)
     }
 }

@@ -17,7 +17,8 @@ class AutoCompleteInteractionListener(
     private val metricService: MetricService,
 ) : EventListener<ChatInputAutoCompleteEvent> {
     override suspend fun handle(event: ChatInputAutoCompleteEvent) {
-        val timer = StopWatch().apply { start() }
+        val timer = StopWatch()
+        timer.start()
 
         if (!event.interaction.guildId.isPresent) {
             event.respondWithSuggestions(listOf())
@@ -45,6 +46,7 @@ class AutoCompleteInteractionListener(
                 .awaitSingleOrNull()
         }
 
-        metricService.recordInteractionDuration(id, "auto-complete", timer.totalTimeMillis.apply { timer.stop() })
+        timer.stop()
+        metricService.recordInteractionDuration(id, "auto-complete", timer.totalTimeMillis)
     }
 }
