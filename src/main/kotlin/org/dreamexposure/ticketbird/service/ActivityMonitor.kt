@@ -7,10 +7,7 @@ import discord4j.rest.http.client.ClientException
 import io.netty.handler.codec.http.HttpResponseStatus
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.mono
-import org.dreamexposure.ticketbird.business.EnvironmentService
-import org.dreamexposure.ticketbird.business.GuildSettingsService
-import org.dreamexposure.ticketbird.business.StaticMessageService
-import org.dreamexposure.ticketbird.business.TicketService
+import org.dreamexposure.ticketbird.business.*
 import org.dreamexposure.ticketbird.config.Config
 import org.dreamexposure.ticketbird.extensions.asMinutes
 import org.dreamexposure.ticketbird.logger.LOGGER
@@ -18,6 +15,7 @@ import org.dreamexposure.ticketbird.utils.GlobalVars.DEFAULT
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
 import org.springframework.stereotype.Component
+import org.springframework.util.StopWatch
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.Duration
@@ -30,6 +28,7 @@ class ActivityMonitor(
     private val ticketService: TicketService,
     private val environmentService: EnvironmentService,
     private val staticMessageService: StaticMessageService,
+    private val metricService: MetricService,
 ) : ApplicationRunner {
 
     override fun run(args: ApplicationArguments?) {
@@ -42,8 +41,13 @@ class ActivityMonitor(
 
     private fun doTheThing() = mono {
         LOGGER.debug("Running ticket inactivity close task...")
+        val overallTimer = StopWatch()
+        overallTimer.start()
 
         client.guilds.collectList().awaitSingle().forEach { guild ->
+            val timer = StopWatch()
+            timer.start()
+
             // Isolate errors to guild-level
             try {
                 val settings = settingsService.getGuildSettings(guild.id)
@@ -107,8 +111,14 @@ class ActivityMonitor(
             } catch (ex: Exception) {
                 LOGGER.error(DEFAULT, "ActivityMonitor Failed to process guild | id: ${guild.id.asString()}", ex)
             } finally {
+                timer.stop()
+
                 LOGGER.debug("Ticket inactivity task completed")
+                metricService.recordTicketActivityMonitorDuration("guild", timer.totalTimeMillis)
             }
         }
+
+        overallTimer.stop()
+        metricService.recordTicketActivityMonitorDuration("overall", overallTimer.totalTimeMillis)
     }
 }

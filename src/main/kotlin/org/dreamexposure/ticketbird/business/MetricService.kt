@@ -18,8 +18,15 @@ class MetricService(
 
     fun recordTicketActionDuration(action: String, duration: Long) {
         meterRegistry.timer(
-            "ticketbird.ticket.action.duration",
+            "bot.ticketbird.ticket.action.duration",
             listOf(Tag.of("action", action))
+        ).record(Duration.ofMillis(duration))
+    }
+
+    fun recordTicketActivityMonitorDuration(scope: String, duration: Long) {
+        meterRegistry.timer(
+            "bot.ticketbird.ticket.activity.monitor.duration",
+            listOf(Tag.of("scope", scope)),
         ).record(Duration.ofMillis(duration))
     }
 }
