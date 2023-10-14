@@ -15,4 +15,11 @@ class MetricService(
             listOf(Tag.of("handler", handler), Tag.of("type", type))
         ).record(Duration.ofMillis(duration))
     }
+
+    fun recordTicketActionDuration(action: String, duration: Long) {
+        meterRegistry.timer(
+            "ticketbird.ticket.action.duration",
+            listOf(Tag.of("action", action))
+        ).record(Duration.ofMillis(duration))
+    }
 }

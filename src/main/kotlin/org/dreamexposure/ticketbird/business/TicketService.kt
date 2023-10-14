@@ -28,6 +28,7 @@ import org.dreamexposure.ticketbird.utils.GlobalVars
 import org.springframework.beans.factory.BeanFactory
 import org.springframework.beans.factory.getBean
 import org.springframework.stereotype.Component
+import org.springframework.util.StopWatch
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.net.URL
@@ -46,6 +47,7 @@ class TicketService(
     private val permissionService: PermissionService,
     private val componentService: ComponentService,
     private val objectMapper: ObjectMapper,
+    private val metricService: MetricService,
 ) {
     private val discordClient
         get() = beanFactory.getBean<GatewayDiscordClient>()
@@ -115,8 +117,15 @@ class TicketService(
     }
 
     suspend fun deleteTicket(guildId: Snowflake, channelId: Snowflake) {
+        val timer = StopWatch()
+        timer.start()
+
+
         ticketRepository.deleteByGuildIdAndChannel(guildId.asLong(), channelId.asLong()).awaitSingleOrNull()
         ticketCache.evict(guildId, channelId)
+
+        timer.stop()
+        metricService.recordTicketActionDuration("delete", timer.totalTimeMillis)
     }
 
     suspend fun deleteAllTickets(guildId: Snowflake) {
@@ -125,6 +134,9 @@ class TicketService(
     }
 
     suspend fun closeTicket(guildId: Snowflake, channelId: Snowflake, inactive: Boolean = false) {
+        val timer = StopWatch()
+        timer.start()
+
         LOGGER.debug("Closing ticket | guildId: {} | channel: {} | inactive: {}", guildId, channelId, inactive)
 
         val ticket = getTicket(guildId, channelId) ?: return // return if ticket does not exist
@@ -141,10 +153,15 @@ class TicketService(
 
 
         channel.createMessage(localeService.getString(settings.locale, field, ticket.creator.asString())).awaitSingleOrNull()
+
+        timer.stop()
+        metricService.recordTicketActionDuration("close", timer.totalTimeMillis)
     }
 
     suspend fun holdTicket(guildId: Snowflake, channelId: Snowflake) {
         LOGGER.debug("Placing ticket on hold | guildId: {} | channel: {}", guildId, channelId)
+        val timer = StopWatch()
+        timer.start()
 
         val ticket = getTicket(guildId, channelId) ?: return // return if ticket does not exist
         val settings = settingsService.getGuildSettings(guildId)
@@ -159,10 +176,15 @@ class TicketService(
         channel.createMessage(
             localeService.getString(settings.locale, "ticket.hold.creator", ticket.creator.asString())
         ).awaitSingleOrNull()
+
+        timer.stop()
+        metricService.recordTicketActionDuration("hold", timer.totalTimeMillis)
     }
 
     suspend fun purgeTicket(guildId: Snowflake, channelId: Snowflake) {
         LOGGER.debug("Purging ticket | guildId: {} | channel: {}", guildId, channelId)
+        val timer = StopWatch()
+        timer.start()
 
         //val ticket = getTicket(guildId, channelId) ?: return // return if ticket does not exist
         val settings = settingsService.getGuildSettings(guildId)
@@ -172,10 +194,15 @@ class TicketService(
 
         channel.delete(localeService.getString(settings.locale, "ticket.delete.time")).awaitSingleOrNull()
         //deleteTicket(guildId, ticket.number)
+
+        timer.stop()
+        metricService.recordTicketActionDuration("purge", timer.totalTimeMillis)
     }
 
     suspend fun moveTicket(guildId: Snowflake, channelId: Snowflake, toCategory: Snowflake, withActivity: Boolean = true) {
         LOGGER.debug("Moving ticket | guildId: {} | channel: {}", guildId, channelId)
+        val timer = StopWatch()
+        timer.start()
 
         val ticket = getTicket(guildId, channelId) ?: return // return if ticket does not exist
         val channel = discordClient.getChannelById(channelId).ofType(TextChannel::class.java).awaitSingle()
@@ -185,6 +212,9 @@ class TicketService(
 
         updateTicket(ticket)
         channel.edit().withParentIdOrNull(toCategory).awaitSingleOrNull()
+
+        timer.stop()
+        metricService.recordTicketActionDuration("move", timer.totalTimeMillis)
     }
 
     suspend fun createTicketChannel(guildId: Snowflake, creator: Snowflake, project: Project?, number: Int): TextChannel {
@@ -204,6 +234,8 @@ class TicketService(
 
     suspend fun createNewTicketFull(guildId: Snowflake, creatorId: Snowflake, project: Project? = null, info: String?): Ticket {
         LOGGER.debug("Full create ticket | guildId: {}", guildId)
+        val timer = StopWatch()
+        timer.start()
 
         // Get stuff
         val creator = discordClient.getMemberById(guildId, creatorId).awaitSingle()
@@ -268,7 +300,7 @@ class TicketService(
             .withComponents(*componentService.getTicketMessageComponents(settings))
             .awaitSingle()
 
-        return createTicket(Ticket(
+        val ticket = createTicket(Ticket(
             guildId = guildId,
             number = ticketNumber,
             project = project?.name.orEmpty(),
@@ -277,11 +309,18 @@ class TicketService(
             category = settings.awaitingCategory!!,
             lastActivity = Instant.now()
         ))
+
+        timer.stop()
+        metricService.recordTicketActionDuration("create-full", timer.totalTimeMillis)
+
+        return ticket
     }
 
     suspend fun logTicket(guildId: Snowflake, channelId: Snowflake) {
         if (!Config.TOGGLE_TICKET_LOGGING.getBoolean()) return
         LOGGER.debug("Logging ticket | guildId: {} | channel: {}", guildId, channelId)
+        val timer = StopWatch()
+        timer.start()
 
         // Get everything we need
         val settings = settingsService.getGuildSettings(guildId)
@@ -383,6 +422,9 @@ class TicketService(
         discordClient.getChannelById(settings.logChannel!!).ofType(TextChannel::class.java).flatMap { channel ->
             channel.createMessage("").withFiles(attachments)
         }.awaitSingleOrNull()
+
+        timer.stop()
+        metricService.recordTicketActionDuration("log", timer.totalTimeMillis)
     }
 
     suspend fun addParticipant(guildId: Snowflake, channelId: Snowflake, participant: Snowflake, addedBy: Snowflake, write: Boolean) {
