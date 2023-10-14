@@ -3,17 +3,22 @@ package org.dreamexposure.ticketbird.listeners
 import discord4j.core.event.domain.interaction.ChatInputAutoCompleteEvent
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.GuildSettingsService
+import org.dreamexposure.ticketbird.business.MetricService
 import org.dreamexposure.ticketbird.interaction.InteractionHandler
 import org.dreamexposure.ticketbird.logger.LOGGER
 import org.dreamexposure.ticketbird.utils.GlobalVars.DEFAULT
 import org.springframework.stereotype.Component
+import org.springframework.util.StopWatch
 
 @Component
 class AutoCompleteInteractionListener(
     private val handlers: List<InteractionHandler<ChatInputAutoCompleteEvent>>,
     private val settingsService: GuildSettingsService,
-): EventListener<ChatInputAutoCompleteEvent> {
+    private val metricService: MetricService,
+) : EventListener<ChatInputAutoCompleteEvent> {
     override suspend fun handle(event: ChatInputAutoCompleteEvent) {
+        val timer = StopWatch().apply { start() }
+
         if (!event.interaction.guildId.isPresent) {
             event.respondWithSuggestions(listOf())
                 .awaitSingleOrNull()
@@ -39,5 +44,7 @@ class AutoCompleteInteractionListener(
             event.respondWithSuggestions(listOf())
                 .awaitSingleOrNull()
         }
+
+        metricService.recordInteractionDuration(id, "auto-complete", timer.totalTimeMillis.apply { timer.stop() })
     }
 }

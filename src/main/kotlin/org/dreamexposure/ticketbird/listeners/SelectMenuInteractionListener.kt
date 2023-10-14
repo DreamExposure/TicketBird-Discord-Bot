@@ -4,20 +4,25 @@ import discord4j.core.event.domain.interaction.SelectMenuInteractionEvent
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.GuildSettingsService
 import org.dreamexposure.ticketbird.business.LocaleService
+import org.dreamexposure.ticketbird.business.MetricService
 import org.dreamexposure.ticketbird.interaction.InteractionHandler
 import org.dreamexposure.ticketbird.logger.LOGGER
 import org.dreamexposure.ticketbird.utils.GlobalVars.DEFAULT
 import org.springframework.stereotype.Component
+import org.springframework.util.StopWatch
 import java.util.*
 
 @Component
 class SelectMenuInteractionListener(
     private val settingsService: GuildSettingsService,
     private val localeService: LocaleService,
-    private val dropdowns: List<InteractionHandler<SelectMenuInteractionEvent>>
-): EventListener<SelectMenuInteractionEvent> {
+    private val dropdowns: List<InteractionHandler<SelectMenuInteractionEvent>>,
+    private val metricService: MetricService,
+) : EventListener<SelectMenuInteractionEvent> {
 
     override suspend fun handle(event: SelectMenuInteractionEvent) {
+        val timer = StopWatch().apply { start() }
+
         if (!event.interaction.guildId.isPresent) {
             event.reply(localeService.getString(Locale.ENGLISH, "dropdown.dm-not-supported")).awaitSingleOrNull()
             return
@@ -41,6 +46,8 @@ class SelectMenuInteractionListener(
                 .withEphemeral(true)
                 .awaitSingleOrNull()
         }
+
+        metricService.recordInteractionDuration(event.customId, "select-menu", timer.totalTimeMillis.apply { timer.stop() })
     }
 }
 
