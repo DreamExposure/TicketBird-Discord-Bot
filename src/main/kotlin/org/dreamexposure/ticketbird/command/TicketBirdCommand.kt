@@ -3,8 +3,8 @@ package org.dreamexposure.ticketbird.command
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import discord4j.core.spec.EmbedCreateSpec
 import kotlinx.coroutines.reactor.awaitSingle
+import org.dreamexposure.ticketbird.GitProperty
 import org.dreamexposure.ticketbird.GitProperty.TICKETBIRD_VERSION
-import org.dreamexposure.ticketbird.GitProperty.TICKETBIRD_VERSION_D4J
 import org.dreamexposure.ticketbird.TicketBird
 import org.dreamexposure.ticketbird.business.LocaleService
 import org.dreamexposure.ticketbird.config.Config
@@ -29,12 +29,12 @@ class TicketBirdCommand(
             .color(GlobalVars.embedColor)
             .title(localeService.getString(settings.locale, "embed.info.title"))
             .addField(localeService.getString(settings.locale, "embed.info.field.version"), TICKETBIRD_VERSION.value, false)
-            .addField(localeService.getString(settings.locale, "embed.info.field.library"), TICKETBIRD_VERSION_D4J.value, false)
+            .addField(localeService.getString(settings.locale, "embed.info.field.library"), "Discord 4J v${GitProperty.TICKETBIRD_VERSION_D4J.value}", false)
             .addField(localeService.getString(settings.locale, "embed.info.field.shard"), formattedIndex(), true)
             .addField(localeService.getString(settings.locale, "embed.info.field.guilds"), "$guilds", true)
             .addField(
-                TicketBird.getUptime().getHumanReadable(),
                 localeService.getString(settings.locale, "embed.info.field.uptime"),
+                TicketBird.getUptime().getHumanReadable(),
                 false
             ).addField(
                 localeService.getString(settings.locale, "embed.info.field.links"),
