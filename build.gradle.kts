@@ -126,10 +126,10 @@ dependencies {
 jib {
     to {
         image = "rg.nl-ams.scw.cloud/dreamexposure/ticketbird"
-        tags = mutableSetOf("latest", ticketBirdVersion, buildVersion)
+        tags = mutableSetOf("latest", buildVersion)
     }
 
-    from.image = "eclipse-temurin:17-jre-alpine"
+    from.image = "eclipse-temurin:17-jre-alpine@sha256:03756521d6d21e52cd72793179b8d316be1b3d1ba362ed9ee659687d5c073a63"
 }
 
 gitProperties {
