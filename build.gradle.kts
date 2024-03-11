@@ -1,4 +1,3 @@
-
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
@@ -26,7 +25,7 @@ buildscript {
 }
 
 val ticketBirdVersion = "2.1.1"
-val gradleWrapperVersion = "7.6"
+val gradleWrapperVersion = "8.6"
 val javaVersion = "17"
 val d4jVersion = "3.2.6"
 val d4jStoresVersion = "3.2.2"
@@ -44,7 +43,7 @@ val buildVersion = if (System.getenv("GITHUB_RUN_NUMBER") != null) {
 } else {
     "$version.d${System.currentTimeMillis().div(1000)}" //Seconds since epoch
 }
-val kotlinSrcDir: File = buildDir.resolve("src/main/kotlin")
+val kotlinSrcDir = layout.buildDirectory.dir("src/main/kotlin").map(Directory::getAsFile).get()
 
 java {
     sourceCompatibility = JavaVersion.toVersion(javaVersion)
@@ -144,7 +143,7 @@ tasks {
         doLast {
             @Suppress("UNCHECKED_CAST")
             val gitProperties = ext[gitProperties.extProperty] as Map<String, String>
-            val enumPairs = gitProperties.mapKeys { it.key.replace('.', '_').toUpperCase() }
+            val enumPairs = gitProperties.mapKeys { it.key.replace('.', '_').uppercase() }
 
             val enumBuilder = TypeSpec.enumBuilder("GitProperty")
                 .primaryConstructor(
