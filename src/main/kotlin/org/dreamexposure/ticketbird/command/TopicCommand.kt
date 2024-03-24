@@ -12,6 +12,7 @@ class TopicCommand(
     private val interactionService: InteractionService,
 ): SlashCommand {
     override val name = "topic"
+    override val hasSubcommands = false
     override val ephemeral = true
 
     override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings) {

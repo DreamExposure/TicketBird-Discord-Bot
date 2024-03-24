@@ -12,6 +12,7 @@ class SupportCommand(
     private val interactionService: InteractionService,
 ) : SlashCommand {
     override val name = "support"
+    override val hasSubcommands = false
     override val ephemeral = true
 
     override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings) {

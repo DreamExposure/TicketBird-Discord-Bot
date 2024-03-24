@@ -5,7 +5,7 @@ import org.dreamexposure.ticketbird.`object`.GuildSettings
 
 interface SlashCommand {
     val name: String
-
+    val hasSubcommands: Boolean
     val ephemeral: Boolean
 
     suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings)

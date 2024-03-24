@@ -10,6 +10,7 @@ class CloseCommand(
     private val interactionService: InteractionService,
 ): SlashCommand {
     override val name = "close"
+    override val hasSubcommands = false
     override val ephemeral = true
 
     override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings) {

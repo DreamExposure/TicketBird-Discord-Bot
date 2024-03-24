@@ -19,6 +19,7 @@ class TicketBirdCommand(
     private val localeService: LocaleService,
 ): SlashCommand {
     override val name = "ticketbird"
+    override val hasSubcommands = false
     override val ephemeral = false
 
     override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings) {

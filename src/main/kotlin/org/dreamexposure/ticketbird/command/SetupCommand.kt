@@ -34,6 +34,7 @@ class SetupCommand(
     private val localeService: LocaleService,
 ) : SlashCommand {
     override val name = "setup"
+    override val hasSubcommands = true
     override val ephemeral = true
 
     private val messageDeleteSeconds = Config.TIMING_MESSAGE_DELETE_GENERIC_SECONDS.getLong().asSeconds()

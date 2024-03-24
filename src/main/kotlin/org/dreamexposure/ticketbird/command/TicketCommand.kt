@@ -12,6 +12,7 @@ class TicketCommand(
     private val interactionService: InteractionService,
 ) : SlashCommand {
     override val name = "ticket"
+    override val hasSubcommands = true
     override val ephemeral = true
 
     override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings) {
