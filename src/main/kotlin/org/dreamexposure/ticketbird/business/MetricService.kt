@@ -16,6 +16,14 @@ class MetricService(
         ).record(Duration.ofMillis(duration))
     }
 
+    fun recordTaskDuration(task: String, tags: List<Tag> = listOf(), duration: Long) {
+        meterRegistry.timer(
+            "bot.task.duration",
+            tags.plus(Tag.of("task", task))
+        ).record(Duration.ofMillis(duration))
+    }
+
+
     fun recordTicketActionDuration(action: String, duration: Long) {
         meterRegistry.timer(
             "bot.ticketbird.ticket.action.duration",
