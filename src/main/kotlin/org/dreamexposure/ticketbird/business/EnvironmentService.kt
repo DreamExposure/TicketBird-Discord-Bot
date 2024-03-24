@@ -1,7 +1,6 @@
 package org.dreamexposure.ticketbird.business
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import discord4j.common.util.Snowflake
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.`object`.PermissionOverwrite
@@ -40,21 +39,25 @@ class EnvironmentService(
     init {
         val matcher = PathMatchingResourcePatternResolver()
 
+        // TODO: Uncomment if I add a premium command
+        this.premiumCommands = emptyList()
         // Get premium commands
-        val premiumCommands = mutableListOf<ApplicationCommandRequest>()
-        for (res in matcher.getResources("commands/premium/*.json")) {
-            val request = objectMapper.readValue<ApplicationCommandRequest>(res.inputStream)
-            premiumCommands.add(request)
-        }
-        this.premiumCommands = premiumCommands
+        //val premiumCommands = mutableListOf<ApplicationCommandRequest>()
+        //for (res in matcher.getResources("commands/premium/*.json")) {
+        //    val request = objectMapper.readValue<ApplicationCommandRequest>(res.inputStream)
+        //    premiumCommands.add(request)
+        //}
+        //this.premiumCommands = premiumCommands
 
+        // TODO: Uncomment if I add a dev command
+        this.devCommands = emptyList()
         // Get dev commands
-        val devCommands = mutableListOf<ApplicationCommandRequest>()
-        for (res in matcher.getResources("commands/dev/*.json")) {
-            val request = objectMapper.readValue<ApplicationCommandRequest>(res.inputStream)
-            premiumCommands.add(request)
-        }
-        this.devCommands = devCommands
+        //val devCommands = mutableListOf<ApplicationCommandRequest>()
+        //for (res in matcher.getResources("commands/dev/*.json")) {
+        //    val request = objectMapper.readValue<ApplicationCommandRequest>(res.inputStream)
+        //    premiumCommands.add(request)
+        //}
+        //this.devCommands = devCommands
     }
 
     suspend fun createCategory(guildId: Snowflake, type: String): Category {
