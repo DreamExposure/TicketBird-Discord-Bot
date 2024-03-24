@@ -3,9 +3,12 @@ package org.dreamexposure.ticketbird.business
 import com.fasterxml.jackson.databind.ObjectMapper
 import discord4j.common.util.Snowflake
 import discord4j.core.GatewayDiscordClient
+import discord4j.core.`object`.entity.channel.Category
 import discord4j.core.`object`.entity.channel.TextChannel
 import discord4j.core.spec.EmbedCreateSpec
 import discord4j.core.spec.MessageCreateFields.File
+import discord4j.rest.http.client.ClientException
+import io.netty.handler.codec.http.HttpResponseStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.reactive.awaitLast
 import kotlinx.coroutines.reactor.awaitSingle
@@ -32,6 +35,7 @@ import org.springframework.util.StopWatch
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.net.URL
+import java.time.Duration
 import java.time.Instant
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
@@ -46,6 +50,8 @@ class TicketService(
     private val localeService: LocaleService,
     private val permissionService: PermissionService,
     private val componentService: ComponentService,
+    private val environmentService: EnvironmentService,
+    private val staticMessageService: StaticMessageService,
     private val objectMapper: ObjectMapper,
     private val metricService: MetricService,
 ) {
@@ -468,5 +474,73 @@ class TicketService(
             participant.asString(),
             removedBy.asString()
         )).awaitSingleOrNull()
+    }
+
+    suspend fun processTicketActivityForGuild(guildId: Snowflake) {
+        val timer = StopWatch()
+        timer.start()
+
+        val settings = settingsService.getGuildSettings(guildId)
+
+        // Sanity checks before continuing
+        if (settings.requiresRepair) return // Skip processing this guild until they decide to run repair command
+        if (!environmentService.validateAllEntitiesExist(settings.guildId)) {
+            // Skip processing since we know something doesn't exist
+            staticMessageService.update(settings.guildId)
+            return
+        }
+        if (!settings.hasRequiredIdsSet()) return
+
+        var updateStaticMessage = false
+
+        // Get closed tickets
+        val closedCategoryChannels = discordClient.getChannelById(settings.closeCategory!!)
+            .ofType(Category::class.java)
+            .flatMapMany { it.channels.ofType(TextChannel::class.java) }
+            .collectList().awaitSingle()
+
+        // Get open tickets
+        val awaitingCategoryChannels = discordClient.getChannelById(settings.awaitingCategory!!)
+            .ofType(Category::class.java)
+            .flatMapMany { it.channels.ofType(TextChannel::class.java) }
+            .collectList().awaitSingle()
+        val respondedCategoryChannels = discordClient.getChannelById(settings.respondedCategory!!)
+            .ofType(Category::class.java)
+            .flatMapMany { it.channels.ofType(TextChannel::class.java) }
+            .collectList().awaitSingle()
+
+        // Loop closed tickets
+        for (closedTicketChannel in closedCategoryChannels) {
+            val ticket = getTicket(guildId, closedTicketChannel.id) ?: continue
+            if (Duration.between(Instant.now(), ticket.lastActivity).abs() > settings.autoDelete) {
+                // Ticket closed for over 24 hours, purge
+                purgeTicket(settings.guildId, ticket.channel)
+                updateStaticMessage = true
+            }
+        }
+
+        // Loop open tickets
+        for (openTicketChannel in awaitingCategoryChannels + respondedCategoryChannels) {
+            val ticket = getTicket(guildId, openTicketChannel.id) ?: continue
+
+            try {
+                if (Duration.between(Instant.now(), ticket.lastActivity).abs() > settings.autoClose) {
+                    // Inactive, auto-close
+                    closeTicket(settings.guildId, ticket.channel, inactive = true)
+                    updateStaticMessage = true
+                }
+            } catch (ex: ClientException) {
+                if (ex.status == HttpResponseStatus.FORBIDDEN) {
+                    // Missing permissions to channel, delete record of ticket as bot can no longer manage it
+                    deleteTicket(guildId, ticket.channel)
+                } else throw ex // Rethrow
+            }
+        }
+
+        if (updateStaticMessage) staticMessageService.update(guildId)
+
+        timer.stop()
+        metricService.recordTicketActivityTaskDuration("guild", timer.totalTimeMillis)
+
     }
 }
