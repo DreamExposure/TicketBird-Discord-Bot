@@ -1,6 +1,6 @@
-package org.dreamexposure.ticketbird.listeners
+package org.dreamexposure.ticketbird.listeners.discord
 
-import discord4j.core.event.domain.interaction.ButtonInteractionEvent
+import discord4j.core.event.domain.interaction.ModalSubmitInteractionEvent
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.GuildSettingsService
 import org.dreamexposure.ticketbird.business.LocaleService
@@ -13,29 +13,29 @@ import org.springframework.util.StopWatch
 import java.util.*
 
 @Component
-class ButtonInteractionListener(
+class ModalInteractionListener(
     private val settingsService: GuildSettingsService,
     private val localeService: LocaleService,
-    private val buttons: List<InteractionHandler<ButtonInteractionEvent>>,
+    private val modals: List<InteractionHandler<ModalSubmitInteractionEvent>>,
     private val metricService: MetricService,
-) : EventListener<ButtonInteractionEvent> {
+) : EventListener<ModalSubmitInteractionEvent> {
 
-    override suspend fun handle(event: ButtonInteractionEvent) {
+    override suspend fun handle(event: ModalSubmitInteractionEvent) {
         val timer = StopWatch()
         timer.start()
 
         if (!event.interaction.guildId.isPresent) {
-            event.reply(localeService.getString(Locale.ENGLISH, "button.dm-not-supported")).awaitSingleOrNull()
+            event.reply(localeService.getString(Locale.ENGLISH, "modal.dm-not-supported")).awaitSingleOrNull()
             return
         }
 
-        val button = buttons.firstOrNull { it.ids.contains(event.customId) }
+        val modal = modals.firstOrNull { it.ids.contains(event.customId) }
 
-        if (button != null) {
+        if (modal != null) {
             try {
-                button.handle(event, settingsService.getGuildSettings(event.interaction.guildId.get()))
+                modal.handle(event, settingsService.getGuildSettings(event.interaction.guildId.get()))
             } catch (e: Exception) {
-                LOGGER.error(DEFAULT, "Error handling button interaction | $event", e)
+                LOGGER.error(DEFAULT, "Error handling modal interaction | $event", e)
 
                 // Attempt to provide a message if there's an unhandled exception
                 event.createFollowup(localeService.getString(Locale.ENGLISH, "generic.unknown-error"))
@@ -49,6 +49,6 @@ class ButtonInteractionListener(
         }
 
         timer.stop()
-        metricService.recordInteractionDuration(event.customId, "button", timer.totalTimeMillis)
+        metricService.recordInteractionDuration(event.customId, "modal", timer.totalTimeMillis)
     }
 }

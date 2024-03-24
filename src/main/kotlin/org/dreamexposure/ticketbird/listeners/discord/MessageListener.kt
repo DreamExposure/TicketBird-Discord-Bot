@@ -1,6 +1,6 @@
 @file:Suppress("DuplicatedCode")
 
-package org.dreamexposure.ticketbird.listeners
+package org.dreamexposure.ticketbird.listeners.discord
 
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.`object`.entity.channel.TextChannel

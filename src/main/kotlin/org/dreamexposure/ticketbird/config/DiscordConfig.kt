@@ -6,6 +6,7 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import discord4j.common.JacksonResources
 import discord4j.common.store.Store
 import discord4j.common.store.legacy.LegacyStoreLayout
+import discord4j.core.DiscordClient
 import discord4j.core.DiscordClientBuilder
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.event.domain.Event
@@ -17,7 +18,6 @@ import discord4j.discordjson.json.GuildData
 import discord4j.discordjson.json.MessageData
 import discord4j.gateway.intent.Intent
 import discord4j.gateway.intent.IntentSet
-import discord4j.rest.RestClient
 import discord4j.store.api.mapping.MappingStoreService
 import discord4j.store.api.service.StoreService
 import discord4j.store.jdk.JdkStoreService
@@ -29,7 +29,7 @@ import io.lettuce.core.RedisURI
 import io.lettuce.core.cluster.RedisClusterClient
 import kotlinx.coroutines.reactor.mono
 import org.dreamexposure.ticketbird.TicketBird
-import org.dreamexposure.ticketbird.listeners.EventListener
+import org.dreamexposure.ticketbird.listeners.discord.EventListener
 import org.dreamexposure.ticketbird.mapper.SnowflakeMapper
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -73,8 +73,8 @@ class DiscordConfig {
     }
 
     @Bean
-    fun discordRestClient(gatewayDiscordClient: GatewayDiscordClient): RestClient {
-        return gatewayDiscordClient.restClient
+    fun discordRestClient(gatewayDiscordClient: GatewayDiscordClient): DiscordClient {
+        return gatewayDiscordClient.rest()
     }
 
     @Bean

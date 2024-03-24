@@ -1,6 +1,6 @@
-package org.dreamexposure.ticketbird.listeners
+package org.dreamexposure.ticketbird.listeners.discord
 
-import discord4j.core.event.domain.interaction.SelectMenuInteractionEvent
+import discord4j.core.event.domain.interaction.ButtonInteractionEvent
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.GuildSettingsService
 import org.dreamexposure.ticketbird.business.LocaleService
@@ -13,29 +13,29 @@ import org.springframework.util.StopWatch
 import java.util.*
 
 @Component
-class SelectMenuInteractionListener(
+class ButtonInteractionListener(
     private val settingsService: GuildSettingsService,
     private val localeService: LocaleService,
-    private val dropdowns: List<InteractionHandler<SelectMenuInteractionEvent>>,
+    private val buttons: List<InteractionHandler<ButtonInteractionEvent>>,
     private val metricService: MetricService,
-) : EventListener<SelectMenuInteractionEvent> {
+) : EventListener<ButtonInteractionEvent> {
 
-    override suspend fun handle(event: SelectMenuInteractionEvent) {
+    override suspend fun handle(event: ButtonInteractionEvent) {
         val timer = StopWatch()
         timer.start()
 
         if (!event.interaction.guildId.isPresent) {
-            event.reply(localeService.getString(Locale.ENGLISH, "dropdown.dm-not-supported")).awaitSingleOrNull()
+            event.reply(localeService.getString(Locale.ENGLISH, "button.dm-not-supported")).awaitSingleOrNull()
             return
         }
 
-        val dropdown = dropdowns.firstOrNull { it.ids.contains(event.customId) }
+        val button = buttons.firstOrNull { it.ids.contains(event.customId) }
 
-        if (dropdown != null) {
+        if (button != null) {
             try {
-                dropdown.handle(event, settingsService.getGuildSettings(event.interaction.guildId.get()))
+                button.handle(event, settingsService.getGuildSettings(event.interaction.guildId.get()))
             } catch (e: Exception) {
-                LOGGER.error(DEFAULT, "Error handling select menu interaction | $event", e)
+                LOGGER.error(DEFAULT, "Error handling button interaction | $event", e)
 
                 // Attempt to provide a message if there's an unhandled exception
                 event.createFollowup(localeService.getString(Locale.ENGLISH, "generic.unknown-error"))
@@ -49,7 +49,6 @@ class SelectMenuInteractionListener(
         }
 
         timer.stop()
-        metricService.recordInteractionDuration(event.customId, "select-menu", timer.totalTimeMillis)
+        metricService.recordInteractionDuration(event.customId, "button", timer.totalTimeMillis)
     }
 }
-

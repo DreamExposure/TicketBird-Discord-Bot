@@ -1,4 +1,4 @@
-package org.dreamexposure.ticketbird.service
+package org.dreamexposure.ticketbird.listeners.runtime
 
 import discord4j.core.GatewayDiscordClient
 import jakarta.annotation.PreDestroy

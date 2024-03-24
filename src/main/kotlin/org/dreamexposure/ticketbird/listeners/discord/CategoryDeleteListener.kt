@@ -1,4 +1,4 @@
-package org.dreamexposure.ticketbird.listeners
+package org.dreamexposure.ticketbird.listeners.discord
 
 import discord4j.core.event.domain.channel.CategoryDeleteEvent
 import org.dreamexposure.ticketbird.business.GuildSettingsService
