@@ -44,7 +44,7 @@
           "name": "member",
           "type": 6,
           "description": "The user to add to the current ticket",
-          "required": "true"
+          "required": true
         },
         {
           "name": "permissions",

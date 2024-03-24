@@ -1,18 +1,23 @@
 package org.dreamexposure.ticketbird.business
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import discord4j.common.util.Snowflake
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.`object`.PermissionOverwrite
 import discord4j.core.`object`.entity.channel.Category
 import discord4j.core.`object`.entity.channel.TextChannel
+import discord4j.discordjson.json.ApplicationCommandRequest
 import discord4j.rest.http.client.ClientException
 import discord4j.rest.util.Permission
 import discord4j.rest.util.PermissionSet
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.logger.LOGGER
+import org.dreamexposure.ticketbird.utils.GlobalVars
 import org.springframework.beans.factory.BeanFactory
 import org.springframework.beans.factory.getBean
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 
@@ -24,9 +29,33 @@ class EnvironmentService(
     private val localeService: LocaleService,
     private val staticMessageService: StaticMessageService,
     private val componentService: ComponentService,
+    objectMapper: ObjectMapper,
 ) {
     private val discordClient
         get() = beanFactory.getBean<GatewayDiscordClient>()
+
+    private final val premiumCommands: List<ApplicationCommandRequest>
+    private final val devCommands: List<ApplicationCommandRequest>
+
+    init {
+        val matcher = PathMatchingResourcePatternResolver()
+
+        // Get premium commands
+        val premiumCommands = mutableListOf<ApplicationCommandRequest>()
+        for (res in matcher.getResources("commands/premium/*.json")) {
+            val request = objectMapper.readValue<ApplicationCommandRequest>(res.inputStream)
+            premiumCommands.add(request)
+        }
+        this.premiumCommands = premiumCommands
+
+        // Get dev commands
+        val devCommands = mutableListOf<ApplicationCommandRequest>()
+        for (res in matcher.getResources("commands/dev/*.json")) {
+            val request = objectMapper.readValue<ApplicationCommandRequest>(res.inputStream)
+            premiumCommands.add(request)
+        }
+        this.devCommands = devCommands
+    }
 
     suspend fun createCategory(guildId: Snowflake, type: String): Category {
         LOGGER.debug("Creating category type {} for guild: {}", type, guildId)
@@ -181,5 +210,23 @@ class EnvironmentService(
             .ofType(TextChannel::class.java)
             .onErrorResume(ClientException.isStatusCode(404, 403)) { Mono.empty() }
             .awaitSingleOrNull() != null
+    }
+
+    suspend fun registerGuildCommands(guildId: Snowflake) {
+        val settings = settingsService.getGuildSettings(guildId)
+        val appService = discordClient.rest().applicationService
+        val appId = discordClient.selfId.asLong()
+
+        val commands = mutableListOf<ApplicationCommandRequest>()
+        if (settings.patronGuild) commands.addAll(premiumCommands)
+        if (settings.devGuild) commands.addAll(devCommands)
+
+        if (commands.isNotEmpty()) {
+            appService.bulkOverwriteGuildApplicationCommand(appId, guildId.asLong(), commands)
+                .doOnNext { LOGGER.debug("Bulk guild overwrite read: {} | {}", it.name(), guildId) }
+                .doOnError { LOGGER.error(GlobalVars.DEFAULT, "Bulk guild overwrite failed | $guildId", it) }
+                .then()
+                .awaitSingleOrNull()
+        }
     }
 }

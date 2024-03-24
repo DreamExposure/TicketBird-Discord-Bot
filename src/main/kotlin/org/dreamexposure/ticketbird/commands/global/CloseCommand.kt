@@ -1,7 +1,8 @@
-package org.dreamexposure.ticketbird.command
+package org.dreamexposure.ticketbird.commands.global
 
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import org.dreamexposure.ticketbird.business.InteractionService
+import org.dreamexposure.ticketbird.commands.SlashCommand
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.springframework.stereotype.Component
 

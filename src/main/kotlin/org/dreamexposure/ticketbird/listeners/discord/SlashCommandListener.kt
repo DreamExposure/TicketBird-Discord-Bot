@@ -5,7 +5,7 @@ import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.GuildSettingsService
 import org.dreamexposure.ticketbird.business.LocaleService
 import org.dreamexposure.ticketbird.business.MetricService
-import org.dreamexposure.ticketbird.command.SlashCommand
+import org.dreamexposure.ticketbird.commands.SlashCommand
 import org.dreamexposure.ticketbird.logger.LOGGER
 import org.dreamexposure.ticketbird.utils.GlobalVars.DEFAULT
 import org.springframework.stereotype.Component

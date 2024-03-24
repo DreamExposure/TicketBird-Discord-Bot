@@ -1,4 +1,4 @@
-package org.dreamexposure.ticketbird.command
+package org.dreamexposure.ticketbird.commands.global
 
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import discord4j.core.`object`.command.ApplicationCommandInteractionOption
@@ -11,6 +11,7 @@ import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.business.LocaleService
 import org.dreamexposure.ticketbird.business.PermissionService
 import org.dreamexposure.ticketbird.business.ProjectService
+import org.dreamexposure.ticketbird.commands.SlashCommand
 import org.dreamexposure.ticketbird.config.Config
 import org.dreamexposure.ticketbird.extensions.asSeconds
 import org.dreamexposure.ticketbird.extensions.discord4j.deleteFollowupDelayed

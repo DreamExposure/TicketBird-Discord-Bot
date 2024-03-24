@@ -1,4 +1,4 @@
-package org.dreamexposure.ticketbird.command
+package org.dreamexposure.ticketbird.commands
 
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import org.dreamexposure.ticketbird.`object`.GuildSettings

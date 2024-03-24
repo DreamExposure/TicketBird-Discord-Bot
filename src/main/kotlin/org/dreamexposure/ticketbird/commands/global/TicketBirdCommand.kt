@@ -1,4 +1,4 @@
-package org.dreamexposure.ticketbird.command
+package org.dreamexposure.ticketbird.commands.global
 
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
 import discord4j.core.spec.EmbedCreateSpec
@@ -7,6 +7,7 @@ import org.dreamexposure.ticketbird.GitProperty
 import org.dreamexposure.ticketbird.GitProperty.TICKETBIRD_VERSION
 import org.dreamexposure.ticketbird.TicketBird
 import org.dreamexposure.ticketbird.business.LocaleService
+import org.dreamexposure.ticketbird.commands.SlashCommand
 import org.dreamexposure.ticketbird.config.Config
 import org.dreamexposure.ticketbird.extensions.getHumanReadable
 import org.dreamexposure.ticketbird.`object`.GuildSettings
