@@ -6,7 +6,6 @@ import discord4j.core.event.domain.interaction.DeferrableInteractionEvent
 import discord4j.core.`object`.entity.Attachment
 import discord4j.core.`object`.entity.Message
 import discord4j.core.`object`.entity.channel.TextChannel
-import discord4j.core.spec.EmbedCreateSpec
 import discord4j.rest.util.Permission
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.reactor.awaitSingle
@@ -21,10 +20,8 @@ import org.dreamexposure.ticketbird.logger.LOGGER
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.`object`.Ticket
 import org.dreamexposure.ticketbird.`object`.TicketCreateState
-import org.dreamexposure.ticketbird.utils.GlobalVars
 import org.springframework.stereotype.Component
 import java.net.URL
-import java.time.Instant
 
 @Component
 class InteractionService(
@@ -34,6 +31,7 @@ class InteractionService(
     private val componentService: ComponentService,
     private val staticMessageService: StaticMessageService,
     private val ticketCreateStateCache: TicketCreateStateCache,
+    private val embedService: EmbedService,
 ) {
     private val openTicketMessageDeleteSeconds = Config.TIMING_MESSAGE_DELETE_TICKET_FLOW_SECONDS.getLong().asSeconds()
     private val genericMessageDeleteSeconds = Config.TIMING_MESSAGE_DELETE_GENERIC_SECONDS.getLong().asSeconds()
@@ -328,20 +326,8 @@ class InteractionService(
             return
         }
 
-        val embed = EmbedCreateSpec.builder()
-            .author(localeService.getString(settings.locale, "bot.name"), null, GlobalVars.iconUrl)
-            .color(GlobalVars.embedColor)
-            .title(localeService.getString(settings.locale, "embed.checksum.title"))
-            .addField(localeService.getString(settings.locale, "embed.checksum.field.checksum"), "`$fileSha`", false)
-            .addField(localeService.getString(settings.locale, "embed.checksum.field.ticket"), "ticket-${ticket.number}", false)
-            .addField(localeService.getString(settings.locale, "embed.checksum.field.transcript"), "`${ticket.attachmentsSha256 ?: "N/a"}`", true)
-            .addField(localeService.getString(settings.locale, "embed.checksum.field.attachments"), "`${ticket.attachmentsSha256 ?: "N/a"}`", true)
-            .footer(localeService.getString(settings.locale, "embed.checksum.footer"), null)
-            .timestamp(Instant.now())
-            .build()
-
         event.createFollowup()
-            .withEmbeds(embed)
+            .withEmbeds(embedService.getChecksumVerificationEmbed(settings, ticket, fileSha))
             .withEphemeral(ephemeral)
             .awaitSingleOrNull()
     }

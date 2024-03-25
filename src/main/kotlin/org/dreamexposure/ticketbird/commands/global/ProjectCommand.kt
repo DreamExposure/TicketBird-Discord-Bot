@@ -5,9 +5,9 @@ import discord4j.core.`object`.command.ApplicationCommandInteractionOption
 import discord4j.core.`object`.command.ApplicationCommandInteractionOptionValue
 import discord4j.core.`object`.entity.Member
 import discord4j.core.`object`.entity.Message
-import discord4j.core.spec.EmbedCreateSpec
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import org.dreamexposure.ticketbird.business.EmbedService
 import org.dreamexposure.ticketbird.business.LocaleService
 import org.dreamexposure.ticketbird.business.PermissionService
 import org.dreamexposure.ticketbird.business.ProjectService
@@ -15,18 +15,15 @@ import org.dreamexposure.ticketbird.commands.SlashCommand
 import org.dreamexposure.ticketbird.config.Config
 import org.dreamexposure.ticketbird.extensions.asSeconds
 import org.dreamexposure.ticketbird.extensions.discord4j.deleteFollowupDelayed
-import org.dreamexposure.ticketbird.extensions.embedFieldSafe
-import org.dreamexposure.ticketbird.extensions.embedTitleSafe
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.`object`.Project
-import org.dreamexposure.ticketbird.utils.GlobalVars
 import org.springframework.stereotype.Component
-import java.time.Instant
 
 @Component
 class ProjectCommand(
     private val projectService: ProjectService,
     private val permissionService: PermissionService,
+    private val embedService: EmbedService,
     private val localeService: LocaleService,
 ) : SlashCommand {
     override val name = "project"
@@ -73,7 +70,7 @@ class ProjectCommand(
         // Check if max amount of projects has been created
         if (projectService.getAllProjects(settings.guildId).size >= 25) {
             event.createFollowup(localeService.getString(settings.locale, "command.project.add.limit-reached"))
-                .withEmbeds(listEmbed(settings))
+                .withEmbeds(embedService.getProjectListEmbed(settings))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
                 .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
@@ -84,7 +81,7 @@ class ProjectCommand(
         projectService.createProject(Project(guildId = settings.guildId, name = name, prefix = prefix))
 
         event.createFollowup(localeService.getString(settings.locale, "command.project.add.success"))
-            .withEmbeds(listEmbed(settings))
+            .withEmbeds(embedService.getProjectListEmbed(settings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
             .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
@@ -103,7 +100,7 @@ class ProjectCommand(
 
         if (projectService.getProject(settings.guildId, projectId) == null) {
             event.createFollowup(localeService.getString(settings.locale, "command.project.remove.not-found"))
-                .withEmbeds(listEmbed(settings))
+                .withEmbeds(embedService.getProjectListEmbed(settings))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
                 .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
@@ -114,7 +111,7 @@ class ProjectCommand(
         projectService.deleteProject(settings.guildId, projectId)
 
         event.createFollowup(localeService.getString(settings.locale, "command.project.remove.success"))
-            .withEmbeds(listEmbed(settings))
+            .withEmbeds(embedService.getProjectListEmbed(settings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
             .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
@@ -133,7 +130,7 @@ class ProjectCommand(
         val project = projectService.getProject(settings.guildId, projectId)
         if (project == null) {
             event.createFollowup(localeService.getString(settings.locale, "command.project.view.not-found"))
-                .withEmbeds(listEmbed(settings))
+                .withEmbeds(embedService.getProjectListEmbed(settings))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
                 .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
@@ -142,7 +139,7 @@ class ProjectCommand(
         }
 
         event.createFollowup()
-            .withEmbeds(viewEmbed(settings, project))
+            .withEmbeds(embedService.getProjectViewEmbed(settings, project))
             .withEphemeral(ephemeral)
             .awaitSingleOrNull()
     }
@@ -185,7 +182,7 @@ class ProjectCommand(
         // Check if project doesn't exist and short circuit.
         if (project == null) {
             event.createFollowup(localeService.getString(settings.locale, "command.project.edit.not-found"))
-                .withEmbeds(listEmbed(settings))
+                .withEmbeds(embedService.getProjectListEmbed(settings))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
                 .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
@@ -220,141 +217,17 @@ class ProjectCommand(
 
         // Return with project view embed
         event.createFollowup(localeService.getString(settings.locale, "command.project.edit.success"))
-            .withEmbeds(viewEmbed(settings, updatedProject))
+            .withEmbeds(embedService.getProjectViewEmbed(settings, updatedProject))
             .withEphemeral(ephemeral)
             .awaitSingleOrNull()
     }
 
     private suspend fun list(event: ChatInputInteractionEvent, settings: GuildSettings) {
         event.createFollowup()
-            .withEmbeds(listEmbed(settings))
+            .withEmbeds(embedService.getProjectListEmbed(settings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
             .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()
-    }
-
-    private suspend fun listEmbed(settings: GuildSettings): EmbedCreateSpec {
-        val projects = projectService.getAllProjects(settings.guildId)
-
-        val builder = EmbedCreateSpec.builder()
-            .author(localeService.getString(settings.locale, "bot.name"), null, GlobalVars.iconUrl)
-            .color(GlobalVars.embedColor)
-            .title(localeService.getString(settings.locale, "embed.projects.title"))
-            .timestamp(Instant.now())
-            .footer(localeService.getString(settings.locale, "embed.projects.footer"), null)
-
-        projects.forEach { project ->
-            builder.addField(
-                project.name,
-                localeService.getString(
-                    settings.locale,
-                    "embed.projects.field.prefix.value",
-                    project.prefix
-                ),
-                false
-            )
-        }
-
-        if (!settings.useProjects && projects.isNotEmpty()) {
-            builder.addField(
-                localeService.getString(settings.locale, "embed.projects.field.note"),
-                localeService.getString(settings.locale, "embed.projects.field.note.disabled-with-any"),
-                false
-            )
-        }
-
-        if (settings.useProjects && projects.isEmpty()) {
-            builder.addField(
-                localeService.getString(settings.locale, "embed.projects.field.note"),
-                localeService.getString(settings.locale, "embed.projects.field.note.enabled-and-none"),
-                false
-            )
-        }
-
-        // Even tho this isn't completely related, we still want to make this state visible
-        if (settings.requiresRepair) {
-            builder.addField(
-                localeService.getString(settings.locale, "embed.field.warning"),
-                localeService.getString(settings.locale, "generic.repair-required"),
-                false
-            )
-        }
-
-        return builder.build()
-    }
-
-    private fun viewEmbed(settings: GuildSettings, project: Project): EmbedCreateSpec {
-        val builder = EmbedCreateSpec.builder()
-            .author(localeService.getString(settings.locale, "bot.name"), null, GlobalVars.iconUrl)
-            .color(GlobalVars.embedColor)
-            .title(project.name.embedTitleSafe())
-            .timestamp(Instant.now())
-            .addField(
-                localeService.getString(settings.locale, "embed.project-view.field.prefix"),
-                project.prefix.embedFieldSafe(),
-                true
-            ).addField(
-                localeService.getString(settings.locale, "embed.project-view.field.example"),
-                "${project.prefix}-ticket-${settings.nextId}",
-                true,
-            ).addField(
-                localeService.getString(settings.locale, "embed.project-view.field.ping-override"),
-                localeService.getString(settings.locale, project.pingOverride.localeEntry),
-                false
-            )
-            .footer(localeService.getString(settings.locale, "embed.project-view.footer"), null)
-
-        // Staff users
-        if (project.staffUsers.isNotEmpty()) {
-            val mentions = project.staffUsers.joinToString("\n") { "<@${it.asString()}>" }
-            builder.addField(
-                localeService.getString(settings.locale, "embed.project-view.field.staff-users"),
-                mentions.embedFieldSafe(),
-                true
-            )
-        } else {
-            builder.addField(
-                localeService.getString(settings.locale, "embed.project-view.field.staff-users"),
-                localeService.getString(settings.locale, "embed.project-view.field.staff-users.none"),
-                true
-            )
-        }
-
-        // Staff roles
-        if (project.staffRoles.isNotEmpty()) {
-            val mentions = project.staffRoles.joinToString("\n") { "<@&${it.asString()}>" }
-            builder.addField(
-                localeService.getString(settings.locale, "embed.project-view.field.staff-roles"),
-                mentions.embedFieldSafe(),
-                true
-            )
-        } else {
-            builder.addField(
-                localeService.getString(settings.locale, "embed.project-view.field.staff-roles"),
-                localeService.getString(settings.locale, "embed.project-view.field.staff-roles.none"),
-                true
-            )
-        }
-
-        // Notes
-        if (!settings.useProjects) {
-            builder.addField(
-                localeService.getString(settings.locale, "embed.project-view.field.note"),
-                localeService.getString(settings.locale, "embed.project-view.field.note.disabled-with-any"),
-                false
-            )
-        }
-
-        // Even tho this isn't completely related, we still want to make this state visible
-        if (settings.requiresRepair) {
-            builder.addField(
-                localeService.getString(settings.locale, "embed.field.warning"),
-                localeService.getString(settings.locale, "generic.repair-required"),
-                false
-            )
-        }
-
-        return builder.build()
     }
 }

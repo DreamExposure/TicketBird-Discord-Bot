@@ -1,71 +1,24 @@
 package org.dreamexposure.ticketbird.commands.global
 
 import discord4j.core.event.domain.interaction.ChatInputInteractionEvent
-import discord4j.core.spec.EmbedCreateSpec
 import kotlinx.coroutines.reactor.awaitSingle
-import org.dreamexposure.ticketbird.GitProperty
-import org.dreamexposure.ticketbird.GitProperty.TICKETBIRD_VERSION
-import org.dreamexposure.ticketbird.TicketBird
-import org.dreamexposure.ticketbird.business.LocaleService
+import org.dreamexposure.ticketbird.business.EmbedService
 import org.dreamexposure.ticketbird.commands.SlashCommand
-import org.dreamexposure.ticketbird.config.Config
-import org.dreamexposure.ticketbird.extensions.getHumanReadable
 import org.dreamexposure.ticketbird.`object`.GuildSettings
-import org.dreamexposure.ticketbird.utils.GlobalVars
 import org.springframework.stereotype.Component
-import java.time.Instant
 
 @Component
 class TicketBirdCommand(
-    private val localeService: LocaleService,
+    private val embedService: EmbedService,
 ): SlashCommand {
     override val name = "ticketbird"
     override val hasSubcommands = false
     override val ephemeral = false
 
     override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings) {
-        val guilds = event.client.guilds.count().awaitSingle()
-
-        val builder = EmbedCreateSpec.builder()
-            .author(localeService.getString(settings.locale, "bot.name"), null, GlobalVars.iconUrl)
-            .color(GlobalVars.embedColor)
-            .title(localeService.getString(settings.locale, "embed.info.title"))
-            .addField(localeService.getString(settings.locale, "embed.info.field.version"), TICKETBIRD_VERSION.value, false)
-            .addField(localeService.getString(settings.locale, "embed.info.field.library"), "Discord 4J v${GitProperty.TICKETBIRD_VERSION_D4J.value}", false)
-            .addField(localeService.getString(settings.locale, "embed.info.field.shard"), formattedIndex(), true)
-            .addField(localeService.getString(settings.locale, "embed.info.field.guilds"), "$guilds", true)
-            .addField(
-                localeService.getString(settings.locale, "embed.info.field.uptime"),
-                TicketBird.getUptime().getHumanReadable(),
-                false
-            ).addField(
-                localeService.getString(settings.locale, "embed.info.field.links"),
-                localeService.getString(
-                    settings.locale,
-                    "embed.info.field.links.value",
-                    "${Config.URL_BASE.getString()}/commands",
-                    Config.URL_SUPPORT.getString(),
-                    Config.URL_INVITE.getString(),
-                    "https://www.patreon.com/Novafox"
-                ),
-                false
-            ).footer(localeService.getString(settings.locale, "embed.info.footer"), null)
-            .timestamp(Instant.now())
-
-        // Even tho this is an info command, we want this state to be easily visible
-        if (settings.requiresRepair) {
-            builder.addField(
-                localeService.getString(settings.locale, "embed.field.warning"),
-                localeService.getString(settings.locale, "generic.repair-required"),
-                false
-            )
-        }
-
         event.createFollowup()
-            .withEmbeds(builder.build())
+            .withEmbeds(embedService.getTicketBirdInfoEmbed(settings))
             .withEphemeral(ephemeral)
             .awaitSingle()
     }
-
-    private fun formattedIndex() = "${TicketBird.getShardIndex()}/${TicketBird.getShardCount()}"
 }

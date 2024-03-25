@@ -5,7 +5,6 @@ import discord4j.common.util.Snowflake
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.`object`.entity.channel.Category
 import discord4j.core.`object`.entity.channel.TextChannel
-import discord4j.core.spec.EmbedCreateSpec
 import discord4j.core.spec.MessageCreateFields.File
 import discord4j.rest.http.client.ClientException
 import io.netty.handler.codec.http.HttpResponseStatus
@@ -20,14 +19,12 @@ import org.dreamexposure.ticketbird.TicketCache
 import org.dreamexposure.ticketbird.config.Config
 import org.dreamexposure.ticketbird.database.TicketData
 import org.dreamexposure.ticketbird.database.TicketRepository
-import org.dreamexposure.ticketbird.extensions.embedDescriptionSafe
 import org.dreamexposure.ticketbird.extensions.sha256Hash
 import org.dreamexposure.ticketbird.extensions.ticketLogFileFormat
 import org.dreamexposure.ticketbird.logger.LOGGER
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.`object`.Project
 import org.dreamexposure.ticketbird.`object`.Ticket
-import org.dreamexposure.ticketbird.utils.GlobalVars
 import org.springframework.beans.factory.BeanFactory
 import org.springframework.beans.factory.getBean
 import org.springframework.stereotype.Component
@@ -52,6 +49,7 @@ class TicketService(
     private val componentService: ComponentService,
     private val environmentService: EnvironmentService,
     private val staticMessageService: StaticMessageService,
+    private val embedService: EmbedService,
     private val objectMapper: ObjectMapper,
     private val metricService: MetricService,
 ) {
@@ -252,14 +250,6 @@ class TicketService(
         settings.nextId++
         settingsService.updateGuildSettings(settings)
 
-        // Build embed
-        val embedBuilder = EmbedCreateSpec.builder()
-            .author("@${creator.displayName}", null, creator.avatarUrl)
-            .color(GlobalVars.embedColor)
-            .timestamp(Instant.now())
-        if (!project?.name.isNullOrBlank()) embedBuilder.title(project!!.name)
-        if (!info.isNullOrBlank()) embedBuilder.description(info.embedDescriptionSafe())
-
         // Create ticket channel + message
         val channel = createTicketChannel(guildId, creatorId, project, ticketNumber)
 
@@ -302,7 +292,7 @@ class TicketService(
         // Create message
         channel.createMessage()
             .withContent(message)
-            .withEmbeds(embedBuilder.build())
+            .withEmbeds(embedService.getTicketOpenEmbed(creator, project, info))
             .withComponents(*componentService.getTicketMessageComponents(settings))
             .awaitSingle()
 

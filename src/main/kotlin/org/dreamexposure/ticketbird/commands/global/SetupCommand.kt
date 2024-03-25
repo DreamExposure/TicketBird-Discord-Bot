@@ -5,7 +5,6 @@ import discord4j.core.`object`.command.ApplicationCommandInteractionOption
 import discord4j.core.`object`.command.ApplicationCommandInteractionOptionValue
 import discord4j.core.`object`.entity.Member
 import discord4j.core.`object`.entity.Message
-import discord4j.core.spec.EmbedCreateSpec
 import discord4j.rest.util.Permission
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
@@ -14,24 +13,21 @@ import org.dreamexposure.ticketbird.commands.SlashCommand
 import org.dreamexposure.ticketbird.config.Config
 import org.dreamexposure.ticketbird.extensions.asSeconds
 import org.dreamexposure.ticketbird.extensions.discord4j.deleteFollowupDelayed
-import org.dreamexposure.ticketbird.extensions.embedFieldSafe
 import org.dreamexposure.ticketbird.extensions.getHumanReadableMinimized
 import org.dreamexposure.ticketbird.`object`.GuildSettings
-import org.dreamexposure.ticketbird.utils.GlobalVars
 import org.springframework.stereotype.Component
 import java.time.Duration
-import java.time.Instant
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
 @Component
 class SetupCommand(
     private val settingsService: GuildSettingsService,
-    private val projectService: ProjectService,
     private val permissionService: PermissionService,
     private val staticMessageService: StaticMessageService,
     private val componentService: ComponentService,
     private val environmentService: EnvironmentService,
+    private val embedService: EmbedService,
     private val localeService: LocaleService,
 ) : SlashCommand {
     override val name = "setup"
@@ -110,7 +106,7 @@ class SetupCommand(
         settings.supportChannel = supportChannel.id
 
         // Create static message
-        val embed = staticMessageService.getEmbed(settings)
+        val embed = embedService.getSupportRequestMessageEmbed(settings)
             ?: throw IllegalStateException("Failed to get embed during setup")
         supportChannel.createMessage(embed)
             .withComponents(*componentService.getStaticMessageComponents(settings))
@@ -120,7 +116,7 @@ class SetupCommand(
         settingsService.upsertGuildSettings(settings)
 
         event.createFollowup(localeService.getString(settings.locale, "command.setup.init.success"))
-            .withEmbeds(viewSettingsEmbed(settings))
+            .withEmbeds(embedService.getViewSettingsEmbed(settings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
             .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
@@ -166,7 +162,7 @@ class SetupCommand(
 
         //  Respond with success
         event.createFollowup(localeService.getString(settings.locale, "command.setup.repair.success"))
-            .withEmbeds(viewSettingsEmbed(settings))
+            .withEmbeds(embedService.getViewSettingsEmbed(settings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
             .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
@@ -184,7 +180,7 @@ class SetupCommand(
         settingsService.upsertGuildSettings(settings)
 
         event.createFollowup(localeService.getString(settings.locale, "command.setup.language.success"))
-            .withEmbeds(viewSettingsEmbed(settings))
+            .withEmbeds(embedService.getViewSettingsEmbed(settings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
             .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
@@ -201,7 +197,7 @@ class SetupCommand(
         settingsService.upsertGuildSettings(settings)
 
         event.createFollowup(localeService.getString(settings.locale, "command.setup.use-projects.success.$useProjects"))
-            .withEmbeds(viewSettingsEmbed(settings))
+            .withEmbeds(embedService.getViewSettingsEmbed(settings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
             .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
@@ -219,7 +215,7 @@ class SetupCommand(
         staticMessageService.update(settings.guildId)
 
         event.createFollowup(localeService.getString(settings.locale, "command.setup.show-ticket-stats.success.$showStats"))
-            .withEmbeds(viewSettingsEmbed(settings))
+            .withEmbeds(embedService.getViewSettingsEmbed(settings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
             .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
@@ -274,7 +270,7 @@ class SetupCommand(
             field = "command.setup.timing.success.$action",
             values = arrayOf((days + hours).getHumanReadableMinimized())
         ))
-            .withEmbeds(viewSettingsEmbed(settings))
+            .withEmbeds(embedService.getViewSettingsEmbed(settings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
             .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
@@ -297,7 +293,7 @@ class SetupCommand(
             "command.setup.ping.success",
             localeService.getString(settings.locale, pingOption.localeEntry)
         ))
-            .withEmbeds(viewSettingsEmbed(settings))
+            .withEmbeds(embedService.getViewSettingsEmbed(settings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
             .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
@@ -350,7 +346,7 @@ class SetupCommand(
             localeString,
             "$loggingEnabled"
         ))
-            .withEmbeds(viewSettingsEmbed(settings))
+            .withEmbeds(embedService.getViewSettingsEmbed(settings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
             .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
@@ -359,117 +355,8 @@ class SetupCommand(
 
     private suspend fun view(event: ChatInputInteractionEvent, settings: GuildSettings) {
         event.createFollowup()
-            .withEmbeds(viewSettingsEmbed(settings))
+            .withEmbeds(embedService.getViewSettingsEmbed(settings))
             .withEphemeral(ephemeral)
             .awaitSingleOrNull()
-    }
-
-    private suspend fun viewSettingsEmbed(settings: GuildSettings): EmbedCreateSpec {
-        val builder = EmbedCreateSpec.builder()
-            .author(localeService.getString(settings.locale, "bot.name"), null, GlobalVars.iconUrl)
-            .color(GlobalVars.embedColor)
-            .title(localeService.getString(settings.locale, "embed.settings.title"))
-            .timestamp(Instant.now())
-            .footer(localeService.getString(settings.locale, "embed.settings.footer"), null)
-
-        if (settings.hasRequiredIdsSet()) {
-            val categories = """
-                <#${settings.awaitingCategory?.asString()}>
-                <#${settings.respondedCategory?.asString()}>
-                <#${settings.holdCategory?.asString()}>
-                <#${settings.closeCategory?.asString()}>
-            """.trimIndent()
-            builder.addField(
-                localeService.getString(settings.locale, "embed.settings.field.categories"),
-                categories,
-                true
-            ).addField(
-                localeService.getString(settings.locale, "embed.settings.field.support-channel"),
-                "<#${settings.supportChannel?.asString()}>",
-                true
-            )
-        } else if (!settings.requiresRepair) {
-            // Not init
-            builder.addField(
-                localeService.getString(settings.locale, "embed.settings.field.categories"),
-                localeService.getString(settings.locale, "embed.settings.field.categories.not-init"),
-                true
-            ).addField(
-                localeService.getString(settings.locale, "embed.settings.field.support-channel"),
-                localeService.getString(settings.locale, "embed.settings.field.support-channel.not-init"),
-                true
-            )
-        }
-
-        builder.addField(
-            localeService.getString(settings.locale, "embed.settings.field.timing"),
-            localeService.getString(
-                settings.locale,
-                "embed.settings.field.timing.value",
-                settings.autoClose.getHumanReadableMinimized(),
-                settings.autoDelete.getHumanReadableMinimized()
-            ),
-            false
-        ).addField(
-            localeService.getString(settings.locale, "embed.settings.field.language"),
-            settings.locale.displayName.embedFieldSafe(),
-            true
-        ).addField(
-            localeService.getString(settings.locale, "embed.settings.field.use-projects"),
-            settings.useProjects.toString(),
-            true
-        ).addField(
-            localeService.getString(settings.locale, "embed.settings.field.ping"),
-            localeService.getString(settings.locale, settings.pingOption.localeEntry),
-            true
-        )
-
-        if (settings.enableLogging) {
-            builder.addField(
-                localeService.getString(settings.locale, "embed.settings.field.logging"),
-                localeService.getString(settings.locale, "embed.settings.field.logging.enabled", settings.logChannel?.asString() ?: ""),
-                false
-            )
-        } else {
-            builder.addField(
-                localeService.getString(settings.locale, "embed.settings.field.logging"),
-                localeService.getString(settings.locale, "embed.settings.field.logging.disabled"),
-                false
-            )
-        }
-        builder.addField(
-            localeService.getString(settings.locale, "embed.settings.field.logging.stats"),
-            settings.showTicketStats.toString(),
-            true
-        )
-
-        // Use projects status notes
-        val projects = projectService.getAllProjects(settings.guildId)
-        if (!settings.useProjects && projects.isNotEmpty()) {
-            builder.addField(
-                localeService.getString(settings.locale, "embed.settings.field.note"),
-                localeService.getString(settings.locale, "embed.settings.field.note.disabled-with-any"),
-                false
-            )
-        }
-
-        if (settings.useProjects && projects.isEmpty()) {
-            builder.addField(
-                localeService.getString(settings.locale, "embed.settings.field.note"),
-                localeService.getString(settings.locale, "embed.settings.field.note.enabled-and-none"),
-                false
-            )
-        }
-
-        // Warning about needing repair
-        if (settings.requiresRepair) {
-            builder.addField(
-                localeService.getString(settings.locale, "embed.field.warning"),
-                localeService.getString(settings.locale, "generic.repair-required"),
-                false
-            )
-        }
-
-        return builder.build()
     }
 }

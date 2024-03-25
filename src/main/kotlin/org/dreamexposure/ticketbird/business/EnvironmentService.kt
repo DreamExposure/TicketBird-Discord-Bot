@@ -26,8 +26,8 @@ class EnvironmentService(
     private val settingsService: GuildSettingsService,
     private val permissionService: PermissionService,
     private val localeService: LocaleService,
-    private val staticMessageService: StaticMessageService,
     private val componentService: ComponentService,
+    private val embedService: EmbedService,
     objectMapper: ObjectMapper,
 ) {
     private val discordClient
@@ -181,7 +181,7 @@ class EnvironmentService(
             settings.supportChannel = supportChannel.id
 
             // Create new static message since the old one is lost now
-            val embed = staticMessageService.getEmbed(settings) ?: throw IllegalStateException("Failed to get embed during recreate")
+            val embed = embedService.getSupportRequestMessageEmbed(settings) ?: throw IllegalStateException("Failed to get embed during recreate")
             supportChannel.createMessage(embed)
                 .withComponents(*componentService.getStaticMessageComponents(settings))
                 .doOnNext { settings.staticMessage = it.id }
@@ -195,7 +195,7 @@ class EnvironmentService(
                 .ofType(TextChannel::class.java)
                 .awaitSingle()
 
-            val embed = staticMessageService.getEmbed(settings) ?: throw IllegalStateException("Failed to get embed during recreate")
+            val embed = embedService.getSupportRequestMessageEmbed(settings) ?: throw IllegalStateException("Failed to get embed during recreate")
             supportChannel.createMessage(embed)
                 .withComponents(*componentService.getStaticMessageComponents(settings))
                 .doOnNext { settings.staticMessage = it.id }

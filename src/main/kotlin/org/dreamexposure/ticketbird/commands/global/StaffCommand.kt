@@ -5,11 +5,10 @@ import discord4j.core.`object`.command.ApplicationCommandInteractionOption
 import discord4j.core.`object`.command.ApplicationCommandInteractionOptionValue
 import discord4j.core.`object`.entity.Member
 import discord4j.core.`object`.entity.Message
-import discord4j.core.`object`.entity.Role
-import discord4j.core.spec.EmbedCreateSpec
 import discord4j.rest.util.AllowedMentions
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import org.dreamexposure.ticketbird.business.EmbedService
 import org.dreamexposure.ticketbird.business.GuildSettingsService
 import org.dreamexposure.ticketbird.business.LocaleService
 import org.dreamexposure.ticketbird.business.PermissionService
@@ -18,15 +17,14 @@ import org.dreamexposure.ticketbird.config.Config
 import org.dreamexposure.ticketbird.extensions.asSeconds
 import org.dreamexposure.ticketbird.extensions.discord4j.deleteFollowupDelayed
 import org.dreamexposure.ticketbird.`object`.GuildSettings
-import org.dreamexposure.ticketbird.utils.GlobalVars
 import org.springframework.stereotype.Component
-import java.time.Instant
 
 @Component
 class StaffCommand(
     private val settingsService: GuildSettingsService,
     private val localeService: LocaleService,
     private val permissionService: PermissionService,
+    private val embedService: EmbedService,
 ): SlashCommand {
     override val name = "staff"
     override val hasSubcommands = true
@@ -65,7 +63,7 @@ class StaffCommand(
         settingsService.upsertGuildSettings(settings)
 
         event.createFollowup(localeService.getString(settings.locale, "command.staff.role.success"))
-            .withEmbeds(getListEmbed(event, settings))
+            .withEmbeds(embedService.getStaffListEmbed(settings))
             .withAllowedMentions(AllowedMentions.suppressAll())
             .withEphemeral(ephemeral)
             .map(Message::getId)
@@ -81,7 +79,7 @@ class StaffCommand(
 
         if (settings.staff.contains(toAddId.asString())) {
             event.createFollowup(localeService.getString(settings.locale, "command.staff.add.already"))
-                .withEmbeds(getListEmbed(event, settings))
+                .withEmbeds(embedService.getStaffListEmbed(settings))
                 .withAllowedMentions(AllowedMentions.suppressAll())
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
@@ -94,7 +92,7 @@ class StaffCommand(
         settingsService.upsertGuildSettings(settings)
 
         event.createFollowup(localeService.getString(settings.locale, "command.staff.add.success", toAddId.asString()))
-            .withEmbeds(getListEmbed(event, settings))
+            .withEmbeds(embedService.getStaffListEmbed(settings))
             .withAllowedMentions(AllowedMentions.suppressAll())
             .withEphemeral(ephemeral)
             .map(Message::getId)
@@ -110,7 +108,7 @@ class StaffCommand(
 
         if (!settings.staff.contains(toRemoveId.asString())) {
             event.createFollowup(localeService.getString(settings.locale, "command.staff.remove.not"))
-                .withEmbeds(getListEmbed(event, settings))
+                .withEmbeds(embedService.getStaffListEmbed(settings))
                 .withAllowedMentions(AllowedMentions.suppressAll())
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
@@ -123,7 +121,7 @@ class StaffCommand(
         settingsService.upsertGuildSettings(settings)
 
         event.createFollowup(localeService.getString(settings.locale, "command.staff.remove.success", toRemoveId.asString()))
-            .withEmbeds(getListEmbed(event, settings))
+            .withEmbeds(embedService.getStaffListEmbed(settings))
             .withAllowedMentions(AllowedMentions.suppressAll())
             .withEphemeral(ephemeral)
             .map(Message::getId)
@@ -133,36 +131,11 @@ class StaffCommand(
 
     private suspend fun list(event: ChatInputInteractionEvent, settings: GuildSettings) {
         event.createFollowup()
-            .withEmbeds(getListEmbed(event, settings))
+            .withEmbeds(embedService.getStaffListEmbed(settings))
             .withAllowedMentions(AllowedMentions.suppressAll())
             .withEphemeral(ephemeral)
             .map(Message::getId)
             .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()
-    }
-
-    private suspend fun getListEmbed(event: ChatInputInteractionEvent, settings: GuildSettings): EmbedCreateSpec {
-        val staffListStringBuilder = StringBuilder()
-        settings.staff.forEach { id -> staffListStringBuilder.append("<@$id>").append("\n") }
-        val staffList = staffListStringBuilder.toString()
-            .ifBlank { localeService.getString(settings.locale, "embed.staff-list.field.users.none") }
-
-        val staffRole = if (settings.staffRole == null) {
-            localeService.getString(settings.locale, "embed.staff-list.field.role.none")
-        } else {
-            event.client.getRoleById(settings.guildId, settings.staffRole!!)
-                .map(Role::getMention)
-                .awaitSingle()
-        }
-
-        return EmbedCreateSpec.builder()
-            .author(localeService.getString(settings.locale, "bot.name"), null, GlobalVars.iconUrl)
-            .color(GlobalVars.embedColor)
-            .title(localeService.getString(settings.locale, "embed.staff-list.title"))
-            .addField(localeService.getString(settings.locale, "embed.staff-list.field.users"), staffList, true)
-            .addField(localeService.getString(settings.locale, "embed.staff-list.field.role"), staffRole, true)
-            .footer(localeService.getString(settings.locale, "embed.staff-list.footer"), null)
-            .timestamp(Instant.now())
-            .build()
     }
 }
