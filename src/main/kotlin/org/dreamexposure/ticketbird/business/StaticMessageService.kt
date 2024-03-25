@@ -32,20 +32,22 @@ class StaticMessageService(
 
         // Get channel
         val channel = try {
-            discordClient.getChannelById(settings.supportChannel!!).ofType(TextChannel::class.java).awaitSingle()
+            discordClient.getChannelById(settings.supportChannel).ofType(TextChannel::class.java).awaitSingle()
         } catch (ex: ClientException) {
-            if (ex.status.code() == 404) settings.staticMessage = null
-            if ((ex.status.code() == 403) || (ex.status.code() == 404)) settings.requiresRepair = true
+            var newSettings = settings
+
+            if (ex.status.code() == 404) newSettings = newSettings.copy(staticMessage = null)
+            if ((ex.status.code() == 403) || (ex.status.code() == 404)) newSettings = newSettings.copy(requiresRepair = true)
 
             // Save if needed
-            if (settings.requiresRepair) settingsService.updateGuildSettings(settings)
+            if (newSettings.requiresRepair) settingsService.updateGuildSettings(newSettings)
 
             return null
         }
 
         // Get message
         val message = try {
-            channel.getMessageById(settings.staticMessage!!).awaitSingleOrNull()
+            channel.getMessageById(settings.staticMessage).awaitSingleOrNull()
         } catch (ex: ClientException) {
             null
         }
@@ -60,12 +62,13 @@ class StaticMessageService(
                 .awaitSingleOrNull()
         } else {
             // Static message deleted, create new one, update settings
+            var newSettings = settings
             val newMessage = channel.createMessage(embed)
                 .withComponents(*componentService.getStaticMessageComponents(settings))
-                .doOnNext { settings.staticMessage = it.id }
+                .doOnNext { newSettings = settings.copy(staticMessage = it.id) }
                 .awaitSingle()
 
-            settingsService.updateGuildSettings(settings)
+            settingsService.updateGuildSettings(newSettings)
             newMessage
         }
     }

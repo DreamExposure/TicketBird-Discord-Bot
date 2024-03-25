@@ -243,11 +243,11 @@ class TicketService(
 
         // Get stuff
         val creator = discordClient.getMemberById(guildId, creatorId).awaitSingle()
-        val settings = settingsService.getGuildSettings(guildId)
+        var settings = settingsService.getGuildSettings(guildId)
         val ticketNumber = settings.nextId
 
         // Update settings
-        settings.nextId++
+        settings = settings.copy(nextId = settings.nextId + 1)
         settingsService.updateGuildSettings(settings)
 
         // Create ticket channel + message
@@ -415,7 +415,7 @@ class TicketService(
 
         updateTicket(ticket)
 
-        discordClient.getChannelById(settings.logChannel!!).ofType(TextChannel::class.java).flatMap { channel ->
+        discordClient.getChannelById(settings.logChannel).ofType(TextChannel::class.java).flatMap { channel ->
             channel.createMessage("").withFiles(attachments)
         }.awaitSingleOrNull()
 

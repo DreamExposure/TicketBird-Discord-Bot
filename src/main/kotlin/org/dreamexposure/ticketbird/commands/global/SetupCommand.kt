@@ -96,27 +96,28 @@ class SetupCommand(
         // Begin setup
 
         // Create categories
-        settings.awaitingCategory = environmentService.createCategory(settings.guildId, "awaiting").id
-        settings.respondedCategory = environmentService.createCategory(settings.guildId, "responded").id
-        settings.holdCategory = environmentService.createCategory(settings.guildId, "hold").id
-        settings.closeCategory = environmentService.createCategory(settings.guildId, "closed").id
+        var newSettings = settings
+        newSettings = newSettings.copy(awaitingCategory = environmentService.createCategory(newSettings.guildId, "awaiting").id)
+        newSettings = newSettings.copy(respondedCategory = environmentService.createCategory(newSettings.guildId, "responded").id)
+        newSettings = newSettings.copy(holdCategory = environmentService.createCategory(newSettings.guildId, "hold").id)
+        newSettings = newSettings.copy(closeCategory = environmentService.createCategory(newSettings.guildId, "closed").id)
 
         // Create support channel
-        val supportChannel = environmentService.createSupportChannel(settings.guildId)
-        settings.supportChannel = supportChannel.id
+        val supportChannel = environmentService.createSupportChannel(newSettings.guildId)
+        newSettings = newSettings.copy(supportChannel = supportChannel.id)
 
         // Create static message
-        val embed = embedService.getSupportRequestMessageEmbed(settings)
+        val embed = embedService.getSupportRequestMessageEmbed(newSettings)
             ?: throw IllegalStateException("Failed to get embed during setup")
         supportChannel.createMessage(embed)
-            .withComponents(*componentService.getStaticMessageComponents(settings))
-            .doOnNext { settings.staticMessage = it.id }
+            .withComponents(*componentService.getStaticMessageComponents(newSettings))
+            .doOnNext { newSettings = newSettings.copy(staticMessage = it.id) }
             .awaitSingle()
 
-        settingsService.upsertGuildSettings(settings)
+        settingsService.upsertGuildSettings(newSettings)
 
-        event.createFollowup(localeService.getString(settings.locale, "command.setup.init.success"))
-            .withEmbeds(embedService.getViewSettingsEmbed(settings))
+        event.createFollowup(localeService.getString(newSettings.locale, "command.setup.init.success"))
+            .withEmbeds(embedService.getViewSettingsEmbed(newSettings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
             .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
@@ -176,11 +177,11 @@ class SetupCommand(
             .map(Locale::forLanguageTag)
             .get()
 
-        settings.locale = newLocale
-        settingsService.upsertGuildSettings(settings)
+        val newSettings = settings.copy(locale = newLocale)
+        settingsService.upsertGuildSettings(newSettings)
 
-        event.createFollowup(localeService.getString(settings.locale, "command.setup.language.success"))
-            .withEmbeds(embedService.getViewSettingsEmbed(settings))
+        event.createFollowup(localeService.getString(newSettings.locale, "command.setup.language.success"))
+            .withEmbeds(embedService.getViewSettingsEmbed(newSettings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
             .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
@@ -193,11 +194,11 @@ class SetupCommand(
             .map(ApplicationCommandInteractionOptionValue::asBoolean)
             .get()
 
-        settings.useProjects = useProjects
-        settingsService.upsertGuildSettings(settings)
+        val newSettings = settings.copy(useProjects = useProjects)
+        settingsService.upsertGuildSettings(newSettings)
 
-        event.createFollowup(localeService.getString(settings.locale, "command.setup.use-projects.success.$useProjects"))
-            .withEmbeds(embedService.getViewSettingsEmbed(settings))
+        event.createFollowup(localeService.getString(newSettings.locale, "command.setup.use-projects.success.$useProjects"))
+            .withEmbeds(embedService.getViewSettingsEmbed(newSettings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
             .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
@@ -210,12 +211,12 @@ class SetupCommand(
             .map(ApplicationCommandInteractionOptionValue::asBoolean)
             .get()
 
-        settings.showTicketStats = showStats
-        settingsService.upsertGuildSettings(settings)
-        staticMessageService.update(settings.guildId)
+        val newSettings = settings.copy(showTicketStats = showStats)
+        settingsService.upsertGuildSettings(newSettings)
+        staticMessageService.update(newSettings.guildId)
 
-        event.createFollowup(localeService.getString(settings.locale, "command.setup.show-ticket-stats.success.$showStats"))
-            .withEmbeds(embedService.getViewSettingsEmbed(settings))
+        event.createFollowup(localeService.getString(newSettings.locale, "command.setup.show-ticket-stats.success.$showStats"))
+            .withEmbeds(embedService.getViewSettingsEmbed(newSettings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
             .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
@@ -249,9 +250,9 @@ class SetupCommand(
         }
 
         // Apply
-        when (action) {
-            "auto-close" -> settings.autoClose = days + hours
-            "auto-delete" -> settings.autoDelete = days + hours
+        val newSettings = when (action) {
+            "auto-close" -> settings.copy(autoClose = days + hours)
+            "auto-delete" -> settings.copy(autoDelete = days + hours)
             else -> {
                 event.createFollowup(
                     localeService.getString(settings.locale, "command.setup.timing.error.action-not-found")
@@ -263,14 +264,14 @@ class SetupCommand(
             }
         }
 
-        settingsService.upsertGuildSettings(settings)
+        settingsService.upsertGuildSettings(newSettings)
 
         event.createFollowup(localeService.getString(
-            settings.locale,
+            newSettings.locale,
             field = "command.setup.timing.success.$action",
             values = arrayOf((days + hours).getHumanReadableMinimized())
         ))
-            .withEmbeds(embedService.getViewSettingsEmbed(settings))
+            .withEmbeds(embedService.getViewSettingsEmbed(newSettings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
             .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
@@ -285,15 +286,15 @@ class SetupCommand(
             .map(GuildSettings.PingOption::valueOf)
             .get()
 
-        settings.pingOption = pingOption
-        settingsService.upsertGuildSettings(settings)
+        val newSettings = settings.copy(pingOption = pingOption)
+        settingsService.upsertGuildSettings(newSettings)
 
         event.createFollowup(localeService.getString(
-            settings.locale,
+            newSettings.locale,
             "command.setup.ping.success",
-            localeService.getString(settings.locale, pingOption.localeEntry)
+            localeService.getString(newSettings.locale, pingOption.localeEntry)
         ))
-            .withEmbeds(embedService.getViewSettingsEmbed(settings))
+            .withEmbeds(embedService.getViewSettingsEmbed(newSettings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
             .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
@@ -334,19 +335,18 @@ class SetupCommand(
         }
 
         // Actually update the settings
-        settings.enableLogging = loggingEnabled
-        settings.logChannel = logChannel
-        settingsService.upsertGuildSettings(settings)
+        val newSettings = settings.copy(enableLogging = loggingEnabled, logChannel = logChannel)
+        settingsService.upsertGuildSettings(newSettings)
 
         val localeString =
             if (Config.TOGGLE_TICKET_LOGGING.getBoolean()) "command.setup.logging.success.with-toggle"
             else "command.setup.logging.success"
         event.createFollowup(localeService.getString(
-            settings.locale,
+            newSettings.locale,
             localeString,
             "$loggingEnabled"
         ))
-            .withEmbeds(embedService.getViewSettingsEmbed(settings))
+            .withEmbeds(embedService.getViewSettingsEmbed(newSettings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
             .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }

@@ -59,11 +59,12 @@ class StaffCommand(
             .map(ApplicationCommandInteractionOptionValue::asSnowflake)
             .orElse(settings.guildId) // everyone role, means to remove staff role
 
-        if (roleId == settings.guildId || roleId.asLong() == 0L) settings.staffRole = null else settings.staffRole = roleId
-        settingsService.upsertGuildSettings(settings)
+        val calculatedRole = if (roleId == settings.guildId || roleId.asLong() == 0L) null else roleId
+        val newSettings = settings.copy(staffRole = calculatedRole)
+        settingsService.upsertGuildSettings(newSettings)
 
-        event.createFollowup(localeService.getString(settings.locale, "command.staff.role.success"))
-            .withEmbeds(embedService.getStaffListEmbed(settings))
+        event.createFollowup(localeService.getString(newSettings.locale, "command.staff.role.success"))
+            .withEmbeds(embedService.getStaffListEmbed(newSettings))
             .withAllowedMentions(AllowedMentions.suppressAll())
             .withEphemeral(ephemeral)
             .map(Message::getId)
@@ -88,11 +89,11 @@ class StaffCommand(
             return
         }
 
-        settings.staff.add(toAddId.asString())
-        settingsService.upsertGuildSettings(settings)
+        val newSettings = settings.copy(staff = settings.staff + toAddId.asString())
+        settingsService.upsertGuildSettings(newSettings)
 
-        event.createFollowup(localeService.getString(settings.locale, "command.staff.add.success", toAddId.asString()))
-            .withEmbeds(embedService.getStaffListEmbed(settings))
+        event.createFollowup(localeService.getString(newSettings.locale, "command.staff.add.success", toAddId.asString()))
+            .withEmbeds(embedService.getStaffListEmbed(newSettings))
             .withAllowedMentions(AllowedMentions.suppressAll())
             .withEphemeral(ephemeral)
             .map(Message::getId)
@@ -117,11 +118,11 @@ class StaffCommand(
             return
         }
 
-        settings.staff.remove(toRemoveId.asString())
-        settingsService.upsertGuildSettings(settings)
+        val newSettings = settings.copy(staff = settings.staff - toRemoveId.asString())
+        settingsService.upsertGuildSettings(newSettings)
 
-        event.createFollowup(localeService.getString(settings.locale, "command.staff.remove.success", toRemoveId.asString()))
-            .withEmbeds(embedService.getStaffListEmbed(settings))
+        event.createFollowup(localeService.getString(newSettings.locale, "command.staff.remove.success", toRemoveId.asString()))
+            .withEmbeds(embedService.getStaffListEmbed(newSettings))
             .withAllowedMentions(AllowedMentions.suppressAll())
             .withEphemeral(ephemeral)
             .map(Message::getId)

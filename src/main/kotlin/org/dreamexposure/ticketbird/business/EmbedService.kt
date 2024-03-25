@@ -262,7 +262,7 @@ class EmbedService(
 
         val staffRole = if (settings.staffRole == null)
             localeService.getString(settings.locale, "embed.staff-list.field.role.none")
-        else "<@&${settings.staffRole!!.asString()}>"
+        else "<@&${settings.staffRole.asString()}>"
 
         return defaultEmbedBuilder(settings)
             .title(localeService.getString(settings.locale, "embed.staff-list.title"))

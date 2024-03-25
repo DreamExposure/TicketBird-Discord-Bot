@@ -12,26 +12,15 @@ class CategoryDeleteListener(
 ): EventListener<CategoryDeleteEvent> {
 
     override suspend fun handle(event: CategoryDeleteEvent) {
-        val settings = settingsService.getGuildSettings(event.category.guildId)
+        var settings = settingsService.getGuildSettings(event.category.guildId)
 
         // Check if any of TicketBird's categories were deleted
-        when (event.category.id) {
-            settings.awaitingCategory -> {
-                settings.awaitingCategory = null
-                settings.requiresRepair = true
-            }
-            settings.respondedCategory -> {
-                settings.respondedCategory = null
-                settings.requiresRepair = true
-            }
-            settings.holdCategory -> {
-                settings.holdCategory = null
-                settings.requiresRepair = true
-            }
-            settings.closeCategory -> {
-                settings.closeCategory = null
-                settings.requiresRepair = true
-            } else -> return // Not a category we care about
+        settings = when (event.category.id) {
+            settings.awaitingCategory -> settings.copy(awaitingCategory = null, requiresRepair = true)
+            settings.respondedCategory -> settings.copy(respondedCategory = null, requiresRepair = true)
+            settings.holdCategory -> settings.copy(holdCategory = null, requiresRepair = true)
+            settings.closeCategory -> settings.copy(closeCategory = null, requiresRepair = true)
+            else -> return // Not a category we care about
         }
 
         // If we made it here, we should update the settings

@@ -9,10 +9,10 @@ class RoleDeleteListener(
     private val settingsService: GuildSettingsService,
 ): EventListener<RoleDeleteEvent> {
     override suspend fun handle(event: RoleDeleteEvent) {
-        val settings = settingsService.getGuildSettings(event.guildId)
+        var settings = settingsService.getGuildSettings(event.guildId)
 
-        when (event.roleId) {
-            settings.staffRole -> settings.staffRole = null
+        settings = when (event.roleId) {
+            settings.staffRole -> settings.copy(staffRole = null)
             else -> return // Not a role we care about
         }
 
