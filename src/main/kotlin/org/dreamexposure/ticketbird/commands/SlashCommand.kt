@@ -8,5 +8,7 @@ interface SlashCommand {
     val hasSubcommands: Boolean
     val ephemeral: Boolean
 
+    suspend fun shouldDefer(event: ChatInputInteractionEvent): Boolean = true
+
     suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings)
 }
