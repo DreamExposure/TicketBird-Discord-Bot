@@ -29,10 +29,10 @@ class StatusUpdateCronJob(
 
     private final val statuses = listOf(
         "/ticketbird for info & help",
+        "Now supports custom messages!",
         "Trans rights are human rights",
         "Version {version}",
         "Do you know what a square is?",
-        "Now has Interactions!",
         "Proudly written in Kotlin using Discord4J",
         "Free Palestine!",
         "https://ticketbird.dreamexposure.org",

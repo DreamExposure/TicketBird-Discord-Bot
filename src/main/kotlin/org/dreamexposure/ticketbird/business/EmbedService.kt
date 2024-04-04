@@ -193,6 +193,10 @@ class EmbedService(
             ),
             false
         ).addField(
+            localeService.getString(settings.locale, "embed.settings.field.messaging"),
+            localeService.getString(settings.locale, "embed.settings.field.messaging.value"),
+            false
+        ).addField(
             localeService.getString(settings.locale, "embed.settings.field.language"),
             settings.locale.displayName.embedFieldSafe(),
             true
