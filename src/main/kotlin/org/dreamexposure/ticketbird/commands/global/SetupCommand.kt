@@ -35,6 +35,10 @@ class SetupCommand(
     override val ephemeral = true
 
     private val messageDeleteSeconds = Config.TIMING_MESSAGE_DELETE_GENERIC_SECONDS.getLong().asSeconds()
+    private val doNotDeferOnSubcommands = setOf("messaging")
+
+
+    override suspend fun shouldDefer(event: ChatInputInteractionEvent) = !doNotDeferOnSubcommands.contains(event.options[0].name)
 
     override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings) {
         // Check permission server-side just in case
@@ -54,6 +58,7 @@ class SetupCommand(
             "language" -> language(event, settings)
             "use-projects" -> useProjects(event, settings)
             "show-ticket-stats" -> showTicketStats(event, settings)
+            "messaging" -> editMessaging(event, settings)
             "timing" -> timing(event, settings)
             "ping" -> ping(event, settings)
             "logging" -> logging(event, settings)
@@ -221,6 +226,27 @@ class SetupCommand(
             .map(Message::getId)
             .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()
+    }
+
+    private suspend fun editMessaging(event: ChatInputInteractionEvent, settings: GuildSettings) {
+        val message = event.options[0].getOption("message")
+            .flatMap(ApplicationCommandInteractionOption::getValue)
+            .map(ApplicationCommandInteractionOptionValue::asString)
+            .get()
+
+        when (message.lowercase()) {
+            "support-message" -> {
+                event.presentModal()
+                    .withCustomId("edit-support-message-modal")
+                    .withTitle(localeService.getString(settings.locale, "modal.edit-support-message.title"))
+                    .withComponents(*componentService.getEditSupportMessageModalComponents(settings))
+                    .awaitSingleOrNull()
+            } else -> {
+                event.reply(
+                    localeService.getString(settings.locale, "command.setup.messaging.error.message-type-not-found")
+                ).withEphemeral(ephemeral).awaitSingleOrNull()
+            }
+        }
     }
 
     private suspend fun timing(event: ChatInputInteractionEvent, settings: GuildSettings) {

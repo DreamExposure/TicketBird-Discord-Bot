@@ -19,3 +19,5 @@ fun String.embedDescriptionSafe(): String = this.substring(0, (4096).coerceAtMos
 fun String.embedFieldSafe(): String = this.substring(0, (1024).coerceAtMost(this.length))
 
 fun String.messageContentSafe(): String = this.substring(0, (2000).coerceAtMost(this.length))
+
+fun String.textInputPlaceholderSafe(): String = this.substring(0, (100).coerceAtMost(this.length))

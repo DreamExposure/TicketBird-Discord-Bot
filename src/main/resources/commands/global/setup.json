@@ -61,6 +61,20 @@
     },
     {
       "type": 1,
+      "name": "messaging",
+      "description": "Allows changing certain messages found throughout TicketBird",
+      "options": [
+        {
+          "type": 3,
+          "name": "message",
+          "description": "The message you want to change",
+          "required": true,
+          "autocomplete": true
+        }
+      ]
+    },
+    {
+      "type": 1,
       "name": "timing",
       "description": "Allows changing timings for the various automatic actions performed by TicketBird",
       "options": [

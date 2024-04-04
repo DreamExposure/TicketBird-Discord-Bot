@@ -10,14 +10,15 @@ import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.springframework.stereotype.Component
 
 @Component
-class SetupTimingsAutoComplete(
+class SetupCommandAutoComplete(
     private val localeService: LocaleService,
 ) : InteractionHandler<ChatInputAutoCompleteEvent> {
-    override val ids = arrayOf("setup.action")
+    override val ids = arrayOf("setup.action", "setup.message")
 
     override suspend fun handle(event: ChatInputAutoCompleteEvent, settings: GuildSettings) {
         when ("${event.commandName}.${event.focusedOption.name}") {
             "setup.action" -> actionTiming(event, settings)
+            "setup.message" -> messageMessaging(event, settings)
             else -> event.respondWithSuggestions(listOf()).awaitSingleOrNull()
         }
     }
@@ -46,6 +47,23 @@ class SetupTimingsAutoComplete(
         val filtered = actions.filter { it.name().contains(input) || (it.value() as String).contains(input) }
 
         event.respondWithSuggestions(filtered.ifEmpty { actions })
+            .awaitSingleOrNull()
+    }
+
+    private suspend fun messageMessaging(event: ChatInputAutoCompleteEvent, settings: GuildSettings) {
+        val input = event.focusedOption.value
+            .map(ApplicationCommandInteractionOptionValue::asString)
+            .get()
+
+        val messages = listOf(
+            ApplicationCommandOptionChoiceData.builder()
+                .name(localeService.getString(settings.locale, "auto-complete.setup.messaging.support-message"))
+                .value("support-message")
+                .build(),
+        )
+        val filtered = messages.filter { it.name().contains(input) || (it.value() as String).contains(input) }
+
+        event.respondWithSuggestions(filtered.ifEmpty { messages })
             .awaitSingleOrNull()
     }
 }
