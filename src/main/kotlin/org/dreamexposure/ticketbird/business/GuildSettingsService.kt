@@ -6,6 +6,8 @@ import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.GuildSettingsCache
 import org.dreamexposure.ticketbird.database.GuildSettingsData
 import org.dreamexposure.ticketbird.database.GuildSettingsRepository
+import org.dreamexposure.ticketbird.extensions.embedDescriptionSafe
+import org.dreamexposure.ticketbird.extensions.embedTitleSafe
 import org.dreamexposure.ticketbird.logger.LOGGER
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.springframework.stereotype.Component
@@ -54,7 +56,10 @@ class GuildSettingsService(
             closeCategory = settings.closeCategory?.asLong(),
             supportChannel = settings.supportChannel?.asLong(),
             logChannel = settings.logChannel?.asLong(),
+
             staticMessage = settings.staticMessage?.asLong(),
+            staticMessageTitle = settings.staticMessageTitle?.embedTitleSafe(),
+            staticMessageDescription = settings.staticMessageDescription?.embedDescriptionSafe(),
 
             nextId = settings.nextId,
             staff = settings.staff.joinToString(","),
@@ -87,7 +92,10 @@ class GuildSettingsService(
             closeCategory = settings.closeCategory?.asLong(),
             supportChannel = settings.supportChannel?.asLong(),
             logChannel = settings.logChannel?.asLong(),
+
             staticMessage = settings.staticMessage?.asLong(),
+            staticMessageTitle = settings.staticMessageTitle?.embedTitleSafe(),
+            staticMessageDescription = settings.staticMessageDescription?.embedDescriptionSafe(),
 
             nextId = settings.nextId,
             staff = settings.staff.joinToString(","),

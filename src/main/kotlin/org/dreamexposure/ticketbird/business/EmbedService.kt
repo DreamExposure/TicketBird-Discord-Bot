@@ -81,9 +81,12 @@ class EmbedService(
     ////// Ticket Embeds //////
     ///////////////////////////
     suspend fun getSupportRequestMessageEmbed(settings: GuildSettings): EmbedCreateSpec? {
+        val computedTitle = settings.staticMessageTitle ?: localeService.getString(settings.locale, "embed.static.title")
+        val computedDescription = settings.staticMessageDescription ?: localeService.getString(settings.locale, "embed.static.desc")
+
         val builder = defaultEmbedBuilder(settings)
-            .title(localeService.getString(settings.locale, "embed.static.title"))
-            .description(localeService.getString(settings.locale, "embed.static.desc"))
+            .title(computedTitle)
+            .description(computedDescription)
             .footer(localeService.getString(settings.locale, "embed.static.footer"), null)
             .timestamp(Instant.now())
 
@@ -97,8 +100,6 @@ class EmbedService(
 
             return builder.build()
         }
-
-        // TODO: Add customizable title and description
 
         // Add ticket stats
         if (settings.showTicketStats) {

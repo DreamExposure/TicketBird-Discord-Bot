@@ -2,9 +2,7 @@ package org.dreamexposure.ticketbird.`object`
 
 import discord4j.common.util.Snowflake
 import org.dreamexposure.ticketbird.database.GuildSettingsData
-import org.dreamexposure.ticketbird.extensions.handleLocaleDebt
-import org.dreamexposure.ticketbird.extensions.listFromDb
-import org.dreamexposure.ticketbird.extensions.toSnowflake
+import org.dreamexposure.ticketbird.extensions.*
 import java.time.Duration
 import java.util.*
 
@@ -30,6 +28,8 @@ data class GuildSettings(
     val logChannel: Snowflake? = null,
 
     val staticMessage: Snowflake? = null,
+    val staticMessageTitle: String? = null,
+    val staticMessageDescription: String? = null,
 
     val nextId: Int = 1,
     val staff: Set<String> = setOf(),
@@ -57,6 +57,8 @@ data class GuildSettings(
         logChannel = data.logChannel?.toSnowflake(),
 
         staticMessage = data.staticMessage?.toSnowflake(),
+        staticMessageTitle = data.staticMessageTitle?.embedTitleSafe(),
+        staticMessageDescription = data.staticMessageDescription?.embedDescriptionSafe(),
 
         nextId = data.nextId,
         staff = data.staff.listFromDb().toSet(),

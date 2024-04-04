@@ -29,6 +29,8 @@ data class GuildSettingsData(
     val logChannel: Long?,
 
     val staticMessage: Long?,
+    val staticMessageTitle: String?,
+    val staticMessageDescription: String?,
 
     val nextId: Int,
 
