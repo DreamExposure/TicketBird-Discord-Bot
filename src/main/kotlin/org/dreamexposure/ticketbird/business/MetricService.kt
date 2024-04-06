@@ -28,6 +28,6 @@ class MetricService(
     }
 
     fun recordTicketActionDuration(action: String, duration: Long) {
-        recordTaskDuration("ticket_action", listOf(Tag.of("action", action)), duration)
+        recordTaskDuration("ticket_action", listOf(Tag.of("scope", action)), duration)
     }
 }
