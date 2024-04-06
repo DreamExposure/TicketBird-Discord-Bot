@@ -28,9 +28,6 @@ class MetricService(
     }
 
     fun recordTicketActionDuration(action: String, duration: Long) {
-        meterRegistry.timer(
-            "bot.ticketbird.ticket.action.duration",
-            listOf(Tag.of("action", action))
-        ).record(Duration.ofMillis(duration))
+        recordTaskDuration("ticket_action", listOf(Tag.of("action", action)), duration)
     }
 }
