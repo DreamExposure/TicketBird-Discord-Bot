@@ -13,6 +13,7 @@ class ProjectCommandAutoComplete(
     private val projectService: ProjectService,
 ) : InteractionHandler<ChatInputAutoCompleteEvent> {
     override val ids = arrayOf("project.project", "support.topic", "topic.topic", "ticket.topic")
+    override val ephemeral = true
 
     override suspend fun handle(event: ChatInputAutoCompleteEvent, settings: GuildSettings) {
         when ("${event.commandName}.${event.focusedOption.name}") {

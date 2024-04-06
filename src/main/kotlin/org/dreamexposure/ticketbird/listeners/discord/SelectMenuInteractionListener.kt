@@ -32,6 +32,8 @@ class SelectMenuInteractionListener(
         val dropdown = dropdowns.firstOrNull { it.ids.contains(event.customId) }
 
         if (dropdown != null) {
+            if (dropdown.shouldDefer(event)) event.deferReply().withEphemeral(dropdown.ephemeral).awaitSingleOrNull()
+
             try {
                 dropdown.handle(event, settingsService.getGuildSettings(event.interaction.guildId.get()))
             } catch (e: Exception) {

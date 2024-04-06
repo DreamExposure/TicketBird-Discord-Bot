@@ -33,6 +33,8 @@ class ButtonInteractionListener(
 
         if (button != null) {
             try {
+                if (button.shouldDefer(event)) event.deferReply().withEphemeral(button.ephemeral).awaitSingleOrNull()
+
                 button.handle(event, settingsService.getGuildSettings(event.interaction.guildId.get()))
             } catch (e: Exception) {
                 LOGGER.error(DEFAULT, "Error handling button interaction | $event", e)

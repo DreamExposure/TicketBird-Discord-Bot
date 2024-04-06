@@ -21,6 +21,7 @@ class EditSupportMessageModal(
     private val localeService: LocaleService,
 ): InteractionHandler<ModalSubmitInteractionEvent> {
     override val ids = arrayOf("edit-support-message-modal")
+    override val ephemeral = true
 
     private val messageDeleteSeconds = Config.TIMING_MESSAGE_DELETE_GENERIC_SECONDS.getLong().asSeconds()
 
@@ -29,9 +30,6 @@ class EditSupportMessageModal(
 
         val title = inputs.first { it.customId == "edit-support-message.title" }.value.getOrNull()
         val description = inputs.first { it.customId == "edit-support-message.description" }.value.getOrNull()
-
-        // Defer, it could take a moment
-        event.deferReply().withEphemeral(true).awaitSingleOrNull()
 
         val newSettings = settings.copy(
             staticMessageTitle = if (!title.isNullOrBlank()) title else null,
@@ -48,7 +46,7 @@ class EditSupportMessageModal(
         )
 
         event.createFollowup(followupContent)
-            .withEphemeral(true)
+            .withEphemeral(ephemeral)
             .map(Message::getId)
             .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()

@@ -14,6 +14,7 @@ class SetupCommandAutoComplete(
     private val localeService: LocaleService,
 ) : InteractionHandler<ChatInputAutoCompleteEvent> {
     override val ids = arrayOf("setup.action", "setup.message")
+    override val ephemeral = true
 
     override suspend fun handle(event: ChatInputAutoCompleteEvent, settings: GuildSettings) {
         when ("${event.commandName}.${event.focusedOption.name}") {

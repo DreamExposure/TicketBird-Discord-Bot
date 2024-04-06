@@ -16,6 +16,9 @@ class SelectProjectDropdown(
     private val localeService: LocaleService,
 ): InteractionHandler<SelectMenuInteractionEvent> {
     override val ids = arrayOf("select-project")
+    override val ephemeral = true
+
+    override suspend fun shouldDefer(event: SelectMenuInteractionEvent) = false
 
     override suspend fun handle(event: SelectMenuInteractionEvent, settings: GuildSettings) {
         val selected = event.values[0].toLong()

@@ -33,6 +33,8 @@ class ModalInteractionListener(
 
         if (modal != null) {
             try {
+                if (modal.shouldDefer(event)) event.deferReply().withEphemeral(modal.ephemeral).awaitSingleOrNull()
+
                 modal.handle(event, settingsService.getGuildSettings(event.interaction.guildId.get()))
             } catch (e: Exception) {
                 LOGGER.error(DEFAULT, "Error handling modal interaction | $event", e)
