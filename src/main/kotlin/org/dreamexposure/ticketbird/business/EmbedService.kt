@@ -224,7 +224,7 @@ class EmbedService(
             )
         }
         builder.addField(
-            localeService.getString(settings.locale, "embed.settings.field.logging.stats"),
+            localeService.getString(settings.locale, "embed.settings.field.stats"),
             settings.showTicketStats.toString(),
             true
         )
