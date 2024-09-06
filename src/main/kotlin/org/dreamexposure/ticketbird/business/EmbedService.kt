@@ -85,8 +85,8 @@ class EmbedService(
         val computedDescription = settings.staticMessageDescription ?: localeService.getString(settings.locale, "embed.static.desc")
 
         val builder = defaultEmbedBuilder(settings)
-            .title(computedTitle)
-            .description(computedDescription)
+            .title(computedTitle.embedTitleSafe())
+            .description(computedDescription.embedDescriptionSafe())
             .footer(localeService.getString(settings.locale, "embed.static.footer"), null)
             .timestamp(Instant.now())
 
@@ -140,7 +140,7 @@ class EmbedService(
     suspend fun getTicketOpenEmbed(creator: Member, project: Project?, info: String?): EmbedCreateSpec {
         val embedBuilder = EmbedCreateSpec.builder()
             .author("@${creator.displayName}", null, creator.avatarUrl)
-        if (!project?.name.isNullOrBlank()) embedBuilder.title(project!!.name)
+        if (!project?.name.isNullOrBlank()) embedBuilder.title(project!!.name.embedTitleSafe())
         if (!info.isNullOrBlank()) embedBuilder.description(info.embedDescriptionSafe())
 
         return embedBuilder.build()
