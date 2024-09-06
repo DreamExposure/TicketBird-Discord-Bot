@@ -37,8 +37,10 @@ class ComponentService(
         val infoInput = TextInput.paragraph(
             "ticket-detail.info",
             localeService.getString(settings.locale, "modal.ticket-detail.info.label"),
-            localeService.getString(settings.locale, "modal.ticket-detail.info.placeholder")
-        )
+            0,
+            4000,
+        ).placeholder(localeService.getString(settings.locale, "modal.ticket-detail.info.placeholder"))
+            .required(false)
 
         return arrayOf(ActionRow.of(infoInput))
     }
