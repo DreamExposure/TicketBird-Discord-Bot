@@ -25,7 +25,7 @@ buildscript {
 }
 
 val ticketBirdVersion = "2.1.1"
-val gradleWrapperVersion = "8.6"
+val gradleWrapperVersion = "8.10"
 val javaVersion = "17"
 val d4jVersion = "3.2.6"
 val d4jStoresVersion = "3.2.2"
@@ -177,6 +177,8 @@ tasks {
     withType<KotlinCompile> {
         dependsOn(generateGitProperties)
 
+        @Suppress("DEPRECATION")
+        // FIXME: This is marked as deprecated but the related link does not seem to work, and no quick fix is available
         kotlinOptions {
             freeCompilerArgs = listOf("-Xjsr305=strict")
             jvmTarget = java.targetCompatibility.majorVersion
