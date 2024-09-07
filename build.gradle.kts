@@ -6,21 +6,21 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     // Kotlin
-    kotlin("jvm") version "1.9.23"
+    kotlin("jvm") version "2.0.20"
 
     // Spring
-    kotlin("plugin.spring") version "1.9.23"
-    id("org.springframework.boot") version "3.2.3"
-    id("io.spring.dependency-management") version "1.1.4"
+    kotlin("plugin.spring") version "2.0.20"
+    id("org.springframework.boot") version "3.3.3"
+    id("io.spring.dependency-management") version "1.1.6"
 
     // Tooling
-    id("com.gorylenko.gradle-git-properties") version "2.4.1"
-    id("com.google.cloud.tools.jib") version "3.4.1"
+    id("com.gorylenko.gradle-git-properties") version "2.4.2"
+    id("com.google.cloud.tools.jib") version "3.4.3"
 }
 
 buildscript {
     dependencies {
-        classpath("com.squareup:kotlinpoet:1.16.0")
+        classpath("com.squareup:kotlinpoet:1.18.1")
     }
 }
 
