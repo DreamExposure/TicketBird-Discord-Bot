@@ -94,7 +94,7 @@ dependencies {
     // Database
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-mysql")
-    implementation("io.asyncer:r2dbc-mysql")
+    implementation("io.asyncer:r2dbc-mysql:1.3.0") // TODO: Remove hard coded version once spring includes this in bom as it is a breaking change
     implementation("com.mysql:mysql-connector-j")
 
     // IO
