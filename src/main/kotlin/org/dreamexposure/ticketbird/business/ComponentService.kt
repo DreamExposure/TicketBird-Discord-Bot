@@ -4,6 +4,7 @@ import discord4j.core.`object`.component.*
 import discord4j.core.`object`.reaction.ReactionEmoji
 import org.dreamexposure.ticketbird.extensions.textInputPlaceholderSafe
 import org.dreamexposure.ticketbird.`object`.GuildSettings
+import org.dreamexposure.ticketbird.`object`.Project
 import org.springframework.stereotype.Component
 
 @Component
@@ -82,5 +83,19 @@ class ComponentService(
             .required(false)
 
         return arrayOf(ActionRow.of(titleInput), ActionRow.of(descriptionInput))
+    }
+
+    suspend fun getEditProjectModalComponents(settings: GuildSettings, project: Project): Array<LayoutComponent> {
+        val infoInput = TextInput.paragraph(
+            "edit-project.info",
+            localeService.getString(settings.locale, "modal.edit-project.info.label"),
+            0,
+            4000
+        ).placeholder(localeService.getString(settings.locale, "modal.edit-project.info.placeholder").textInputPlaceholderSafe())
+            .prefilled(project.additionalInfo ?: "")
+            .required(false)
+
+
+        return arrayOf(ActionRow.of(infoInput))
     }
 }

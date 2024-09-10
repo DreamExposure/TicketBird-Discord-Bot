@@ -9,6 +9,7 @@ data class Project(
     val guildId: Snowflake,
     val name: String,
     val prefix: String,
+    val additionalInfo: String? = null,
     val staffUsers: List<Snowflake> = listOf(),
     val staffRoles: List<Snowflake> = listOf(),
     val pingOverride: PingOverride = PingOverride.NONE,
@@ -18,6 +19,7 @@ data class Project(
         guildId = Snowflake.of(data.guildId),
         name = data.projectName,
         prefix = data.projectPrefix,
+        additionalInfo = data.additionalInfo,
         staffUsers = data.staffUsers
             ?.split(",")
             ?.filter(String::isNotBlank)

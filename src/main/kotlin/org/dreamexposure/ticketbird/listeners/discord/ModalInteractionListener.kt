@@ -29,7 +29,7 @@ class ModalInteractionListener(
             return
         }
 
-        val modal = modals.firstOrNull { it.ids.contains(event.customId) }
+        val modal = modals.firstOrNull { it.ids.any(event.customId::startsWith) }
 
         if (modal != null) {
             try {
@@ -51,6 +51,6 @@ class ModalInteractionListener(
         }
 
         timer.stop()
-        metricService.recordInteractionDuration(event.customId, "modal", timer.totalTimeMillis)
+        metricService.recordInteractionDuration(modal?.ids?.joinToString("|") ?: event.customId, "button", timer.totalTimeMillis)
     }
 }

@@ -80,6 +80,11 @@
           "min_length": 1
         },
         {
+          "type": 5,
+          "name": "edit-info",
+          "description": "If true, will open a modal to edit the additional info (default: false)"
+        },
+        {
           "type": 4,
           "name": "ping-override",
           "description": "Override global ping settings for this project",

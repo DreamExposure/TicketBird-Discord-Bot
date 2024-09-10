@@ -296,6 +296,13 @@ class TicketService(
             .withComponents(*componentService.getTicketMessageComponents(settings))
             .awaitSingle()
 
+        // Create follow-up info message
+        if (project?.additionalInfo != null) {
+            channel.createMessage()
+                .withEmbeds(embedService.getTopicAdditionalInfoEmbed(project, settings))
+                .awaitSingle()
+        }
+
         val ticket = createTicket(Ticket(
             guildId = guildId,
             number = ticketNumber,

@@ -7,10 +7,7 @@ import discord4j.core.`object`.entity.Member
 import discord4j.core.`object`.entity.Message
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
-import org.dreamexposure.ticketbird.business.EmbedService
-import org.dreamexposure.ticketbird.business.LocaleService
-import org.dreamexposure.ticketbird.business.PermissionService
-import org.dreamexposure.ticketbird.business.ProjectService
+import org.dreamexposure.ticketbird.business.*
 import org.dreamexposure.ticketbird.commands.SlashCommand
 import org.dreamexposure.ticketbird.config.Config
 import org.dreamexposure.ticketbird.extensions.asSeconds
@@ -24,6 +21,7 @@ class ProjectCommand(
     private val projectService: ProjectService,
     private val permissionService: PermissionService,
     private val embedService: EmbedService,
+    private val componentService: ComponentService,
     private val localeService: LocaleService,
 ) : SlashCommand {
     override val name = "project"
@@ -31,6 +29,21 @@ class ProjectCommand(
     override val ephemeral = true
 
     private val messageDeleteSeconds = Config.TIMING_MESSAGE_DELETE_GENERIC_SECONDS.getLong().asSeconds()
+
+    override suspend fun shouldDefer(event: ChatInputInteractionEvent): Boolean {
+        val commandName = event.options[0].name
+        when (commandName) {
+            // Check if /edit edit-info:true as this will pop a modal
+            "edit" -> {
+                val editInfo = event.options[0].getOption("edit-info")
+                    .flatMap(ApplicationCommandInteractionOption::getValue)
+                    .map(ApplicationCommandInteractionOptionValue::asBoolean)
+                    .orElse(false)
+                return !editInfo
+            }
+            else -> return super.shouldDefer(event)
+        }
+    }
 
     override suspend fun handle(event: ChatInputInteractionEvent, settings: GuildSettings) {
         // Check permission server-side just in case
@@ -151,7 +164,9 @@ class ProjectCommand(
                 .map(ApplicationCommandInteractionOptionValue::asString)
                 .map(String::toLong)
                 .get()
-        } catch (ex: NumberFormatException) { -1 }
+        } catch (ex: NumberFormatException) {
+            -1
+        }
         val project = projectService.getProject(settings.guildId, projectId)
 
         val prefix = event.options[0].getOption("prefix")
@@ -160,6 +175,10 @@ class ProjectCommand(
             .map { it.replace(Regex("\\W"), "") } // Keep only alphanumeric chars
             .map { it.substring(0, 16.coerceAtMost(it.length)) }
             .orElse(project?.prefix)
+        val editInfo = event.options[0].getOption("edit-info")
+            .flatMap(ApplicationCommandInteractionOption::getValue)
+            .map(ApplicationCommandInteractionOptionValue::asBoolean)
+            .orElse(false)
         val pingOverride = event.options[0].getOption("ping-override")
             .flatMap(ApplicationCommandInteractionOption::getValue)
             .map(ApplicationCommandInteractionOptionValue::asLong)
@@ -207,19 +226,30 @@ class ProjectCommand(
             if (staffRoles.contains(staffRole)) staffRoles.remove(staffRole)
             else staffRoles.add(staffRole)
         }
-        projectService.updateProject(project.copy(
-            prefix = prefix,
-            staffUsers = staffUsers,
-            staffRoles = staffRoles,
-            pingOverride = pingOverride,
-        ))
+        projectService.updateProject(
+            project.copy(
+                prefix = prefix,
+                staffUsers = staffUsers,
+                staffRoles = staffRoles,
+                pingOverride = pingOverride,
+            )
+        )
         val updatedProject = projectService.getProject(settings.guildId, project.id)!!
 
-        // Return with project view embed
-        event.createFollowup(localeService.getString(settings.locale, "command.project.edit.success"))
-            .withEmbeds(embedService.getProjectViewEmbed(settings, updatedProject))
-            .withEphemeral(ephemeral)
-            .awaitSingleOrNull()
+        if (editInfo) {
+            // Pop Modal for follow-up
+            event.presentModal()
+                .withCustomId("edit-project-modal-${updatedProject.id}")
+                .withTitle(localeService.getString(settings.locale, "modal.edit-project.title"))
+                .withComponents(*componentService.getEditProjectModalComponents(settings, project))
+                .awaitSingleOrNull()
+        } else {
+            // Return with project view embed
+            event.createFollowup(localeService.getString(settings.locale, "command.project.edit.success"))
+                .withEmbeds(embedService.getProjectViewEmbed(settings, updatedProject))
+                .withEphemeral(ephemeral)
+                .awaitSingleOrNull()
+        }
     }
 
     private suspend fun list(event: ChatInputInteractionEvent, settings: GuildSettings) {

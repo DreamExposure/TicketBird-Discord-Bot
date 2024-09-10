@@ -10,6 +10,7 @@ data class ProjectData(
     val guildId: Long,
     val projectName: String,
     val projectPrefix: String,
+    val additionalInfo: String?,
     val staffUsers: String?,
     val staffRoles: String?,
     val pingOverride: Int,

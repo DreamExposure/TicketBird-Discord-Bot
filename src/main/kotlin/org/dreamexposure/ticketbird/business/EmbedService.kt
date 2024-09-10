@@ -146,6 +146,13 @@ class EmbedService(
         return embedBuilder.build()
     }
 
+    suspend fun getTopicAdditionalInfoEmbed(project: Project, settings: GuildSettings): EmbedCreateSpec {
+        return defaultEmbedBuilder(settings)
+            .title(localeService.getString(settings.locale, "embed.ticket.additional-info.title"))
+            .description(project.additionalInfo?.embedDescriptionSafe() ?: "[Unset, how'd this happen?]")
+            .build()
+    }
+
     /////////////////////////////
     ////// Settings Embeds //////
     /////////////////////////////
@@ -330,6 +337,7 @@ class EmbedService(
     suspend fun getProjectViewEmbed(settings: GuildSettings, project: Project): EmbedCreateSpec {
         val builder = defaultEmbedBuilder(settings)
             .title(project.name.embedTitleSafe())
+            .description(project.additionalInfo?.embedDescriptionSafe() ?: localeService.getString(settings.locale, "embed.project-view.description.no-info"))
             .addField(
                 localeService.getString(settings.locale, "embed.project-view.field.prefix"),
                 project.prefix.embedFieldSafe(),

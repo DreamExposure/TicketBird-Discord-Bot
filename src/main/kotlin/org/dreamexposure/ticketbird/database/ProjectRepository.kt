@@ -14,6 +14,7 @@ interface ProjectRepository: R2dbcRepository<ProjectData, Long> {
         UPDATE projects
         SET project_prefix = :prefix,
             project_name = :name,
+            additional_info = :additionalInfo,
             staff_users = :staffUsers,
             staff_roles = :staffRoles,
             ping_override = :pingOverride
@@ -25,6 +26,7 @@ interface ProjectRepository: R2dbcRepository<ProjectData, Long> {
         guildId: Long,
         prefix: String,
         name: String,
+        additionalInfo: String?,
         staffUsers: String?,
         staffRoles: String?,
         pingOverride: Int,
