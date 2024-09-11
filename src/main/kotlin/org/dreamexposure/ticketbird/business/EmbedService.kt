@@ -388,6 +388,21 @@ class EmbedService(
             )
         }
 
+        // Effective ticket visibility
+        val effectiveVisibility = StringBuilder()
+            .appendLine("- Ticket Author")
+        if (settings.staffRole != null)
+            effectiveVisibility.appendLine("- <@${settings.staffRole.asString()}>")
+        if (settings.staff.isNotEmpty())
+            effectiveVisibility.append(settings.staff.joinToString("\n") { "- <@${it}>" })
+        if (project.staffUsers.isNotEmpty())
+            effectiveVisibility.append(project.staffUsers.joinToString("\n") { "- <@${it.asString()}>" })
+        if (project.staffRoles.isNotEmpty())
+            effectiveVisibility.append(project.staffRoles.joinToString("\n") { "- <@${it.asString()}>" })
+
+        builder.addField(localeService.getString(settings.locale, "embed.project-view.field.visibility"), effectiveVisibility.toString(), false)
+
+
         // Notes
         if (!settings.useProjects) {
             builder.addField(
