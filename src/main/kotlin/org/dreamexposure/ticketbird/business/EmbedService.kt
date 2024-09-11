@@ -15,6 +15,7 @@ import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.`object`.Project
 import org.dreamexposure.ticketbird.`object`.Ticket
 import org.dreamexposure.ticketbird.utils.GlobalVars
+import org.dreamexposure.ticketbird.utils.GlobalVars.successColor
 import org.springframework.beans.factory.BeanFactory
 import org.springframework.beans.factory.getBean
 import org.springframework.stereotype.Component
@@ -140,6 +141,8 @@ class EmbedService(
     suspend fun getTicketOpenEmbed(creator: Member, project: Project?, info: String?): EmbedCreateSpec {
         val embedBuilder = EmbedCreateSpec.builder()
             .author("@${creator.displayName}", null, creator.avatarUrl)
+            .timestamp(Instant.now())
+            .color(successColor)
         if (!project?.name.isNullOrBlank()) embedBuilder.title(project!!.name.embedTitleSafe())
         if (!info.isNullOrBlank()) embedBuilder.description(info.embedDescriptionSafe())
 
