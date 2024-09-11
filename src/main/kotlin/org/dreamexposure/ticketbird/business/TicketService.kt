@@ -289,19 +289,19 @@ class TicketService(
             localeService.getString(settings.locale, "ticket.open.message.ping-author-only", creatorId.asString())
         }
 
-        // Create message
-        channel.createMessage()
-            .withContent(message)
-            .withEmbeds(embedService.getTicketOpenEmbed(creator, project, info))
-            .withComponents(*componentService.getTicketMessageComponents(settings))
-            .awaitSingle()
-
-        // Create follow-up info message
+        // Create additional info message before ticket controls message
         if (project?.additionalInfo != null) {
             channel.createMessage()
                 .withEmbeds(embedService.getTopicAdditionalInfoEmbed(project, settings))
                 .awaitSingle()
         }
+
+        // Create message with user info + ticket controls
+        channel.createMessage()
+            .withContent(message)
+            .withEmbeds(embedService.getTicketOpenEmbed(creator, project, info))
+            .withComponents(*componentService.getTicketMessageComponents(settings))
+            .awaitSingle()
 
         val ticket = createTicket(Ticket(
             guildId = guildId,
