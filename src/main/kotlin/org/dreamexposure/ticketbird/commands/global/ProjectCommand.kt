@@ -108,7 +108,7 @@ class ProjectCommand(
                 .map(ApplicationCommandInteractionOptionValue::asString)
                 .map(String::toLong)
                 .get()
-        } catch (ex: NumberFormatException) { -1 }
+        } catch (_: NumberFormatException) { -1 }
 
 
         if (projectService.getProject(settings.guildId, projectId) == null) {
@@ -138,7 +138,7 @@ class ProjectCommand(
                 .map(ApplicationCommandInteractionOptionValue::asString)
                 .map(String::toLong)
                 .get()
-        } catch (ex: NumberFormatException) { -1 }
+        } catch (_: NumberFormatException) { -1 }
 
         val project = projectService.getProject(settings.guildId, projectId)
         if (project == null) {
@@ -164,9 +164,7 @@ class ProjectCommand(
                 .map(ApplicationCommandInteractionOptionValue::asString)
                 .map(String::toLong)
                 .get()
-        } catch (ex: NumberFormatException) {
-            -1
-        }
+        } catch (_: NumberFormatException) { -1 }
         val project = projectService.getProject(settings.guildId, projectId)
 
         val prefix = event.options[0].getOption("prefix")
@@ -226,15 +224,14 @@ class ProjectCommand(
             if (staffRoles.contains(staffRole)) staffRoles.remove(staffRole)
             else staffRoles.add(staffRole)
         }
-        projectService.updateProject(
-            project.copy(
-                prefix = prefix,
-                staffUsers = staffUsers,
-                staffRoles = staffRoles,
-                pingOverride = pingOverride,
-            )
+        val updatedProject = project.copy(
+            prefix = prefix,
+            staffUsers = staffUsers,
+            staffRoles = staffRoles,
+            pingOverride = pingOverride,
         )
-        val updatedProject = projectService.getProject(settings.guildId, project.id)!!
+
+        projectService.updateProject(updatedProject)
 
         if (editInfo) {
             // Pop Modal for follow-up
@@ -256,8 +253,6 @@ class ProjectCommand(
         event.createFollowup()
             .withEmbeds(embedService.getProjectListEmbed(settings))
             .withEphemeral(ephemeral)
-            .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 }
