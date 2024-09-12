@@ -31,17 +31,9 @@ class ProjectCommand(
     private val messageDeleteSeconds = Config.TIMING_MESSAGE_DELETE_GENERIC_SECONDS.getLong().asSeconds()
 
     override suspend fun shouldDefer(event: ChatInputInteractionEvent): Boolean {
-        val commandName = event.options[0].name
-        when (commandName) {
-            // Check if /edit edit-info:true as this will pop a modal
-            "edit" -> {
-                val editInfo = event.options[0].getOption("edit-info")
-                    .flatMap(ApplicationCommandInteractionOption::getValue)
-                    .map(ApplicationCommandInteractionOptionValue::asBoolean)
-                    .orElse(false)
-                return !editInfo
-            }
-            else -> return super.shouldDefer(event)
+        return when (event.options[0].name) {
+            "edit-info" -> true
+            else -> super.shouldDefer(event)
         }
     }
 
@@ -63,6 +55,7 @@ class ProjectCommand(
             "list" -> list(event, settings)
             "view" -> view(event, settings)
             "edit" -> edit(event, settings)
+            "edit-info" -> editInfo(event, settings)
             else -> throw IllegalStateException("Invalid subcommand specified")
         }
     }
@@ -173,10 +166,6 @@ class ProjectCommand(
             .map { it.replace(Regex("\\W"), "") } // Keep only alphanumeric chars
             .map { it.substring(0, 16.coerceAtMost(it.length)) }
             .orElse(project?.prefix)
-        val editInfo = event.options[0].getOption("edit-info")
-            .flatMap(ApplicationCommandInteractionOption::getValue)
-            .map(ApplicationCommandInteractionOptionValue::asBoolean)
-            .orElse(false)
         val pingOverride = event.options[0].getOption("ping-override")
             .flatMap(ApplicationCommandInteractionOption::getValue)
             .map(ApplicationCommandInteractionOptionValue::asLong)
@@ -233,20 +222,38 @@ class ProjectCommand(
 
         projectService.updateProject(updatedProject)
 
-        if (editInfo) {
-            // Pop Modal for follow-up
-            event.presentModal()
-                .withCustomId("edit-project-modal-${updatedProject.id}")
-                .withTitle(localeService.getString(settings.locale, "modal.edit-project.title"))
-                .withComponents(*componentService.getEditProjectModalComponents(settings, project))
-                .awaitSingleOrNull()
-        } else {
-            // Return with project view embed
-            event.createFollowup(localeService.getString(settings.locale, "command.project.edit.success"))
-                .withEmbeds(embedService.getProjectViewEmbed(settings, updatedProject))
+        // Return with project view embed
+        event.createFollowup(localeService.getString(settings.locale, "command.project.edit.success"))
+            .withEmbeds(embedService.getProjectViewEmbed(settings, updatedProject))
+            .withEphemeral(ephemeral)
+            .awaitSingleOrNull()
+    }
+
+    private suspend fun editInfo(event: ChatInputInteractionEvent, settings: GuildSettings) {
+        val projectId = try {
+            event.options[0].getOption("project")
+                .flatMap(ApplicationCommandInteractionOption::getValue)
+                .map(ApplicationCommandInteractionOptionValue::asString)
+                .map(String::toLong)
+                .get()
+        } catch (_: NumberFormatException) { -1 }
+        val project = projectService.getProject(settings.guildId, projectId)
+
+        // Check if project doesn't exist and short circuit.
+        if (project == null) {
+            event.reply(localeService.getString(settings.locale, "command.project.edit.not-found"))
+                .withEmbeds(embedService.getProjectListEmbed(settings))
                 .withEphemeral(ephemeral)
                 .awaitSingleOrNull()
+            return
         }
+
+        // Pop Modal for follow-up
+        event.presentModal()
+            .withCustomId("edit-project-modal-${project.id}")
+            .withTitle(localeService.getString(settings.locale, "modal.edit-project.title"))
+            .withComponents(*componentService.getEditProjectModalComponents(settings, project))
+            .awaitSingleOrNull()
     }
 
     private suspend fun list(event: ChatInputInteractionEvent, settings: GuildSettings) {

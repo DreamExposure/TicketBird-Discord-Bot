@@ -80,11 +80,6 @@
           "min_length": 1
         },
         {
-          "type": 5,
-          "name": "edit-info",
-          "description": "If true, will open a modal to edit the additional info (default: false)"
-        },
-        {
           "type": 4,
           "name": "ping-override",
           "description": "Override global ping settings for this project",
@@ -121,6 +116,20 @@
           "type": 5,
           "name": "remove-all-staff",
           "description": "Whether to remove all existing staff from this project (default: false)"
+        }
+      ]
+    },
+    {
+      "type": 1,
+      "name": "edit-info",
+      "description": "Add or edit the additional information presented to a user after opening a ticket",
+      "options": [
+        {
+          "type": 3,
+          "name": "project",
+          "description": "The project to edit",
+          "required": true,
+          "autocomplete": true
         }
       ]
     }
