@@ -54,6 +54,7 @@ Perfect for modmail, community management, and more, TicketBird is capable of al
 | /project list            | Lists all existing projects/topics                                                        | Admin-only  |
 | /project view            | View full details about a specific project/topic                                          | Admin-only  |
 | /project edit            | Edit various settings for a project/topic - Like changing prefix, staff, or ping override | Admin-only  |
+| /project edit-info       | Edit the additional info within a project                                                 | Admin-only  |
 | /ticket open             | Opens a new ticket                                                                        | Everyone    | 
 | /ticket topic            | Changes a ticket's topic when run in a ticket channel                                     | Everyone    |
 | /ticket add              | Adds a user to the ticket as a participant when run in a ticket channel                   | Everyone    |
