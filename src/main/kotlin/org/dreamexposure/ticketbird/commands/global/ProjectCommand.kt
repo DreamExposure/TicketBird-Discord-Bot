@@ -32,7 +32,7 @@ class ProjectCommand(
 
     override suspend fun shouldDefer(event: ChatInputInteractionEvent): Boolean {
         return when (event.options[0].name) {
-            "edit-info" -> true
+            "edit-info" -> false
             else -> super.shouldDefer(event)
         }
     }
