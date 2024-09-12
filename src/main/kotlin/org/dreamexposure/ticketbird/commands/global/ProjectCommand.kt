@@ -32,7 +32,7 @@ class ProjectCommand(
 
     override suspend fun shouldDefer(event: ChatInputInteractionEvent): Boolean {
         return when (event.options[0].name) {
-            "edit-info" -> false
+            "add", "edit-info" -> false
             else -> super.shouldDefer(event)
         }
     }
@@ -61,36 +61,20 @@ class ProjectCommand(
     }
 
     private suspend fun add(event: ChatInputInteractionEvent, settings: GuildSettings) {
-        val name = event.options[0].getOption("name")
-            .flatMap(ApplicationCommandInteractionOption::getValue)
-            .map(ApplicationCommandInteractionOptionValue::asString)
-            .map { it.substring(0, 100.coerceAtMost(it.length)) }
-            .get()
-        val prefix = event.options[0].getOption("prefix")
-            .flatMap(ApplicationCommandInteractionOption::getValue)
-            .map(ApplicationCommandInteractionOptionValue::asString)
-            .map { it.replace(Regex("\\W"), "") } // Keep only alphanumeric chars
-            .map { it.substring(0, 16.coerceAtMost(it.length)) }
-            .get()
-
         // Check if max amount of projects has been created
         if (projectService.getAllProjects(settings.guildId).size >= 25) {
-            event.createFollowup(localeService.getString(settings.locale, "command.project.add.limit-reached"))
+            event.reply(localeService.getString(settings.locale, "command.project.add.limit-reached"))
                 .withEmbeds(embedService.getProjectListEmbed(settings))
                 .withEphemeral(ephemeral)
-                .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
 
-        projectService.createProject(Project(guildId = settings.guildId, name = name, prefix = prefix))
-
-        event.createFollowup(localeService.getString(settings.locale, "command.project.add.success"))
-            .withEmbeds(embedService.getProjectListEmbed(settings))
-            .withEphemeral(ephemeral)
-            .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+        // pop modal
+        event.presentModal()
+            .withCustomId("add-project-modal")
+            .withTitle(localeService.getString(settings.locale, "modal.add-project.title"))
+            .withComponents(*componentService.getAddProjectModalComponents(settings))
             .awaitSingleOrNull()
     }
 
