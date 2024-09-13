@@ -1,0 +1,155 @@
+{
+  "name": "setup",
+  "description": "A set of commands for setting up and configuring TicketBird",
+  "default_member_permissions": "32",
+  "dm_permissions": false,
+  "options": [
+    {
+      "type": 1,
+      "name": "init",
+      "description": "Initiates the bot and setups needed channels and categories"
+    },
+    {
+      "type": 1,
+      "name": "repair",
+      "description": "Repairs the bot's configuration and recreates missing channels or categories"
+    },
+    {
+      "type": 1,
+      "name": "language",
+      "description": "Sets the language for the bot to use when sending responses. Defaults to english",
+      "options": [
+        {
+          "type": 3,
+          "name": "language",
+          "description": "The language for the bot to use when sending responses",
+          "required": true,
+          "choices": [
+            {
+              "name": "English",
+              "value": "en"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": 1,
+      "name": "use-projects",
+      "description": "Sets whether to use projects for helping sort tickets. Defaults to false",
+      "options": [
+        {
+          "type": 5,
+          "name": "use",
+          "description": "Whether to use projects for helping sort tickets",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": 1,
+      "name": "show-ticket-stats",
+      "description": "Sets whether to publicly show total open/closed tickets in support messages. Defaults to true",
+      "options": [
+        {
+          "type": 5,
+          "name": "show",
+          "description": "Whether to publicly show total open/closed tickets in TicketBird's support messages",
+          "required": true
+        }
+      ]
+    },
+    {
+      "type": 1,
+      "name": "messaging",
+      "description": "Allows changing certain messages found throughout TicketBird",
+      "options": [
+        {
+          "type": 3,
+          "name": "message",
+          "description": "The message you want to change",
+          "required": true,
+          "autocomplete": true
+        }
+      ]
+    },
+    {
+      "type": 1,
+      "name": "timing",
+      "description": "Allows changing timings for the various automatic actions performed by TicketBird",
+      "options": [
+        {
+          "type": 3,
+          "name": "action",
+          "description": "The action you want to change the timing of",
+          "required": true,
+          "autocomplete": true
+        },
+        {
+          "type": 4,
+          "name": "days",
+          "description": "Amount of days (added to hours; default: 0)",
+          "min_value": 0,
+          "max_value": 30
+        },
+        {
+          "type": 4,
+          "name": "hours",
+          "description": "Amount of hours (added to days; default: 0)",
+          "min_value": 0,
+          "max_value": 999
+        }
+      ]
+    },
+    {
+      "type": 1,
+      "name": "ping",
+      "description": "Modify the global ping settings when a ticket is opened. May be overridden on the project-level",
+      "options": [
+        {
+          "type": 4,
+          "name": "setting",
+          "description": "The ping setting to use globally",
+          "required": true,
+          "choices": [
+            {
+              "name": "Ping author only (default)",
+              "value": 1
+            },
+            {
+              "name": "Ping author and project staff",
+              "value": 2
+            },
+            {
+              "name": "Ping author and all staff",
+              "value": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": 1,
+      "name": "logging",
+      "description": "Modify the logging behavior of TicketBird when a ticket is closed and deleted",
+      "options": [
+        {
+          "type": 5,
+          "name": "enable",
+          "description": "Whether to enable TicketBird's logging functionality"
+        },
+        {
+          "type": 7,
+          "name": "channel",
+          "description": "The channel for TicketBird's logs to appear in",
+          "channel_types": [0]
+        }
+      ]
+    },
+    {
+      "type": 1,
+      "name": "view",
+      "description": "Allows viewing TicketBird's configuration in this server"
+    }
+  ]
+}

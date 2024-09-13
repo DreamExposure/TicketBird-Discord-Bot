@@ -2,40 +2,39 @@ package org.dreamexposure.ticketbird.`object`
 
 import discord4j.common.util.Snowflake
 import org.dreamexposure.ticketbird.database.GuildSettingsData
-import org.dreamexposure.ticketbird.extensions.handleLocaleDebt
-import org.dreamexposure.ticketbird.extensions.listFromDb
-import org.dreamexposure.ticketbird.extensions.toSnowflake
+import org.dreamexposure.ticketbird.extensions.*
 import java.time.Duration
 import java.util.*
-import java.util.concurrent.CopyOnWriteArrayList
 
 data class GuildSettings(
     val guildId: Snowflake,
-    var locale: Locale = Locale.ENGLISH,
-    var patronGuild: Boolean = false,
-    var devGuild: Boolean = false,
+    val locale: Locale = Locale.ENGLISH,
+    val patronGuild: Boolean = false,
+    val devGuild: Boolean = false,
 
-    var useProjects: Boolean = false,
-    var enableLogging: Boolean = false,
-    var showTicketStats: Boolean = true,
-    var autoClose: Duration = Duration.ofDays(7),
-    var autoDelete: Duration = Duration.ofHours(24),
+    val useProjects: Boolean = false,
+    val enableLogging: Boolean = false,
+    val showTicketStats: Boolean = true,
+    val autoClose: Duration = Duration.ofDays(7),
+    val autoDelete: Duration = Duration.ofHours(24),
 
-    var requiresRepair: Boolean = false,
+    val requiresRepair: Boolean = false,
 
-    var awaitingCategory: Snowflake? = null,
-    var respondedCategory: Snowflake? = null,
-    var holdCategory: Snowflake? = null,
-    var closeCategory: Snowflake? = null,
-    var supportChannel: Snowflake? = null,
-    var logChannel: Snowflake? = null,
+    val awaitingCategory: Snowflake? = null,
+    val respondedCategory: Snowflake? = null,
+    val holdCategory: Snowflake? = null,
+    val closeCategory: Snowflake? = null,
+    val supportChannel: Snowflake? = null,
+    val logChannel: Snowflake? = null,
 
-    var staticMessage: Snowflake? = null,
+    val staticMessage: Snowflake? = null,
+    val staticMessageTitle: String? = null,
+    val staticMessageDescription: String? = null,
 
-    var nextId: Int = 1,
-    val staff: MutableList<String> = CopyOnWriteArrayList(),
-    var staffRole: Snowflake? = null,
-    var pingOption: PingOption = PingOption.AUTHOR_ONLY,
+    val nextId: Int = 1,
+    val staff: Set<String> = setOf(),
+    val staffRole: Snowflake? = null,
+    val pingOption: PingOption = PingOption.AUTHOR_ONLY,
 ) {
     constructor(data: GuildSettingsData) : this(
         guildId = Snowflake.of(data.guildId),
@@ -58,9 +57,11 @@ data class GuildSettings(
         logChannel = data.logChannel?.toSnowflake(),
 
         staticMessage = data.staticMessage?.toSnowflake(),
+        staticMessageTitle = data.staticMessageTitle?.embedTitleSafe(),
+        staticMessageDescription = data.staticMessageDescription?.embedDescriptionSafe(),
 
         nextId = data.nextId,
-        staff = data.staff.listFromDb(),
+        staff = data.staff.listFromDb().toSet(),
         staffRole = data.staffRole?.toSnowflake(),
         pingOption = PingOption.valueOf(data.pingOption)
     )

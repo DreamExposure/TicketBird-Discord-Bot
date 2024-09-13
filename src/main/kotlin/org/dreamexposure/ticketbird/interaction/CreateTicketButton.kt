@@ -16,13 +16,16 @@ class CreateTicketButton(
     private val localeService: LocaleService,
 ): InteractionHandler<ButtonInteractionEvent> {
     override val ids = arrayOf("create-ticket")
+    override val ephemeral = true
 
     private val messageDeleteSeconds = Config.TIMING_MESSAGE_DELETE_TICKET_FLOW_SECONDS.getLong().asSeconds()
+
+    override suspend fun shouldDefer(event: ButtonInteractionEvent) = false
 
     override suspend fun handle(event: ButtonInteractionEvent, settings: GuildSettings) {
         if (settings.requiresRepair) {
             event.reply(localeService.getString(settings.locale, "generic.repair-required"))
-                .withEphemeral(true)
+                .withEphemeral(ephemeral)
                 .awaitSingleOrNull()
             return
         }
@@ -30,13 +33,13 @@ class CreateTicketButton(
         if (settings.useProjects) {
             // Defer, fetching all projects may be slow
             event.deferReply()
-                .withEphemeral(true)
+                .withEphemeral(ephemeral)
                 .awaitSingleOrNull()
 
             // Guild is set up to use projects, send an ephemeral select menu to let them select the project
             event.createFollowup(localeService.getString(settings.locale, "dropdown.select-project.prompt"))
                 .withComponents(*componentService.getProjectSelectComponents(settings))
-                .withEphemeral(true)
+                .withEphemeral(ephemeral)
                 .flatMap { event.deleteReplyDelayed(messageDeleteSeconds) }
                 .awaitSingleOrNull()
         } else {

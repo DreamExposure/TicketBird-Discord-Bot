@@ -1,0 +1,104 @@
+{
+  "name": "ticket",
+  "description": "A set of commands related to ticket management",
+  "dm_permission": false,
+  "options": [
+    {
+      "name": "open",
+      "type": 1,
+      "description": "Opens a new ticket",
+      "options": [
+        {
+          "name": "info",
+          "type": 3,
+          "description": "Any additional info you'd like to add"
+        },
+        {
+          "name": "topic",
+          "type": 3,
+          "description": "The reason for opening a ticket",
+          "autocomplete": true
+        }
+      ]
+    },
+    {
+      "name": "topic",
+      "type": 1,
+      "description": "Changes the topic of the current ticket",
+      "options": [
+        {
+          "name": "topic",
+          "type": 3,
+          "description": "The topic to change to",
+          "autocomplete": true,
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "add",
+      "type": 1,
+      "description": "Add a user and/or role to the current ticket",
+      "options": [
+        {
+          "name": "member",
+          "type": 6,
+          "description": "The user to add to the current ticket",
+          "required": true
+        },
+        {
+          "name": "permissions",
+          "type": 4,
+          "description": "The level of permission to give to these users/roles",
+          "required": true,
+          "choices": [
+            {
+              "name": "Read-Only",
+              "value": 0
+            },
+            {
+              "name": "Read/Write",
+              "value": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "remove",
+      "type": 1,
+      "description": "Remove a user and/or role from the current ticket",
+      "options": [
+        {
+          "name": "member",
+          "type": 6,
+          "description": "The user to remove from the current ticket",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "hold",
+      "type": 1,
+      "description": "Places the current ticket on hold"
+    },
+    {
+      "name": "close",
+      "type": 1,
+      "description": "Closes the current ticket"
+    },
+    {
+      "name": "checksum",
+      "type": 1,
+      "description": "Validate a transcript.log or attachments.zip's legitimacy with its SHA-256 checksum",
+      "options": [
+        {
+          "name": "file",
+          "type": 11,
+          "description": "A file for TicketBird to validate against",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

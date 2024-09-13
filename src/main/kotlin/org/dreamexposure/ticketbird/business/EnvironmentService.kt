@@ -5,12 +5,14 @@ import discord4j.core.GatewayDiscordClient
 import discord4j.core.`object`.PermissionOverwrite
 import discord4j.core.`object`.entity.channel.Category
 import discord4j.core.`object`.entity.channel.TextChannel
+import discord4j.discordjson.json.ApplicationCommandRequest
 import discord4j.rest.http.client.ClientException
 import discord4j.rest.util.Permission
 import discord4j.rest.util.PermissionSet
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.dreamexposure.ticketbird.logger.LOGGER
+import org.dreamexposure.ticketbird.utils.GlobalVars
 import org.springframework.beans.factory.BeanFactory
 import org.springframework.beans.factory.getBean
 import org.springframework.stereotype.Component
@@ -22,11 +24,39 @@ class EnvironmentService(
     private val settingsService: GuildSettingsService,
     private val permissionService: PermissionService,
     private val localeService: LocaleService,
-    private val staticMessageService: StaticMessageService,
     private val componentService: ComponentService,
+    private val embedService: EmbedService,
+    //objectMapper: ObjectMapper,
 ) {
     private val discordClient
         get() = beanFactory.getBean<GatewayDiscordClient>()
+
+    private final val premiumCommands: List<ApplicationCommandRequest>
+    private final val devCommands: List<ApplicationCommandRequest>
+
+    init {
+        //val matcher = PathMatchingResourcePatternResolver()
+
+        // TODO: Uncomment if I add a premium command
+        this.premiumCommands = emptyList()
+        // Get premium commands
+        //val premiumCommands = mutableListOf<ApplicationCommandRequest>()
+        //for (res in matcher.getResources("commands/premium/*.json")) {
+        //    val request = objectMapper.readValue<ApplicationCommandRequest>(res.inputStream)
+        //    premiumCommands.add(request)
+        //}
+        //this.premiumCommands = premiumCommands
+
+        // TODO: Uncomment if I add a dev command
+        this.devCommands = emptyList()
+        // Get dev commands
+        //val devCommands = mutableListOf<ApplicationCommandRequest>()
+        //for (res in matcher.getResources("commands/dev/*.json")) {
+        //    val request = objectMapper.readValue<ApplicationCommandRequest>(res.inputStream)
+        //    premiumCommands.add(request)
+        //}
+        //this.devCommands = devCommands
+    }
 
     suspend fun createCategory(guildId: Snowflake, type: String): Category {
         LOGGER.debug("Creating category type {} for guild: {}", type, guildId)
@@ -67,7 +97,7 @@ class EnvironmentService(
     suspend fun validateAllEntitiesExist(guildId: Snowflake): Boolean {
         LOGGER.debug("Validating entities for {}...", guildId)
 
-        val settings = settingsService.getGuildSettings(guildId)
+        var settings = settingsService.getGuildSettings(guildId)
         val guild = discordClient.getGuildById(guildId).awaitSingle()
 
         var properSetup = settings.hasRequiredIdsSet() && !settings.requiresRepair
@@ -75,8 +105,8 @@ class EnvironmentService(
         // Check awaiting response ticket category
         if (settings.awaitingCategory != null) {
             guild.getChannelById(settings.awaitingCategory!!)
-                .doOnError(ClientException.isStatusCode(404)) { settings.awaitingCategory = null }
-                .doOnError(ClientException.isStatusCode(404, 403)) { settings.requiresRepair = true; properSetup = false }
+                .doOnError(ClientException.isStatusCode(404)) { settings = settings.copy(awaitingCategory = null) }
+                .doOnError(ClientException.isStatusCode(404, 403)) { settings = settings.copy(requiresRepair = true); properSetup = false }
                 .onErrorResume { Mono.empty() }
                 .awaitSingleOrNull()
         }
@@ -84,8 +114,8 @@ class EnvironmentService(
         // Check responded ticket category
         if (settings.respondedCategory != null) {
             guild.getChannelById(settings.respondedCategory!!)
-                .doOnError(ClientException.isStatusCode(404)) { settings.respondedCategory = null }
-                .doOnError(ClientException.isStatusCode(404, 403)) { settings.requiresRepair = true; properSetup = false }
+                .doOnError(ClientException.isStatusCode(404)) { settings = settings.copy(respondedCategory = null) }
+                .doOnError(ClientException.isStatusCode(404, 403)) { settings = settings.copy(requiresRepair = true); properSetup = false }
                 .onErrorResume { Mono.empty() }
                 .awaitSingleOrNull()
         }
@@ -93,8 +123,8 @@ class EnvironmentService(
         // Check held ticket category
         if (settings.holdCategory != null) {
             guild.getChannelById(settings.holdCategory!!)
-                .doOnError(ClientException.isStatusCode(404)) { settings.holdCategory = null }
-                .doOnError(ClientException.isStatusCode(404, 403)) { settings.requiresRepair = true; properSetup = false }
+                .doOnError(ClientException.isStatusCode(404)) { settings = settings.copy(holdCategory = null) }
+                .doOnError(ClientException.isStatusCode(404, 403)) { settings = settings.copy(requiresRepair = true); properSetup = false }
                 .onErrorResume { Mono.empty() }
                 .awaitSingleOrNull()
         }
@@ -102,8 +132,8 @@ class EnvironmentService(
         // Check closed ticket category
         if (settings.closeCategory != null) {
             guild.getChannelById(settings.closeCategory!!)
-                .doOnError(ClientException.isStatusCode(404)) { settings.closeCategory = null }
-                .doOnError(ClientException.isStatusCode(404, 403)) { settings.requiresRepair = true; properSetup = false }
+                .doOnError(ClientException.isStatusCode(404)) { settings = settings.copy(closeCategory = null) }
+                .doOnError(ClientException.isStatusCode(404, 403)) { settings = settings.copy(requiresRepair = true); properSetup = false }
                 .onErrorResume { Mono.empty() }
                 .awaitSingleOrNull()
         }
@@ -111,8 +141,8 @@ class EnvironmentService(
         // Check support channel
         if (settings.supportChannel != null) {
             guild.getChannelById(settings.supportChannel!!)
-                .doOnError(ClientException.isStatusCode(404)) { settings.supportChannel = null }
-                .doOnError(ClientException.isStatusCode(404, 403)) { settings.requiresRepair = true; properSetup = false }
+                .doOnError(ClientException.isStatusCode(404)) { settings = settings.copy(supportChannel = null) }
+                .doOnError(ClientException.isStatusCode(404, 403)) { settings = settings.copy(requiresRepair = true); properSetup = false }
                 .onErrorResume { Mono.empty() }
                 .awaitSingleOrNull()
         }
@@ -122,8 +152,8 @@ class EnvironmentService(
             guild.getChannelById(settings.supportChannel!!)
                 .ofType(TextChannel::class.java)
                 .flatMap { it.getMessageById(settings.staticMessage) }
-                .doOnError(ClientException.isStatusCode(404)) { settings.staticMessage = null }
-                .doOnError(ClientException.isStatusCode(404, 403)) { settings.requiresRepair = true; properSetup = false }
+                .doOnError(ClientException.isStatusCode(404)) { settings = settings.copy(staticMessage = null) }
+                .doOnError(ClientException.isStatusCode(404, 403)) { settings = settings.copy(requiresRepair = true); properSetup = false }
                 .onErrorResume { Mono.empty() }
                 .awaitSingleOrNull()
         }
@@ -137,22 +167,22 @@ class EnvironmentService(
     suspend fun recreateMissingEntities(guildId: Snowflake) {
         LOGGER.debug("Recreating missing entities for guild {}", guildId)
 
-        val settings = settingsService.getGuildSettings(guildId)
+        var settings = settingsService.getGuildSettings(guildId)
 
-        if (settings.awaitingCategory == null) settings.awaitingCategory = createCategory(guildId, "awaiting").id
-        if (settings.respondedCategory == null) settings.respondedCategory = createCategory(guildId, "responded").id
-        if (settings.holdCategory == null) settings.holdCategory = createCategory(guildId, "hold").id
-        if (settings.closeCategory == null) settings.closeCategory = createCategory(guildId, "closed").id
+        if (settings.awaitingCategory == null) settings = settings.copy(awaitingCategory = createCategory(guildId, "awaiting").id)
+        if (settings.respondedCategory == null) settings = settings.copy(respondedCategory = createCategory(guildId, "responded").id)
+        if (settings.holdCategory == null) settings = settings.copy(holdCategory = createCategory(guildId, "hold").id)
+        if (settings.closeCategory == null) settings = settings.copy(closeCategory = createCategory(guildId, "closed").id)
 
         if (settings.supportChannel == null) {
             val supportChannel = createSupportChannel(guildId)
-            settings.supportChannel = supportChannel.id
+            settings = settings.copy(supportChannel = supportChannel.id)
 
             // Create new static message since the old one is lost now
-            val embed = staticMessageService.getEmbed(settings) ?: throw IllegalStateException("Failed to get embed during recreate")
+            val embed = embedService.getSupportRequestMessageEmbed(settings) ?: throw IllegalStateException("Failed to get embed during recreate")
             supportChannel.createMessage(embed)
                 .withComponents(*componentService.getStaticMessageComponents(settings))
-                .doOnNext { settings.staticMessage = it.id }
+                .doOnNext { settings = settings.copy(staticMessage = it.id) }
                 .awaitSingle()
         }
 
@@ -163,14 +193,14 @@ class EnvironmentService(
                 .ofType(TextChannel::class.java)
                 .awaitSingle()
 
-            val embed = staticMessageService.getEmbed(settings) ?: throw IllegalStateException("Failed to get embed during recreate")
+            val embed = embedService.getSupportRequestMessageEmbed(settings) ?: throw IllegalStateException("Failed to get embed during recreate")
             supportChannel.createMessage(embed)
                 .withComponents(*componentService.getStaticMessageComponents(settings))
-                .doOnNext { settings.staticMessage = it.id }
+                .doOnNext { settings = settings.copy(staticMessage = it.id) }
                 .awaitSingle()
         }
 
-        if (settings.hasRequiredIdsSet()) settings.requiresRepair = false
+        if (settings.hasRequiredIdsSet()) settings = settings.copy(requiresRepair = false)
         settingsService.upsertGuildSettings(settings)
     }
 
@@ -181,5 +211,23 @@ class EnvironmentService(
             .ofType(TextChannel::class.java)
             .onErrorResume(ClientException.isStatusCode(404, 403)) { Mono.empty() }
             .awaitSingleOrNull() != null
+    }
+
+    suspend fun registerGuildCommands(guildId: Snowflake) {
+        val settings = settingsService.getGuildSettings(guildId)
+        val appService = discordClient.rest().applicationService
+        val appId = discordClient.selfId.asLong()
+
+        val commands = mutableListOf<ApplicationCommandRequest>()
+        if (settings.patronGuild) commands.addAll(premiumCommands)
+        if (settings.devGuild) commands.addAll(devCommands)
+
+        if (commands.isNotEmpty()) {
+            appService.bulkOverwriteGuildApplicationCommand(appId, guildId.asLong(), commands)
+                .doOnNext { LOGGER.debug("Bulk guild overwrite read: {} | {}", it.name(), guildId) }
+                .doOnError { LOGGER.error(GlobalVars.DEFAULT, "Bulk guild overwrite failed | $guildId", it) }
+                .then()
+                .awaitSingleOrNull()
+        }
     }
 }

@@ -79,7 +79,7 @@ class PermissionService(
             overwrites += project.staffRoles.map { PermissionOverwrite.forRole(it, getTicketGrantOverrides(true), PermissionSet.none()) }
         }
         if (settings.staffRole != null)
-            overwrites += PermissionOverwrite.forRole(settings.staffRole!!, getTicketGrantOverrides(true), PermissionSet.none())
+            overwrites += PermissionOverwrite.forRole(settings.staffRole, getTicketGrantOverrides(true), PermissionSet.none())
 
         return overwrites
     }

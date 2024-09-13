@@ -13,6 +13,7 @@ Perfect for modmail, community management, and more, TicketBird is capable of al
 
 # 💎 Core Features
 - Simple setup (just use one command to get everything initiated)
+- Now with customizable messages!
 - Easy to repair. Accidentally delete a channel? No worries, TicketBird is always watching for changes and ready to repair itself via a single command!
 - Easy for users to understand and use without a single command (but can also open tickets with a command)
 - Allow users to pick from up to 25 topics (called projects), if desired
@@ -39,6 +40,7 @@ Perfect for modmail, community management, and more, TicketBird is capable of al
 | /setup language          | Allows you to select the language for the bot to use                                      | Admin-only  |
 | /setup use-projects      | Whether to use "projects" or ticket topics to help sort tickets                           | Admin-only  |
 | /setup show-ticket-stats | Whether to show opened/closed ticket stats in the support request embed                   | Admin-only  |
+| /setup messaging         | Allows configuring certain messages found throughout TicketBird                           | Admin-only  |
 | /setup timing            | Allows configuring the timing of TicketBird's automated actions                           | Admin-only  |
 | /setup ping              | Allows modifying the default ping setting when a new ticket is opened                     | Admin-only  |
 | /setup logging           | Allows enabling and configuring ticket logging                                            | Admin-only  |
@@ -52,6 +54,7 @@ Perfect for modmail, community management, and more, TicketBird is capable of al
 | /project list            | Lists all existing projects/topics                                                        | Admin-only  |
 | /project view            | View full details about a specific project/topic                                          | Admin-only  |
 | /project edit            | Edit various settings for a project/topic - Like changing prefix, staff, or ping override | Admin-only  |
+| /project edit-info       | Edit the additional info within a project                                                 | Admin-only  |
 | /ticket open             | Opens a new ticket                                                                        | Everyone    | 
 | /ticket topic            | Changes a ticket's topic when run in a ticket channel                                     | Everyone    |
 | /ticket add              | Adds a user to the ticket as a participant when run in a ticket channel                   | Everyone    |
@@ -63,7 +66,7 @@ Perfect for modmail, community management, and more, TicketBird is capable of al
 # 🗓️ Planned & Work In Progress
 This bot is a hobby project for me, please note that while these features are planned, there's no solid timeline.
 - Website rewrite (It's old and ugly)
-- Customizable messages
+- [WIP] Customizable messages
 - And so much more!
 
 # 🧰 Tech stack

@@ -1,4 +1,3 @@
-
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
@@ -7,35 +6,34 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     // Kotlin
-    kotlin("jvm") version "1.9.10"
+    kotlin("jvm") version "2.0.20"
 
     // Spring
-    kotlin("plugin.spring") version "1.9.10"
-    id("org.springframework.boot") version "3.1.3"
-    id("io.spring.dependency-management") version "1.1.3"
+    kotlin("plugin.spring") version "2.0.20"
+    id("org.springframework.boot") version "3.3.3"
+    id("io.spring.dependency-management") version "1.1.6"
 
     // Tooling
-    id("com.gorylenko.gradle-git-properties") version "2.4.1"
-    id("com.google.cloud.tools.jib") version "3.4.0"
+    id("com.gorylenko.gradle-git-properties") version "2.4.2"
+    id("com.google.cloud.tools.jib") version "3.4.3"
 }
 
 buildscript {
     dependencies {
-        classpath("com.squareup:kotlinpoet:1.14.2")
+        classpath("com.squareup:kotlinpoet:1.18.1")
     }
 }
 
-val ticketBirdVersion = "2.1.0"
-val gradleWrapperVersion = "7.6"
+val ticketBirdVersion = "2.1.1"
+val gradleWrapperVersion = "8.10"
 val javaVersion = "17"
 val d4jVersion = "3.2.6"
 val d4jStoresVersion = "3.2.2"
 val logbackContribVersion = "0.1.5"
-val mysqlR2dbcVersion = "0.8.2.RELEASE"
-val mySqlConnectorVersion = "8.0.33"
 val discordWebhooksVersion = "0.8.4"
 val springMockkVersion = "4.0.2"
-val commonsIOVersion = "2.13.0"
+val orgJsonVersion = "20240303"
+val commonsIOVersion = "2.15.1"
 
 group = "org.dreamexposure"
 version = ticketBirdVersion
@@ -45,7 +43,7 @@ val buildVersion = if (System.getenv("GITHUB_RUN_NUMBER") != null) {
 } else {
     "$version.d${System.currentTimeMillis().div(1000)}" //Seconds since epoch
 }
-val kotlinSrcDir: File = buildDir.resolve("src/main/kotlin")
+val kotlinSrcDir = layout.buildDirectory.dir("src/main/kotlin").map(Directory::getAsFile).get()
 
 java {
     sourceCompatibility = JavaVersion.toVersion(javaVersion)
@@ -96,10 +94,11 @@ dependencies {
     // Database
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-mysql")
-    implementation("dev.miku:r2dbc-mysql:$mysqlR2dbcVersion")
-    implementation("mysql:mysql-connector-java:$mySqlConnectorVersion")
+    implementation("io.asyncer:r2dbc-mysql:1.3.0") // TODO: Remove hard coded version once spring includes this in bom as it is a breaking change
+    implementation("com.mysql:mysql-connector-j")
 
     // IO
+    implementation("org.json:json:$orgJsonVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     implementation("commons-io:commons-io:$commonsIOVersion")
@@ -107,7 +106,10 @@ dependencies {
     // Discord
     implementation("com.discord4j:discord4j-core:$d4jVersion")
     implementation("com.discord4j:stores-redis:$d4jStoresVersion")
-    implementation("club.minnced:discord-webhooks:$discordWebhooksVersion")
+    implementation("club.minnced:discord-webhooks:$discordWebhooksVersion") {
+        // Due to vulnerability in older versions: https://github.com/advisories/GHSA-rm7j-f5g5-27vv
+        exclude(group = "org.json", module = "json")
+    }
 
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
@@ -123,10 +125,10 @@ dependencies {
 jib {
     to {
         image = "rg.nl-ams.scw.cloud/dreamexposure/ticketbird"
-        tags = mutableSetOf("latest", ticketBirdVersion, buildVersion)
+        tags = mutableSetOf("latest", buildVersion)
     }
 
-    from.image = "eclipse-temurin:17-jre-alpine"
+    from.image = "eclipse-temurin:17-jre-alpine@sha256:03756521d6d21e52cd72793179b8d316be1b3d1ba362ed9ee659687d5c073a63"
 }
 
 gitProperties {
@@ -141,7 +143,7 @@ tasks {
         doLast {
             @Suppress("UNCHECKED_CAST")
             val gitProperties = ext[gitProperties.extProperty] as Map<String, String>
-            val enumPairs = gitProperties.mapKeys { it.key.replace('.', '_').toUpperCase() }
+            val enumPairs = gitProperties.mapKeys { it.key.replace('.', '_').uppercase() }
 
             val enumBuilder = TypeSpec.enumBuilder("GitProperty")
                 .primaryConstructor(
@@ -175,6 +177,8 @@ tasks {
     withType<KotlinCompile> {
         dependsOn(generateGitProperties)
 
+        @Suppress("DEPRECATION")
+        // FIXME: This is marked as deprecated but the related link does not seem to work, and no quick fix is available
         kotlinOptions {
             freeCompilerArgs = listOf("-Xjsr305=strict")
             jvmTarget = java.targetCompatibility.majorVersion

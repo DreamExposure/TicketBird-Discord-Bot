@@ -27,6 +27,8 @@ interface GuildSettingsRepository: R2dbcRepository<GuildSettingsData, Long> {
             support_channel = :supportChannel,
             log_channel = :logChannel,
             static_message = :staticMessage,
+            static_message_title = :staticMessageTitle,
+            static_message_description = :staticMessageDescription,
             next_id = :nextId,
             staff = :staff,
             staff_role = :staffRole,
@@ -51,7 +53,10 @@ interface GuildSettingsRepository: R2dbcRepository<GuildSettingsData, Long> {
         closeCategory: Long?,
         supportChannel: Long?,
         logChannel: Long?,
+
         staticMessage: Long?,
+        staticMessageTitle: String?,
+        staticMessageDescription: String?,
 
         nextId: Int,
         staff: String,
