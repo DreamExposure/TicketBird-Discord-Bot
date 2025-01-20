@@ -34,7 +34,7 @@ class AutoCompleteInteractionListener(
             try {
                 handler.handle(event, settingsService.getGuildSettings(event.interaction.guildId.get()))
             } catch (e: Exception) {
-                LOGGER.error(DEFAULT, "Error handling auto complete interaction | $event", e)
+                LOGGER.error(DEFAULT, "Error handling auto complete interaction| id:$id | $event", e)
 
                 // Attempt to respond with empty list so user doesn't have to wait
                 event.respondWithSuggestions(listOf())

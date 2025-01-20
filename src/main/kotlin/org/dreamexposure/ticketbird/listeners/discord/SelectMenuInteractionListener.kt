@@ -37,7 +37,7 @@ class SelectMenuInteractionListener(
             try {
                 dropdown.handle(event, settingsService.getGuildSettings(event.interaction.guildId.get()))
             } catch (e: Exception) {
-                LOGGER.error(DEFAULT, "Error handling select menu interaction | $event", e)
+                LOGGER.error(DEFAULT, "Error handling select menu interaction | id:${event.customId} | $event", e)
 
                 // Attempt to provide a message if there's an unhandled exception
                 event.createFollowup(localeService.getString(Locale.ENGLISH, "generic.unknown-error"))
