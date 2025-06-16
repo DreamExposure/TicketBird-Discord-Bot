@@ -2,6 +2,7 @@ import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
 import org.gradle.api.tasks.wrapper.Wrapper.DistributionType.ALL
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -25,7 +26,7 @@ buildscript {
 }
 
 val ticketBirdVersion = "2.1.2"
-val gradleWrapperVersion = "8.10"
+val gradleWrapperVersion = "8.14.2"
 val javaVersion = "17"
 val d4jVersion = "3.2.6"
 val d4jStoresVersion = "3.2.2"
@@ -177,11 +178,9 @@ tasks {
     withType<KotlinCompile> {
         dependsOn(generateGitProperties)
 
-        @Suppress("DEPRECATION")
-        // FIXME: This is marked as deprecated but the related link does not seem to work, and no quick fix is available
-        kotlinOptions {
-            freeCompilerArgs = listOf("-Xjsr305=strict")
-            jvmTarget = java.targetCompatibility.majorVersion
+        compilerOptions {
+            freeCompilerArgs.set(listOf("-Xjsr305=strict"))
+            jvmTarget.set(JvmTarget.fromTarget(java.targetCompatibility.majorVersion))
         }
     }
 
