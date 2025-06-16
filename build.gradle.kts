@@ -15,13 +15,13 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
 
     // Tooling
-    id("com.gorylenko.gradle-git-properties") version "2.4.2"
-    id("com.google.cloud.tools.jib") version "3.4.3"
+    id("com.gorylenko.gradle-git-properties") version "2.5.0"
+    id("com.google.cloud.tools.jib") version "3.4.5"
 }
 
 buildscript {
     dependencies {
-        classpath("com.squareup:kotlinpoet:1.18.1")
+        classpath("com.squareup:kotlinpoet:2.2.0")
     }
 }
 
@@ -33,8 +33,8 @@ val d4jStoresVersion = "3.2.2"
 val logbackContribVersion = "0.1.5"
 val discordWebhooksVersion = "0.8.4"
 val springMockkVersion = "4.0.2"
-val orgJsonVersion = "20240303"
-val commonsIOVersion = "2.15.1"
+val orgJsonVersion = "20250517"
+val commonsIOVersion = "2.19.0"
 
 group = "org.dreamexposure"
 version = ticketBirdVersion
