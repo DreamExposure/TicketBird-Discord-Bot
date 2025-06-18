@@ -1,7 +1,7 @@
 package org.dreamexposure.ticketbird.business
 
 import discord4j.core.`object`.component.*
-import discord4j.core.`object`.reaction.ReactionEmoji
+import discord4j.core.`object`.emoji.Emoji
 import org.dreamexposure.ticketbird.extensions.textInputPlaceholderSafe
 import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.`object`.Project
@@ -15,7 +15,7 @@ class ComponentService(
     suspend fun getStaticMessageComponents(settings: GuildSettings): Array<LayoutComponent> {
         val button = Button.primary(
             "create-ticket",
-            ReactionEmoji.unicode("\uD83D\uDCE8"), // Incoming envelop emote
+            Emoji.unicode("\uD83D\uDCE8"), // Incoming envelop emote
             localeService.getString(settings.locale, "button.create-ticket.label")
         ).disabled(settings.requiresRepair)
 
@@ -49,12 +49,12 @@ class ComponentService(
     suspend fun getTicketMessageComponents(settings: GuildSettings): Array<LayoutComponent> {
         val closeButton = Button.success(
             "close-ticket",
-            ReactionEmoji.unicode("\u2714"), // Check mark emote
+            Emoji.unicode("\u2714"), // Check mark emote
             localeService.getString(settings.locale, "button.close-ticket.label")
         )
         val holdButton = Button.secondary(
             "hold-ticket",
-            ReactionEmoji.unicode("\u23F8"),
+            Emoji.unicode("\u23F8"),
             localeService.getString(settings.locale, "button.hold-ticket.label")
         )
 
