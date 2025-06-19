@@ -47,7 +47,7 @@ class SetupCommand(
             event.createFollowup(localeService.getString(settings.locale, "command.setup.missing-perms"))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+                .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -73,7 +73,7 @@ class SetupCommand(
             event.createFollowup(localeService.getString(settings.locale, "command.setup.init.already"))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+                .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -125,7 +125,7 @@ class SetupCommand(
             .withEmbeds(embedService.getViewSettingsEmbed(newSettings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+            .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 
@@ -135,7 +135,7 @@ class SetupCommand(
             event.createFollowup(localeService.getString(settings.locale, "command.setup.repair.never-init"))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+                .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -158,7 +158,7 @@ class SetupCommand(
             event.createFollowup(localeService.getString(settings.locale, "command.setup.repair.no-issue-detected"))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+                .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -171,7 +171,7 @@ class SetupCommand(
             .withEmbeds(embedService.getViewSettingsEmbed(settings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+            .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 
@@ -189,7 +189,7 @@ class SetupCommand(
             .withEmbeds(embedService.getViewSettingsEmbed(newSettings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+            .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 
@@ -206,7 +206,7 @@ class SetupCommand(
             .withEmbeds(embedService.getViewSettingsEmbed(newSettings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+            .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 
@@ -224,7 +224,7 @@ class SetupCommand(
             .withEmbeds(embedService.getViewSettingsEmbed(newSettings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+            .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 
@@ -270,7 +270,7 @@ class SetupCommand(
             event.createFollowup(localeService.getString(settings.locale, "command.setup.timing.error.duration-zero"))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+                .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -284,7 +284,7 @@ class SetupCommand(
                     localeService.getString(settings.locale, "command.setup.timing.error.action-not-found")
                 ).withEphemeral(ephemeral)
                     .map(Message::getId)
-                    .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+                    .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                     .awaitSingleOrNull()
                 return
             }
@@ -300,7 +300,7 @@ class SetupCommand(
             .withEmbeds(embedService.getViewSettingsEmbed(newSettings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+            .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 
@@ -323,7 +323,7 @@ class SetupCommand(
             .withEmbeds(embedService.getViewSettingsEmbed(newSettings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+            .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 
@@ -344,7 +344,7 @@ class SetupCommand(
                 event.createFollowup(localeService.getString(settings.locale, "command.setup.logging.error.no-channel"))
                     .withEphemeral(ephemeral)
                     .map(Message::getId)
-                    .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+                    .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                     .awaitSingleOrNull()
                 return
             }
@@ -354,7 +354,7 @@ class SetupCommand(
                 event.createFollowup(localeService.getString(settings.locale, "command.setup.logging.error.channel-invalid"))
                     .withEphemeral(ephemeral)
                     .map(Message::getId)
-                    .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+                    .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                     .awaitSingleOrNull()
                 return
             }
@@ -375,7 +375,7 @@ class SetupCommand(
             .withEmbeds(embedService.getViewSettingsEmbed(newSettings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+            .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 

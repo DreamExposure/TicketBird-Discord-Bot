@@ -39,7 +39,7 @@ class TicketCommand(
                 .map(ApplicationCommandInteractionOptionValue::asString)
                 .map(String::toLong)
                 .orElse(-1)
-        } catch (ex: NumberFormatException) { -1 }
+        } catch (_: NumberFormatException) { -1 }
 
         interactionService.openTicketViaInteraction(info, topicId, ephemeral, event, settings)
     }
@@ -51,7 +51,7 @@ class TicketCommand(
                 .map(ApplicationCommandInteractionOptionValue::asString)
                 .map(String::toLong)
                 .orElse(-1)
-        } catch (ex: NumberFormatException) { -1 }
+        } catch (_: NumberFormatException) { -1 }
 
         interactionService.changeTopicViaCommand(topicId, ephemeral, event, settings)
     }

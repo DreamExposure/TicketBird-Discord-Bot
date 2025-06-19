@@ -42,7 +42,7 @@ class EditProjectModal(
             event.createFollowup(localeService.getString(settings.locale, "command.project.edit.not-found"))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+                .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }

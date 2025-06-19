@@ -39,7 +39,7 @@ class AddProjectModal(
                 .withEmbeds(embedService.getProjectListEmbed(settings))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+                .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -55,7 +55,7 @@ class AddProjectModal(
             .withEmbeds(embedService.getProjectViewEmbed(settings, project))
             .withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+            .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 }

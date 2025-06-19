@@ -39,7 +39,7 @@ class StaffCommand(
             event.createFollowup(localeService.getString(settings.locale, "command.setup.missing-perms"))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+                .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -68,7 +68,7 @@ class StaffCommand(
             .withAllowedMentions(AllowedMentions.suppressAll())
             .withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+            .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 
@@ -84,7 +84,7 @@ class StaffCommand(
                 .withAllowedMentions(AllowedMentions.suppressAll())
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+                .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -97,7 +97,7 @@ class StaffCommand(
             .withAllowedMentions(AllowedMentions.suppressAll())
             .withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+            .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 
@@ -113,7 +113,7 @@ class StaffCommand(
                 .withAllowedMentions(AllowedMentions.suppressAll())
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+                .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -126,7 +126,7 @@ class StaffCommand(
             .withAllowedMentions(AllowedMentions.suppressAll())
             .withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+            .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 
@@ -136,7 +136,7 @@ class StaffCommand(
             .withAllowedMentions(AllowedMentions.suppressAll())
             .withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+            .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 }

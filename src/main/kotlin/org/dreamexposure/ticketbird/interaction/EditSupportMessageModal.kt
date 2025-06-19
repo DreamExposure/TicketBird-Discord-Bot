@@ -48,7 +48,7 @@ class EditSupportMessageModal(
         event.createFollowup(followupContent)
             .withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+            .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 }

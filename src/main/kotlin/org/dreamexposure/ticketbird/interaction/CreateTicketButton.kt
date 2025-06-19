@@ -40,7 +40,7 @@ class CreateTicketButton(
             event.createFollowup(localeService.getString(settings.locale, "dropdown.select-project.prompt"))
                 .withComponents(*componentService.getProjectSelectComponents(settings))
                 .withEphemeral(ephemeral)
-                .flatMap { event.deleteReplyDelayed(messageDeleteSeconds) }
+                .map { event.deleteReplyDelayed(messageDeleteSeconds) }
                 .awaitSingleOrNull()
         } else {
             // Guild is not using projects, send to modal

@@ -44,7 +44,7 @@ class ProjectCommand(
             event.createFollowup(localeService.getString(settings.locale, "command.project.missing-perms"))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+                .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -93,7 +93,7 @@ class ProjectCommand(
                 .withEmbeds(embedService.getProjectListEmbed(settings))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+                .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -104,7 +104,7 @@ class ProjectCommand(
             .withEmbeds(embedService.getProjectListEmbed(settings))
             .withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+            .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 
@@ -123,7 +123,7 @@ class ProjectCommand(
                 .withEmbeds(embedService.getProjectListEmbed(settings))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+                .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -175,7 +175,7 @@ class ProjectCommand(
                 .withEmbeds(embedService.getProjectListEmbed(settings))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
+                .map { event.deleteFollowupDelayed(it, messageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }

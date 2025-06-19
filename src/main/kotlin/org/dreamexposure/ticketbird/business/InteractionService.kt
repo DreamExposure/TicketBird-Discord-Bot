@@ -63,7 +63,7 @@ class InteractionService(
                 .withComponents(*componentService.getProjectSelectComponents(settings, withCreate = true))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, openTicketMessageDeleteSeconds) }
+                .map { event.deleteFollowupDelayed(it, openTicketMessageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -79,7 +79,7 @@ class InteractionService(
                 .withComponents(*componentService.getProjectSelectComponents(settings, withCreate = true))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, openTicketMessageDeleteSeconds) }
+                .map { event.deleteFollowupDelayed(it, openTicketMessageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -99,7 +99,7 @@ class InteractionService(
             ticket.channel.asString()
         )).withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, openTicketMessageDeleteSeconds) }
+            .map { event.deleteFollowupDelayed(it, openTicketMessageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 
@@ -113,7 +113,7 @@ class InteractionService(
             event.createFollowup(localeService.getString(settings.locale, "command.hold.not-ticket"))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
+                .map { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -126,7 +126,7 @@ class InteractionService(
             event.createFollowup(localeService.getString(settings.locale, "command.hold.already-held"))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
+                .map { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -138,7 +138,7 @@ class InteractionService(
         event.createFollowup(localeService.getString(settings.locale, "command.hold.success"))
             .withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
+            .map { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 
@@ -152,7 +152,7 @@ class InteractionService(
             event.createFollowup(localeService.getString(settings.locale, "command.close.not-ticket"))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
+                .map { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -165,7 +165,7 @@ class InteractionService(
             event.createFollowup(localeService.getString(settings.locale, "command.close.already-closed"))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
+                .map { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -177,7 +177,7 @@ class InteractionService(
         event.createFollowup(localeService.getString(settings.locale, "command.close.success"))
             .withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
+            .map { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 
@@ -191,7 +191,7 @@ class InteractionService(
             event.createFollowup(localeService.getString(settings.locale, "command.topic.not-ticket"))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
+                .map { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -205,7 +205,7 @@ class InteractionService(
             event.createFollowup(localeService.getString(settings.locale, "command.topic.not-found"))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
+                .map { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -222,7 +222,7 @@ class InteractionService(
         event.createFollowup(localeService.getString(settings.locale, "command.topic.success", project.name))
             .withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
+            .map { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 
@@ -236,7 +236,7 @@ class InteractionService(
             event.createFollowup(localeService.getString(settings.locale, "command.ticket.add.not-ticket"))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
+                .map { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -253,7 +253,7 @@ class InteractionService(
             event.createFollowup(localeService.getString(settings.locale, "command.ticket.add.already"))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
+                .map { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -263,7 +263,7 @@ class InteractionService(
         event.createFollowup(localeService.getString(settings.locale, "generic.success"))
             .withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
+            .map { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 
@@ -276,7 +276,7 @@ class InteractionService(
             event.createFollowup(localeService.getString(settings.locale, "command.ticket.remove.not-ticket"))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
+                .map { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -293,7 +293,7 @@ class InteractionService(
             event.createFollowup(localeService.getString(settings.locale, "command.ticket.remove.admin"))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
+                .map { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -303,7 +303,7 @@ class InteractionService(
         event.createFollowup(localeService.getString(settings.locale, "generic.success"))
             .withEphemeral(ephemeral)
             .map(Message::getId)
-            .flatMap { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
+            .map { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
             .awaitSingleOrNull()
     }
 
@@ -321,7 +321,7 @@ class InteractionService(
             event.createFollowup(localeService.getString(settings.locale, "command.ticket.checksum.no-tickets", fileSha))
                 .withEphemeral(ephemeral)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
+                .map { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
                 .awaitSingleOrNull()
             return
         }
@@ -338,7 +338,7 @@ class InteractionService(
             event.createFollowup(localeService.getString(settings.locale, "generic.error.lifecycle-permission-denied"))
                 .withEphemeral(true)
                 .map(Message::getId)
-                .flatMap { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
+                .map { event.deleteFollowupDelayed(it, genericMessageDeleteSeconds) }
                 .awaitSingleOrNull()
             false
         } else true
