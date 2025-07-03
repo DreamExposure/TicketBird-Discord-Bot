@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    name: Build for JDK 17
+    name: Build for JDK 21
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name != 'DreamExposure/TicketBird-Discord-Bot' }}
     steps:
@@ -22,10 +22,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Set up JDK 17
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          java-version: 17
+          java-version: 21
           distribution: 'adopt'
 
       - name: Validate gradle
@@ -57,7 +57,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          java-version: 17
+          java-version: 21
           distribution: 'adopt'
 
       - name: Change wrapper permissions

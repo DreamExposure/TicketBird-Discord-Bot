@@ -27,7 +27,7 @@ buildscript {
 
 val ticketBirdVersion = "2.1.2"
 val gradleWrapperVersion = "8.14.2"
-val javaVersion = "17"
+val javaVersion = "21"
 val d4jVersion = "3.3.0-RC2"
 val d4jStoresVersion = "3.2.3"
 val logbackContribVersion = "0.1.5"
@@ -129,7 +129,7 @@ jib {
         tags = mutableSetOf("latest", buildVersion)
     }
 
-    from.image = "eclipse-temurin:17-jre-alpine@sha256:03756521d6d21e52cd72793179b8d316be1b3d1ba362ed9ee659687d5c073a63"
+    from.image = "eclipse-temurin:21-jdk-alpine@sha256:2f2f553ce09d25e2d2f0f521ab94cd73f70c9b21327a29149c23a2b63b8e29a0"
 }
 
 gitProperties {
