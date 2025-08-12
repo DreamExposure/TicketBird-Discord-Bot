@@ -82,14 +82,18 @@ class DiscordConfig {
         val useRedis = Config.CACHE_USE_REDIS.getBoolean()
         val redisHost = Config.REDIS_HOST.getString()
         val redisPort = Config.REDIS_PORT.getInt()
+        val redisDatabase = Config.REDIS_DATABASE.getInt()
         val redisPassword = Config.REDIS_PASSWORD.getString().toCharArray()
+        val redisUser = Config.REDIS_USER.getString()
         val isRedisCluster = Config.CACHE_REDIS_IS_CLUSTER.getBoolean()
         val prefix = Config.CACHE_PREFIX.getString()
 
         return if (useRedis) {
             val uriBuilder = RedisURI.Builder
                 .redis(redisHost, redisPort)
-            if (redisPassword.isNotEmpty()) uriBuilder.withPassword(redisPassword)
+            if (redisPassword.isNotEmpty() && redisUser.isNotEmpty()) uriBuilder.withAuthentication(redisUser, redisPassword)
+            else if (redisPassword.isNotEmpty()) uriBuilder.withPassword(redisPassword)
+            if (redisDatabase > -1) uriBuilder.withDatabase(redisDatabase)
 
             val rss = if (isRedisCluster) {
                 RedisClusterStoreService.Builder()
