@@ -28,7 +28,7 @@ buildscript {
 val ticketBirdVersion = "2.1.2"
 val gradleWrapperVersion = "8.14.2"
 val javaVersion = "21"
-val d4jVersion = "3.3.0-RC2"
+val d4jVersion = "3.3.0-RC3"
 val d4jStoresVersion = "3.2.3"
 val logbackContribVersion = "0.1.5"
 val discordWebhooksVersion = "0.8.4"
