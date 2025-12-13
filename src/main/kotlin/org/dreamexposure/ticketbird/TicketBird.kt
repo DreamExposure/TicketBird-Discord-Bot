@@ -28,33 +28,9 @@ class TicketBird {
         }
 
         fun getShardIndex(): Int {
-            /*
-            This sucks. So k8s doesn't expose the pod ordinal for a pod in a stateful set
-            https://github.com/kubernetes/kubernetes/pull/68719
-
-            This has been an open issue and PR for over 3 years now, and has gone stale as of March 3rd 2021.
-
-            So, in order to get the pod ordinal since it's not directly exposed, we have to get the hostname, and parse
-            the ordinal out of that.
-
-            To make sure we don't use this when running anywhere but inside k8s, we are mapping the hostname to an env
-            variable SHARD_POD_NAME and if that is present, parsing it for the pod ordinal to tell the bot its shard index.
-
-            This will be removed when/if they add this feature directly and SHARD_INDEX will be an env variable...
-            */
-
-            //Check if we are running in k8s or not...
-            val shardPodName = System.getenv("SHARD_POD_NAME")
-            return if (shardPodName != null) {
-                //In k8s, parse this
-
-                //Pod name would look like `ticketbird-dev-N` where N is the ordinal and therefore shard index.
-                val parts = shardPodName.split("-").toTypedArray()
-                parts[parts.size - 1].toInt() //Get last part in name, that should be ordinal
-            } else {
-                //Fall back to config value
-                Config.SHARD_INDEX.getInt()
-            }
+            val k8sPodIndex = System.getenv("KUBERNETES_POD_INDEX")
+            return k8sPodIndex?.toInt() ?: // Fall back to config
+            Config.SHARD_INDEX.getInt()
         }
 
         fun getShardCount(): Int {
