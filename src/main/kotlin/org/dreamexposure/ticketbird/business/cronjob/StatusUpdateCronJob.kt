@@ -43,7 +43,7 @@ class StatusUpdateCronJob(
         "Support TicketBird on Patreon"
     )
 
-    override fun run(args: ApplicationArguments?) {
+    override fun run(args: ApplicationArguments) {
         Flux.interval(Config.TIMING_BOT_STATUS_UPDATE_MINUTES.getLong().asMinutes())
             .onBackpressureDrop()
             .flatMap { update() }

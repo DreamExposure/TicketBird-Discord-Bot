@@ -31,7 +31,7 @@ import org.springframework.stereotype.Component
 import org.springframework.util.StopWatch
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.net.URL
+import java.net.URI
 import java.time.Duration
 import java.time.Instant
 import java.util.zip.ZipEntry
@@ -271,10 +271,10 @@ class TicketService(
 
             if (calculatedPingOption == GuildSettings.PingOption.AUTHOR_AND_PROJECT_STAFF) {
                 pings += project!!.staffUsers.map { "<@${it.asString()}>" }
-                pings += project!!.staffRoles.map { "<@&${it.asString()}>" }
+                pings += project.staffRoles.map { "<@&${it.asString()}>" }
             } else if (calculatedPingOption == GuildSettings.PingOption.AUTHOR_AND_ALL_STAFF) {
                 pings += settings.staff.map(Snowflake::of).map { "<@${it.asString()}>" }
-                if (settings.staffRole != null) pings += "<@&${settings.staffRole!!.asString()}>"
+                if (settings.staffRole != null) pings += "<@&${settings.staffRole.asString()}>"
 
                 if (project != null) {
                     pings += project.staffUsers.map { "<@${it.asString()}>" }
@@ -380,7 +380,7 @@ class TicketService(
                         ticketLog.append(",").append(objectMapper.writeValueAsString(it.data))
                         // Download attachment to memory and write to zip
                         withContext(Dispatchers.IO) {
-                            URL(it.url).openStream().use { attachmentStream ->
+                            URI(it.url).toURL().openStream().use { attachmentStream ->
                                 hasAttachments = true
                                 val entry = ZipEntry(it.filename)
 

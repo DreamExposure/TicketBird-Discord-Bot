@@ -1,7 +1,7 @@
 package org.dreamexposure.ticketbird.config
 
+import org.springframework.boot.web.error.ErrorPage
 import org.springframework.boot.web.server.ConfigurableWebServerFactory
-import org.springframework.boot.web.server.ErrorPage
 import org.springframework.boot.web.server.WebServerFactoryCustomizer
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
@@ -29,8 +29,8 @@ class WebFluxConfig : WebServerFactoryCustomizer<ConfigurableWebServerFactory>, 
     private var ctx: ApplicationContext? = null
 
     // Web stuff
-    override fun customize(factory: ConfigurableWebServerFactory?) {
-        factory?.addErrorPages(ErrorPage(HttpStatus.NOT_FOUND, "/"))
+    override fun customize(factory: ConfigurableWebServerFactory) {
+        factory.addErrorPages(ErrorPage(HttpStatus.NOT_FOUND, "/"))
     }
 
     override fun addCorsMappings(registry: CorsRegistry) {

@@ -143,7 +143,7 @@ class EmbedService(
             .author("@${creator.displayName}", null, creator.avatarUrl)
             .timestamp(Instant.now())
             .color(successColor)
-        if (!project?.name.isNullOrBlank()) embedBuilder.title(project!!.name.embedTitleSafe())
+        if (!project?.name.isNullOrBlank()) embedBuilder.title(project.name.embedTitleSafe())
         if (!info.isNullOrBlank()) embedBuilder.description(info.embedDescriptionSafe())
 
         return embedBuilder.build()

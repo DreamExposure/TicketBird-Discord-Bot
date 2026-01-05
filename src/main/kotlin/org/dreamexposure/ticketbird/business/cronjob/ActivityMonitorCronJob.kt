@@ -24,7 +24,7 @@ class ActivityMonitorCronJob(
 ): ApplicationRunner {
     private val interval = Config.TIMING_ACTIVITY_MONITOR_FREQUENCY_MINUTES.getLong().asMinutes()
 
-    override fun run(args: ApplicationArguments?) {
+    override fun run(args: ApplicationArguments) {
         Flux.interval(interval)
             .onBackpressureDrop()
             .flatMap { doAction() }

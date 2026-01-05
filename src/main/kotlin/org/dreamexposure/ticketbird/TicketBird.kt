@@ -4,14 +4,14 @@ import org.dreamexposure.ticketbird.config.Config
 import org.dreamexposure.ticketbird.logger.LOGGER
 import org.dreamexposure.ticketbird.utils.GlobalVars
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.autoconfigure.session.SessionAutoConfiguration
 import org.springframework.boot.builder.SpringApplicationBuilder
+import org.springframework.boot.webflux.autoconfigure.WebSessionIdResolverAutoConfiguration
 import org.springframework.stereotype.Component
 import java.lang.management.ManagementFactory
 import java.time.Duration
 
 @Component
-@SpringBootApplication(exclude = [SessionAutoConfiguration::class])
+@SpringBootApplication(exclude = [WebSessionIdResolverAutoConfiguration::class])
 class TicketBird {
     companion object {
         @JvmStatic

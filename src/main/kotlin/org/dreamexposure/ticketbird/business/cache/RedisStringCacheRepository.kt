@@ -94,7 +94,7 @@ class RedisStringCacheRepository<K, V>(
                     LOGGER.error("Failed to read value from redis | guildId:$guildId | keySearch:${formatKeySearch(guildId)} | data:$it", ex)
                     null
                 }
-            }.map { it!! } // Yeah, this shouldn't be required with mapNotNull, but it generates an error otherwise, probably a language bug?
+            }
             .collectList()
             .awaitSingle()
     }

@@ -104,7 +104,7 @@ class EnvironmentService(
 
         // Check awaiting response ticket category
         if (settings.awaitingCategory != null) {
-            guild.getChannelById(settings.awaitingCategory!!)
+            guild.getChannelById(settings.awaitingCategory)
                 .doOnError(ClientException.isStatusCode(404)) { settings = settings.copy(awaitingCategory = null) }
                 .doOnError(ClientException.isStatusCode(404, 403)) { settings = settings.copy(requiresRepair = true); properSetup = false }
                 .onErrorResume { Mono.empty() }

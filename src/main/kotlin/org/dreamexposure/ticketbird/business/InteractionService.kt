@@ -21,7 +21,7 @@ import org.dreamexposure.ticketbird.`object`.GuildSettings
 import org.dreamexposure.ticketbird.`object`.Ticket
 import org.dreamexposure.ticketbird.`object`.TicketCreateState
 import org.springframework.stereotype.Component
-import java.net.URL
+import java.net.URI
 
 @Component
 class InteractionService(
@@ -311,7 +311,7 @@ class InteractionService(
         LOGGER.debug("Validate ticket checksum via interaction | guild {} | eventType: {}", settings.guildId, event.interaction.type.name)
 
         val fileSha =  withContext(Dispatchers.IO) {
-                URL(file.url).openStream().use {
+                URI(file.url).toURL().openStream().use {
                     it.readBytes().sha256Hash()
                 }
         }
