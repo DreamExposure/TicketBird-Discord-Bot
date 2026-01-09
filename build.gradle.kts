@@ -96,8 +96,8 @@ dependencies {
     // Database
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-mysql")
-    implementation("io.asyncer:r2dbc-mysql")
-    implementation("com.mysql:mysql-connector-j")
+    implementation("org.mariadb:r2dbc-mariadb")
+    implementation("org.mariadb:mariadb-java-client")
 
     // IO
     implementation("org.json:json:$orgJsonVersion")
