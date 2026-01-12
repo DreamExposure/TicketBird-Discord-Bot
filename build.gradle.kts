@@ -184,7 +184,7 @@ tasks {
         dependsOn(generateGitProperties)
 
         compilerOptions {
-            freeCompilerArgs.set(listOf("-Xjsr305=strict"))
+            freeCompilerArgs.set(listOf("-Xjsr305=strict", "-Xannotation-default-target=param-property"))
             jvmTarget.set(JvmTarget.fromTarget(java.targetCompatibility.majorVersion))
         }
     }
