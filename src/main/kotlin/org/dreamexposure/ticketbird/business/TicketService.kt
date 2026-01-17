@@ -326,6 +326,7 @@ class TicketService(
         timer.start()
 
         // Get everything we need
+        val fileLoggingToggle = Config.TOGGLE_TICKET_FILE_LOGGING.getBoolean()
         val settings = settingsService.getGuildSettings(guildId)
         if (!settings.enableLogging || settings.logChannel == null) return // sanity check
 
@@ -378,16 +379,19 @@ class TicketService(
                     // Handle any attachments
                     if (message.attachments.isNotEmpty()) message.attachments.forEach {
                         ticketLog.append(",").append(objectMapper.writeValueAsString(it.data))
-                        // Download attachment to memory and write to zip
-                        withContext(Dispatchers.IO) {
-                            URI(it.url).toURL().openStream().use { attachmentStream ->
-                                hasAttachments = true
-                                val entry = ZipEntry(it.filename)
 
-                                zipStream.putNextEntry(entry)
-                                IOUtils.copy(attachmentStream, zipStream)
-                                attachmentStream.close()
-                                zipStream.closeEntry()
+                        if (fileLoggingToggle) {
+                            // Download attachment to memory and write to zip
+                            withContext(Dispatchers.IO) {
+                                URI(it.url).toURL().openStream().use { attachmentStream ->
+                                    hasAttachments = true
+                                    val entry = ZipEntry(it.filename)
+
+                                    zipStream.putNextEntry(entry)
+                                    IOUtils.copy(attachmentStream, zipStream)
+                                    attachmentStream.close()
+                                    zipStream.closeEntry()
+                                }
                             }
                         }
                     }
