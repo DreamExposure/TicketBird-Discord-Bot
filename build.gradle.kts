@@ -7,35 +7,35 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     // Kotlin
-    kotlin("jvm") version "2.3.0"
+    kotlin("jvm") version "2.4.20"
 
     // Spring
-    kotlin("plugin.spring") version "2.3.0"
-    id("org.springframework.boot") version "4.0.1"
+    kotlin("plugin.spring") version "2.4.20"
+    id("org.springframework.boot") version "4.1.1"
     id("io.spring.dependency-management") version "1.1.7"
 
     // Tooling
-    id("com.gorylenko.gradle-git-properties") version "2.5.4"
+    id("com.gorylenko.gradle-git-properties") version "4.0.1"
     id("com.google.cloud.tools.jib") version "3.5.2"
 }
 
 buildscript {
     dependencies {
-        classpath("com.squareup:kotlinpoet:2.2.0")
+        classpath("com.squareup:kotlinpoet:2.4.0")
     }
 }
 
 val ticketBirdVersion = "2.1.2"
-val gradleWrapperVersion = "9.2.1"
+val gradleWrapperVersion = "9.8.0"
 val javaVersion = "21"
-val d4jVersion = "3.3.0"
+val d4jVersion = "3.3.3"
 val d4jStoresVersion = "3.2.3"
 val logbackContribVersion = "0.1.5"
 val discordWebhooksVersion = "0.8.4"
 val springMockkVersion = "5.0.1"
-val orgJsonVersion = "20251224"
-val commonsIOVersion = "2.21.0"
-val okioVersion = "3.16.2"
+val orgJsonVersion = "20260814"
+val commonsIOVersion = "2.22.0"
+val okioVersion = "3.18.2"
 
 group = "org.dreamexposure"
 version = ticketBirdVersion
@@ -72,7 +72,6 @@ dependencies {
     // Tools
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
 
@@ -184,7 +183,7 @@ tasks {
         dependsOn(generateGitProperties)
 
         compilerOptions {
-            freeCompilerArgs.set(listOf("-Xjsr305=strict", "-Xannotation-default-target=param-property"))
+            freeCompilerArgs.set(listOf("-Xjsr305=strict"))
             jvmTarget.set(JvmTarget.fromTarget(java.targetCompatibility.majorVersion))
         }
     }

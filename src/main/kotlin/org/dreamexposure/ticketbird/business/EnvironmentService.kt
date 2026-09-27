@@ -151,7 +151,7 @@ class EnvironmentService(
         if (settings.supportChannel != null && settings.staticMessage != null) {
             guild.getChannelById(settings.supportChannel!!)
                 .ofType(TextChannel::class.java)
-                .flatMap { it.getMessageById(settings.staticMessage) }
+                .flatMap { it.getMessageById(settings.staticMessage!!) }
                 .doOnError(ClientException.isStatusCode(404)) { settings = settings.copy(staticMessage = null) }
                 .doOnError(ClientException.isStatusCode(404, 403)) { settings = settings.copy(requiresRepair = true); properSetup = false }
                 .onErrorResume { Mono.empty() }

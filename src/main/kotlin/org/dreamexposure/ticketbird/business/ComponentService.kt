@@ -12,7 +12,7 @@ class ComponentService(
     private val localeService: LocaleService,
     private val projectService: ProjectService,
 ) {
-    suspend fun getStaticMessageComponents(settings: GuildSettings): Array<LayoutComponent> {
+    suspend fun getStaticMessageComponents(settings: GuildSettings): Array<TopLevelMessageComponent> {
         val button = Button.primary(
             "create-ticket",
             Emoji.unicode("\uD83D\uDCE8"), // Incoming envelop emote
@@ -22,7 +22,7 @@ class ComponentService(
         return arrayOf(ActionRow.of(button))
     }
 
-    suspend fun getProjectSelectComponents(settings: GuildSettings, withCreate: Boolean = false): Array<LayoutComponent> {
+    suspend fun getProjectSelectComponents(settings: GuildSettings, withCreate: Boolean = false): Array<TopLevelMessageComponent> {
         val projectsAsOptions = projectService.getAllProjects(settings.guildId)
             .map { SelectMenu.Option.of(it.name, it.id.toString()) }
 
@@ -34,7 +34,7 @@ class ComponentService(
         return arrayOf(ActionRow.of(selectMenu))
     }
 
-    suspend fun getTicketOpenModalComponents(settings: GuildSettings): Array<LayoutComponent> {
+    suspend fun getTicketOpenModalComponents(settings: GuildSettings): Array<TopLevelModalComponent> {
         val infoInput = TextInput.paragraph(
             "ticket-detail.info",
             0,
@@ -45,7 +45,7 @@ class ComponentService(
         return arrayOf(Label.of(localeService.getString(settings.locale, "modal.ticket-detail.info.label"),infoInput))
     }
 
-    suspend fun getTicketMessageComponents(settings: GuildSettings): Array<LayoutComponent> {
+    suspend fun getTicketMessageComponents(settings: GuildSettings): Array<TopLevelMessageComponent> {
         val closeButton = Button.success(
             "close-ticket",
             Emoji.unicode("\u2714"), // Check mark emote
@@ -60,7 +60,7 @@ class ComponentService(
         return arrayOf(ActionRow.of(closeButton, holdButton))
     }
 
-    suspend fun getEditSupportMessageModalComponents(settings: GuildSettings): Array<LayoutComponent> {
+    suspend fun getEditSupportMessageModalComponents(settings: GuildSettings): Array<TopLevelModalComponent> {
         val currentTitle = settings.staticMessageTitle ?: localeService.getString(settings.locale, "embed.static.title")
         val currentDesc = settings.staticMessageDescription ?: localeService.getString(settings.locale, "embed.static.desc")
 
@@ -85,7 +85,7 @@ class ComponentService(
         )
     }
 
-    suspend fun getAddProjectModalComponents(settings: GuildSettings): Array<LayoutComponent> {
+    suspend fun getAddProjectModalComponents(settings: GuildSettings): Array<TopLevelModalComponent> {
         val nameInput = TextInput.small(
             "add-project.name",
             1,
@@ -112,7 +112,7 @@ class ComponentService(
         )
     }
 
-    suspend fun getEditProjectModalComponents(settings: GuildSettings, project: Project): Array<LayoutComponent> {
+    suspend fun getEditProjectModalComponents(settings: GuildSettings, project: Project): Array<TopLevelModalComponent> {
         val infoInput = TextInput.paragraph(
             "edit-project.info",
             0,

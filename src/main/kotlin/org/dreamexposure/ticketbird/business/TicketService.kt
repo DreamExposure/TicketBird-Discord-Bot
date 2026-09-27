@@ -147,8 +147,8 @@ class TicketService(
         val settings = settingsService.getGuildSettings(guildId)
         val channel = discordClient.getChannelById(channelId).ofType(TextChannel::class.java).awaitSingle()
 
-        channel.edit().withParentIdOrNull(settings.closeCategory)
-            .doOnNext { ticket.category = settings.closeCategory!! }
+        channel.edit().withParentIdOrNull(settings.closeCategory!!)
+            .doOnNext { ticket.category = settings.closeCategory }
             .doOnNext { ticket.lastActivity = Instant.now() }
             .awaitSingle()
         updateTicket(ticket)
@@ -171,8 +171,8 @@ class TicketService(
         val settings = settingsService.getGuildSettings(guildId)
         val channel = discordClient.getChannelById(channelId).ofType(TextChannel::class.java).awaitSingle()
 
-        channel.edit().withParentIdOrNull(settings.holdCategory)
-            .doOnNext { ticket.category = settings.holdCategory!! }
+        channel.edit().withParentIdOrNull(settings.holdCategory!!)
+            .doOnNext { ticket.category = settings.holdCategory }
             .doOnNext { ticket.lastActivity = Instant.now() }
             .awaitSingle()
         updateTicket(ticket)
